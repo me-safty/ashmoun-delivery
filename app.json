@@ -1,14 +1,15 @@
 {
   "expo": {
-    "name": "2026-10-30-i-wnat-to-build-mobile-0c8367f1",
-    "slug": "2026-10-30-i-wnat-to-build-mobile-0c8367f1",
+    "name": "توصيل أشمون",
+    "slug": "ashmoun-delivery",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "20261030iwnattobuildmobile0c8367f1",
+    "scheme": "ashmoundelivery",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.mohamedsafty.ashmoundelivery"
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +18,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.mohamedsafty.ashmoundelivery"
     },
     "web": {
       "output": "server",

@@ -10,7 +10,7 @@ Expo ships breaking changes every SDK release. APIs you remember are likely rena
 
 ## Commands
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+This project uses pnpm: run `pnpm exec` (or `pnpm dlx` for one-off CLIs) wherever docs say `npx`.
 
 ```bash
 npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
