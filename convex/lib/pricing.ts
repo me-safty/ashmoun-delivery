@@ -15,6 +15,9 @@ export function priceLine(
   const known = new Set(product.optionGroups.map((g) => g.key));
   const unknown = selections.find((s) => !known.has(s.groupKey));
   if (unknown) return { kind: "invalid", reason: `unknown group ${unknown.groupKey}` };
+  if (new Set(selections.map((s) => s.groupKey)).size !== selections.length) {
+    return { kind: "invalid", reason: "group selected twice" };
+  }
 
   let unitPrice = product.price;
   const labels: string[] = [];
@@ -33,5 +36,6 @@ export function priceLine(
       labels.push(option.name);
     }
   }
+  if (unitPrice < 0) return { kind: "invalid", reason: "negative price" };
   return { kind: "ok", unitPrice, optionsLabel: labels.join("، ") };
 }
