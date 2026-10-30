@@ -34,11 +34,29 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      [
+        "expo-localization",
+        {
+          "forcesRTL": true
+        }
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "2a94122e-33e9-428e-b76a-29bd67f41fed"
+      }
+    },
+    "owner": "mohamed_safty"
   }
 }
