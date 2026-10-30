@@ -12,6 +12,7 @@ import type * as lib_hours from "../lib/hours.js";
 import type * as lib_orderStatus from "../lib/orderStatus.js";
 import type * as lib_pricing from "../lib/pricing.js";
 import type * as seed from "../seed.js";
+import type * as zones from "../zones.js";
 
 import type {
   ApiFromModules,
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   "lib/orderStatus": typeof lib_orderStatus;
   "lib/pricing": typeof lib_pricing;
   seed: typeof seed;
+  zones: typeof zones;
 }>;
 
 /**

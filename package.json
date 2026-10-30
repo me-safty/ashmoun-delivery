@@ -39,16 +39,18 @@
     "@edge-runtime/vm": "^5.0.0",
     "@types/react": "~19.3.0",
     "convex-test": "^0.0.66",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "~58.0.4",
+    "playwright": "1.59.1",
     "typescript": "~6.0.3",
     "vitest": "^5.0.5"
   },
   "scripts": {
     "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint",
+    "lint": "eslint .",
     "test": "vitest run",
     "typecheck": "tsc --noEmit && tsc --noEmit -p convex"
   },
