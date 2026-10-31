@@ -11,7 +11,7 @@ import { PriceSummary } from "@/components/price-summary";
 import { TextField } from "@/components/text-field";
 import { useCart, useCartQuote } from "@/lib/cart";
 import { errorMessage } from "@/lib/errors";
-import { colors, radius, space } from "@/theme";
+import { colors, formatPrice, radius, space } from "@/theme";
 
 export default function Checkout() {
   const { shop, lines, clear } = useCart();
@@ -48,7 +48,12 @@ export default function Checkout() {
   return (
     <FormScreen
       footer={
-        <Button label="تأكيد الطلب" loading={placing} disabled={!shop || !address || !priced} onPress={submit} />
+        <Button
+          label={priced && address ? `تأكيد الطلب · ${formatPrice(priced.subtotal + address.deliveryFee)}` : "تأكيد الطلب"}
+          loading={placing}
+          disabled={!shop || !address || !priced}
+          onPress={submit}
+        />
       }>
       <Stack.Screen options={{ title: "إتمام الطلب" }} />
       <AppText variant="subtitle">التوصيل إلى</AppText>
@@ -60,20 +65,26 @@ export default function Checkout() {
             accessibilityRole="radio"
             accessibilityState={{ selected }}
             onPress={() => setChosenId(a._id)}
-            style={[styles.option, selected && styles.optionOn]}>
-            <AppText variant="subtitle">
-              {a.label} · {a.zoneName}
-            </AppText>
+            style={[styles.option, styles.addressOption, selected && styles.optionOn]}>
+            <View style={[styles.radio, selected && styles.radioOn]} />
+            <View style={styles.optionBody}>
+              <AppText variant="subtitle">
+                {a.label} · {a.zoneName}
+              </AppText>
+              <AppText variant="caption" tone="muted">
+                {a.street}
+                {a.landmark ? ` · ${a.landmark}` : ""}
+              </AppText>
+            </View>
             <AppText variant="caption" tone="muted">
-              {a.street}
-              {a.landmark ? ` · ${a.landmark}` : ""}
+              توصيل {formatPrice(a.deliveryFee)}
             </AppText>
           </Pressable>
         );
       })}
 
       <AppText variant="subtitle">طريقة الدفع</AppText>
-      <View style={[styles.option, styles.optionOn]}>
+      <View style={styles.option}>
         <AppText variant="subtitle">💵 كاش عند الاستلام</AppText>
         <AppText variant="caption" tone="muted">
           ادفع للمندوب لما الطلب يوصلك.
@@ -106,4 +117,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   optionOn: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  addressOption: { flexDirection: "row", alignItems: "center", gap: space.md },
+  optionBody: { flex: 1, gap: 2 },
+  radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.faint },
+  radioOn: { borderColor: colors.primary, backgroundColor: colors.primary },
 });

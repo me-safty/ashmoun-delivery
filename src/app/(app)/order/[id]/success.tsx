@@ -30,7 +30,10 @@ export default function OrderSuccess() {
             رقم الطلب #{order._id.slice(-6).toUpperCase()}
           </AppText>
           <AppText variant="title" tone="primary">
-            {formatPrice(order.total)} كاش عند الاستلام
+            {formatPrice(order.total)}
+          </AppText>
+          <AppText variant="caption" tone="muted">
+            هتدفع كاش عند الاستلام
           </AppText>
           <AppText variant="caption" tone="muted">
             التوصيل إلى {order.address.label} · {order.address.zoneName}
