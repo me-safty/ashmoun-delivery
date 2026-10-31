@@ -1,21 +1,20 @@
+import { useAuthActions } from "@convex-dev/auth/react";
 import { useMutation } from "convex/react";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { AndroidImportance } from "expo-notifications";
 import { router } from "expo-router";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Platform } from "react-native";
 import { api } from "@/convex/_generated/api";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+// This device's token, remembered so sign-out can detach it from the account.
+let deviceToken: string | null = null;
+
+// expo-notifications throws on web when reading the last response.
+const useLastNotificationResponse =
+  Platform.OS === "web" ? () => null : Notifications.useLastNotificationResponse;
 
 async function getPushToken() {
   if (Platform.OS === "web" || !Device.isDevice) return null;
@@ -33,23 +32,37 @@ async function getPushToken() {
   return (await Notifications.getExpoPushTokenAsync({ projectId })).data;
 }
 
-// Registers this device for order-status pushes and opens the order when a push is tapped.
+// Registers this device for order-status pushes and opens the order when a push is tapped,
+// including the tap that launched a closed app.
 export function usePushNotifications(enabled: boolean) {
   const savePushToken = useMutation(api.users.savePushToken);
+  const lastResponse = useLastNotificationResponse();
 
   useEffect(() => {
     if (!enabled) return;
     getPushToken()
-      .then((token) => (token ? savePushToken({ token }) : undefined))
+      .then(async (token) => {
+        if (!token) return;
+        deviceToken = token;
+        await savePushToken({ token });
+      })
       .catch(() => {});
   }, [enabled, savePushToken]);
 
   useEffect(() => {
-    if (!enabled || Platform.OS === "web") return;
-    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-      const orderId = response.notification.request.content.data?.orderId;
-      if (typeof orderId === "string") router.push({ pathname: "/order/[id]", params: { id: orderId } });
-    });
-    return () => subscription.remove();
-  }, [enabled]);
+    if (!enabled || !lastResponse) return;
+    const orderId = lastResponse.notification.request.content.data?.orderId;
+    if (typeof orderId === "string") router.push({ pathname: "/order/[id]", params: { id: orderId } });
+    Notifications.clearLastNotificationResponse();
+  }, [enabled, lastResponse]);
+}
+
+export function useSignOut() {
+  const { signOut } = useAuthActions();
+  const removePushToken = useMutation(api.users.removePushToken);
+  return useCallback(async () => {
+    if (deviceToken) await removePushToken({ token: deviceToken }).catch(() => {});
+    deviceToken = null;
+    await signOut();
+  }, [removePushToken, signOut]);
 }

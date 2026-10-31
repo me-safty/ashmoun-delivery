@@ -1,4 +1,3 @@
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useMutation, useQuery } from "convex/react";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -8,6 +7,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { confirm } from "@/lib/confirm";
+import { useSignOut } from "@/lib/push";
 import { errorMessage } from "@/lib/errors";
 import { colors, formatPrice, radius, space } from "@/theme";
 
@@ -16,7 +16,7 @@ export default function Profile() {
   const addresses = useQuery(api.addresses.mine);
   const setDefault = useMutation(api.addresses.setDefault);
   const remove = useMutation(api.addresses.remove);
-  const { signOut } = useAuthActions();
+  const signOut = useSignOut();
   const [error, setError] = useState<string | null>(null);
   const sortedAddresses = [...(addresses ?? [])].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
 
