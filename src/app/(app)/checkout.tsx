@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "convex/react";
-import { router, Stack } from "expo-router";
+import { Redirect, router, Stack } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
@@ -25,6 +25,7 @@ export default function Checkout() {
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [placing, setPlacing] = useState(false);
+  const [placed, setPlaced] = useState(false);
   const deliverable = addresses?.filter((a) => a.zoneActive) ?? [];
   const address =
     deliverable.find((a) => a._id === chosenId) ?? deliverable.find((a) => a.isDefault) ?? deliverable[0];
@@ -40,6 +41,7 @@ export default function Checkout() {
         note,
         items: lines.map((l) => ({ productId: l.productId, quantity: l.quantity, selections: l.selections })),
       });
+      setPlaced(true);
       clear();
       router.dismissAll();
       router.push({ pathname: "/order/[id]/success", params: { id: orderId } });
@@ -48,6 +50,9 @@ export default function Checkout() {
       setPlacing(false);
     }
   }
+
+  // After a successful order the cart empties on the way to the success screen.
+  if (!placed && (!shop || lines.length === 0)) return <Redirect href="/cart" />;
 
   return (
     <FormScreen
