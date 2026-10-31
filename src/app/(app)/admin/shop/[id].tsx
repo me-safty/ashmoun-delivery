@@ -5,6 +5,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, TextInput, View } from "reac
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { cleanNumber } from "@/lib/number-input";
+import { AdminGrid, adminPage } from "@/components/admin-grid";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { ToggleRow } from "@/components/toggle-row";
@@ -19,14 +20,16 @@ export default function AdminShopMenu() {
   if (data === null) return <Unavailable message="المحل ده مش موجود" />;
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, adminPage]}>
       <Stack.Screen options={{ title: data.shop.name }} />
       {data.sections.map((section) => (
         <View key={section._id} style={styles.section}>
           <AppText variant="subtitle">{section.name}</AppText>
-          {section.products.map((product) => (
-            <ProductRow key={`${product._id}-${product.price}`} product={product} />
-          ))}
+          <AdminGrid>
+            {section.products.map((product) => (
+              <ProductRow key={`${product._id}-${product.price}`} product={product} />
+            ))}
+          </AdminGrid>
         </View>
       ))}
     </ScrollView>
@@ -92,6 +95,7 @@ const styles = StyleSheet.create({
   content: { padding: space.lg, gap: space.lg },
   section: { gap: space.sm },
   card: {
+    flexGrow: 1,
     gap: space.sm,
     padding: space.md,
     backgroundColor: colors.surface,

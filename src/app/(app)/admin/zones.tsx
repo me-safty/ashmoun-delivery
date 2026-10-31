@@ -4,6 +4,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, TextInput, View } from "reac
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { cleanNumber } from "@/lib/number-input";
+import { AdminGrid, adminPage } from "@/components/admin-grid";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { ToggleRow } from "@/components/toggle-row";
@@ -14,11 +15,13 @@ export default function Zones() {
   const zones = useQuery(api.adminCatalog.zones);
   if (zones === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, adminPage]}>
       <AppText tone="muted">رسوم التوصيل بتتحسب على الطلبات الجديدة بس.</AppText>
-      {zones.map((zone) => (
-        <ZoneRow key={`${zone._id}-${zone.deliveryFee}`} zone={zone} />
-      ))}
+      <AdminGrid>
+        {zones.map((zone) => (
+          <ZoneRow key={`${zone._id}-${zone.deliveryFee}`} zone={zone} />
+        ))}
+      </AdminGrid>
     </ScrollView>
   );
 }
@@ -81,6 +84,7 @@ const styles = StyleSheet.create({
   loading: { marginTop: space.xxl },
   content: { padding: space.lg, gap: space.md },
   card: {
+    flexGrow: 1,
     gap: space.sm,
     padding: space.lg,
     backgroundColor: colors.surface,
