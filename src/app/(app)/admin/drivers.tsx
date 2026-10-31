@@ -1,11 +1,12 @@
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { FormScreen } from "@/components/form-screen";
 import { TextField } from "@/components/text-field";
+import { ToggleRow } from "@/components/toggle-row";
 import { errorMessage } from "@/lib/errors";
 import { colors, radius, space } from "@/theme";
 
@@ -35,24 +36,20 @@ export default function Drivers() {
   return (
     <FormScreen footer={<Button label="إضافة مندوب" loading={saving} onPress={add} />}>
       {drivers?.map((driver) => (
-        <View key={driver._id} style={[styles.card, !driver.active && styles.inactive]}>
+        <View key={driver._id} style={[styles.card, !driver.active && styles.off]}>
           <View style={styles.body}>
             <AppText variant="subtitle">🛵 {driver.name}</AppText>
             <AppText variant="caption" tone="muted">
               {driver.phone}
             </AppText>
           </View>
-          <Pressable
-            accessibilityRole="switch"
-            accessibilityState={{ checked: driver.active }}
-            onPress={() =>
-              void setActive({ driverId: driver._id, active: !driver.active }).catch((e) => setError(errorMessage(e)))
+          <ToggleRow
+            label={driver.active ? "متاح" : "مش متاح"}
+            value={driver.active}
+            onValueChange={(active) =>
+              void setActive({ driverId: driver._id, active }).catch((e) => setError(errorMessage(e)))
             }
-            style={styles.toggle}>
-            <AppText variant="caption" tone={driver.active ? "successInk" : "mutedInk"}>
-              {driver.active ? "متاح" : "مش متاح"}
-            </AppText>
-          </Pressable>
+          />
         </View>
       ))}
       <AppText variant="subtitle">مندوب جديد</AppText>
@@ -74,7 +71,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  inactive: { opacity: 0.6 },
+  off: { borderStyle: "dashed", backgroundColor: colors.background },
   body: { flex: 1 },
-  toggle: { minHeight: 44, justifyContent: "center", paddingHorizontal: space.md },
 });

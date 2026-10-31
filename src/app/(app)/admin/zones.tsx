@@ -1,11 +1,12 @@
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { cleanNumber } from "@/lib/number-input";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
+import { ToggleRow } from "@/components/toggle-row";
 import { errorMessage } from "@/lib/errors";
 import { colors, fonts, radius, space } from "@/theme";
 
@@ -43,20 +44,16 @@ function ZoneRow({ zone }: { zone: Doc<"zones"> }) {
   }
 
   return (
-    <View style={[styles.card, !zone.active && styles.inactive]}>
+    <View style={[styles.card, !zone.active && styles.off]}>
       <View style={styles.row}>
         <AppText variant="subtitle" style={styles.name}>
           {zone.name}
         </AppText>
-        <Pressable
-          accessibilityRole="switch"
-          accessibilityState={{ checked: zone.active }}
-          onPress={() => void save({ active: !zone.active })}
-          style={styles.toggle}>
-          <AppText variant="caption" tone={zone.active ? "successInk" : "mutedInk"}>
-            {zone.active ? "التوصيل شغال" : "متوقف"}
-          </AppText>
-        </Pressable>
+        <ToggleRow
+          label={zone.active ? "التوصيل شغال" : "متوقف"}
+          value={zone.active}
+          onValueChange={(active) => void save({ active })}
+        />
       </View>
       <View style={styles.row}>
         <TextInput
@@ -85,10 +82,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  inactive: { opacity: 0.7 },
+  off: { borderStyle: "dashed", backgroundColor: colors.background },
   row: { flexDirection: "row", alignItems: "center", gap: space.sm },
   name: { flex: 1 },
-  toggle: { minHeight: 44, justifyContent: "center", paddingHorizontal: space.sm },
   input: {
     width: 80,
     minHeight: 44,

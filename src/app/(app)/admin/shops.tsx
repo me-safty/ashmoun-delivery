@@ -1,3 +1,4 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useMutation, useQuery } from "convex/react";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -5,6 +6,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "reac
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
 import { EmojiTile } from "@/components/emoji-tile";
+import { ToggleRow } from "@/components/toggle-row";
 import { ShopStatusBadge, shopState, todayHoursLabel } from "@/components/shop-status";
 import { errorMessage } from "@/lib/errors";
 import { useNow } from "@/lib/use-now";
@@ -29,24 +31,21 @@ export default function AdminShops() {
             <EmojiTile emoji={shop.emoji} tint={shop.tint} size={48} />
             <View style={styles.body}>
               <AppText variant="subtitle">{shop.name}</AppText>
-              <AppText variant="caption" tone="muted">
-                {todayHoursLabel(shop, now)}
+              <AppText variant="caption" tone="mutedInk">
+                {todayHoursLabel(shop, now)} · تعديل المنيو
               </AppText>
             </View>
             <ShopStatusBadge state={shopState(shop, now)} />
+            <Ionicons name="chevron-back" size={16} color={colors.faint} />
           </Pressable>
-          <Pressable
-            accessibilityRole="switch"
-            accessibilityState={{ checked: !shop.paused }}
-            onPress={() => {
+          <ToggleRow
+            label={shop.paused ? "واقف مؤقتاً" : "بيستقبل طلبات"}
+            value={!shop.paused}
+            onValueChange={(receiving) => {
               setError(null);
-              void setPaused({ shopId: shop._id, paused: !shop.paused }).catch((e) => setError(errorMessage(e)));
+              void setPaused({ shopId: shop._id, paused: !receiving }).catch((e) => setError(errorMessage(e)));
             }}
-            style={styles.toggle}>
-            <AppText variant="caption" tone={shop.paused ? "primary" : "danger"}>
-              {shop.paused ? "شغل استقبال الطلبات" : "وقف استقبال الطلبات مؤقتاً"}
-            </AppText>
-          </Pressable>
+          />
         </View>
       ))}
     </ScrollView>
@@ -66,5 +65,4 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: "row", alignItems: "center", gap: space.md },
   body: { flex: 1 },
-  toggle: { minHeight: 44, justifyContent: "center", alignSelf: "flex-start", paddingHorizontal: space.sm },
 });

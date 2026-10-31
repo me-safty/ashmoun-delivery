@@ -1,12 +1,13 @@
 import { useMutation, useQuery } from "convex/react";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { cleanNumber } from "@/lib/number-input";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
+import { ToggleRow } from "@/components/toggle-row";
 import { Unavailable } from "@/components/unavailable";
 import { errorMessage } from "@/lib/errors";
 import { colors, fonts, radius, space } from "@/theme";
@@ -53,20 +54,16 @@ function ProductRow({ product }: { product: Doc<"products"> }) {
   }
 
   return (
-    <View style={[styles.card, !product.available && styles.inactive]}>
+    <View style={[styles.card, !product.available && styles.off]}>
       <View style={styles.row}>
         <AppText variant="subtitle" style={styles.name}>
           {product.emoji} {product.name}
         </AppText>
-        <Pressable
-          accessibilityRole="switch"
-          accessibilityState={{ checked: product.available }}
-          onPress={() => void save({ available: !product.available })}
-          style={styles.toggle}>
-          <AppText variant="caption" tone={product.available ? "successInk" : "mutedInk"}>
-            {product.available ? "متاح" : "غير متاح"}
-          </AppText>
-        </Pressable>
+        <ToggleRow
+          label={product.available ? "متاح" : "غير متاح"}
+          value={product.available}
+          onValueChange={(available) => void save({ available })}
+        />
       </View>
       <View style={styles.row}>
         <TextInput
@@ -96,10 +93,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  inactive: { opacity: 0.7 },
+  off: { borderStyle: "dashed", backgroundColor: colors.background },
   row: { flexDirection: "row", alignItems: "center", gap: space.sm },
   name: { flex: 1 },
-  toggle: { minHeight: 44, justifyContent: "center", paddingHorizontal: space.sm },
   input: {
     width: 90,
     minHeight: 44,
