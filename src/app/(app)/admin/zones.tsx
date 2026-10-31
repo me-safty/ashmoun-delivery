@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
-import { toLatinDigits } from "@/convex/lib/phone";
+import { cleanNumber } from "@/lib/number-input";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { errorMessage } from "@/lib/errors";
@@ -16,7 +16,7 @@ export default function Zones() {
     <ScrollView contentContainerStyle={styles.content}>
       <AppText tone="muted">رسوم التوصيل بتتحسب على الطلبات الجديدة بس.</AppText>
       {zones.map((zone) => (
-        <ZoneRow key={zone._id} zone={zone} />
+        <ZoneRow key={`${zone._id}-${zone.deliveryFee}`} zone={zone} />
       ))}
     </ScrollView>
   );
@@ -28,13 +28,13 @@ function ZoneRow({ zone }: { zone: Doc<"zones"> }) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const parsed = Number(fee);
-  const changed = parsed !== zone.deliveryFee;
+  const changed = fee !== "" && parsed !== zone.deliveryFee;
 
-  async function save(active: boolean) {
+  async function save(deliveryFee: number, active: boolean) {
     setError(null);
     setSaving(true);
     try {
-      await updateZone({ zoneId: zone._id, deliveryFee: changed ? parsed : zone.deliveryFee, active });
+      await updateZone({ zoneId: zone._id, deliveryFee, active });
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -51,7 +51,7 @@ function ZoneRow({ zone }: { zone: Doc<"zones"> }) {
         <Pressable
           accessibilityRole="switch"
           accessibilityState={{ checked: zone.active }}
-          onPress={() => void save(!zone.active)}
+          onPress={() => void save(zone.deliveryFee, !zone.active)}
           style={styles.toggle}>
           <AppText variant="caption" tone={zone.active ? "success" : "muted"}>
             {zone.active ? "التوصيل شغال" : "متوقف"}
@@ -63,11 +63,11 @@ function ZoneRow({ zone }: { zone: Doc<"zones"> }) {
           accessibilityLabel={`رسوم توصيل ${zone.name}`}
           keyboardType="number-pad"
           value={fee}
-          onChangeText={(text) => setFee(toLatinDigits(text).replace(/[^\d.]/g, ""))}
+          onChangeText={(text) => setFee(cleanNumber(text))}
           style={styles.input}
         />
         <AppText tone="muted">ج.م</AppText>
-        <Button kind="secondary" label="حفظ" disabled={!changed || fee === ""} loading={saving} onPress={() => void save(zone.active)} />
+        <Button kind="secondary" label="حفظ" disabled={!changed} loading={saving} onPress={() => void save(parsed, zone.active)} />
       </View>
       {error ? <AppText tone="danger">{error}</AppText> : null}
     </View>

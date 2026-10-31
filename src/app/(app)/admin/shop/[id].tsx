@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
-import { toLatinDigits } from "@/convex/lib/phone";
+import { cleanNumber } from "@/lib/number-input";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { Unavailable } from "@/components/unavailable";
@@ -24,7 +24,7 @@ export default function AdminShopMenu() {
         <View key={section._id} style={styles.section}>
           <AppText variant="subtitle">{section.name}</AppText>
           {section.products.map((product) => (
-            <ProductRow key={product._id} product={product} />
+            <ProductRow key={`${product._id}-${product.price}`} product={product} />
           ))}
         </View>
       ))}
@@ -38,13 +38,13 @@ function ProductRow({ product }: { product: Doc<"products"> }) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const parsed = Number(price);
-  const changed = parsed !== product.price;
+  const changed = price !== "" && parsed !== product.price;
 
-  async function save(available: boolean) {
+  async function save(price: number, available: boolean) {
     setError(null);
     setSaving(true);
     try {
-      await updateProduct({ productId: product._id, price: changed ? parsed : product.price, available });
+      await updateProduct({ productId: product._id, price, available });
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -61,7 +61,7 @@ function ProductRow({ product }: { product: Doc<"products"> }) {
         <Pressable
           accessibilityRole="switch"
           accessibilityState={{ checked: product.available }}
-          onPress={() => void save(!product.available)}
+          onPress={() => void save(product.price, !product.available)}
           style={styles.toggle}>
           <AppText variant="caption" tone={product.available ? "success" : "muted"}>
             {product.available ? "متاح" : "غير متاح"}
@@ -73,11 +73,11 @@ function ProductRow({ product }: { product: Doc<"products"> }) {
           accessibilityLabel={`سعر ${product.name}`}
           keyboardType="decimal-pad"
           value={price}
-          onChangeText={(text) => setPrice(toLatinDigits(text).replace(/[^\d.]/g, ""))}
+          onChangeText={(text) => setPrice(cleanNumber(text))}
           style={styles.input}
         />
         <AppText tone="muted">ج.م</AppText>
-        <Button kind="secondary" label="حفظ" disabled={!changed || price === ""} loading={saving} onPress={() => void save(product.available)} />
+        <Button kind="secondary" label="حفظ" disabled={!changed} loading={saving} onPress={() => void save(parsed, product.available)} />
       </View>
       {error ? <AppText tone="danger">{error}</AppText> : null}
     </View>
