@@ -1,41 +1,41 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
-import { StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { colors, formatPrice, radius, space } from "@/theme";
 
-export default function Home() {
+export default function Profile() {
   const me = useQuery(api.users.me);
   const addresses = useQuery(api.addresses.mine);
   const { signOut } = useAuthActions();
-  const address = addresses?.find((a) => a.isDefault) ?? addresses?.[0];
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <AppText variant="display">أهلاً {me?.name}</AppText>
-      {address ? (
-        <View style={styles.card}>
-          <AppText variant="caption" tone="muted">
-            التوصيل إلى {address.label}
-          </AppText>
+    <ScrollView contentContainerStyle={styles.screen}>
+      <View style={styles.card}>
+        <AppText variant="title">{me?.name}</AppText>
+        <AppText tone="muted">{me?.phone}</AppText>
+      </View>
+      <AppText variant="subtitle">عناويني</AppText>
+      {addresses?.map((address) => (
+        <View key={address._id} style={styles.card}>
           <AppText variant="subtitle">
-            {address.zoneName} · {address.street}
+            {address.label} · {address.zoneName}
           </AppText>
+          <AppText tone="muted">{address.street}</AppText>
           <AppText variant="caption" tone="primary">
-            رسوم التوصيل {formatPrice(address.deliveryFee)}
+            توصيل {formatPrice(address.deliveryFee)}
           </AppText>
         </View>
-      ) : null}
-      <Button kind="secondary" label="تسجيل الخروج" onPress={() => void signOut()} />
-    </SafeAreaView>
+      ))}
+      <Button kind="danger" label="تسجيل الخروج" onPress={() => void signOut()} />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, padding: space.xl, gap: space.lg },
+  screen: { padding: space.lg, gap: space.md },
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.md,
