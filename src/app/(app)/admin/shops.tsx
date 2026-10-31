@@ -38,9 +38,10 @@ export default function AdminShops() {
           <Pressable
             accessibilityRole="switch"
             accessibilityState={{ checked: !shop.paused }}
-            onPress={() =>
-              void setPaused({ shopId: shop._id, paused: !shop.paused }).catch((e) => setError(errorMessage(e)))
-            }
+            onPress={() => {
+              setError(null);
+              void setPaused({ shopId: shop._id, paused: !shop.paused }).catch((e) => setError(errorMessage(e)));
+            }}
             style={styles.toggle}>
             <AppText variant="caption" tone={shop.paused ? "primary" : "danger"}>
               {shop.paused ? "شغل استقبال الطلبات" : "وقف استقبال الطلبات مؤقتاً"}
