@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { Unavailable } from "@/components/unavailable";
+import { orderCode } from "@/lib/order-code";
 import { colors, formatPrice, radius, space } from "@/theme";
 
 export default function OrderSuccess() {
@@ -27,7 +28,7 @@ export default function OrderSuccess() {
       {order ? (
         <View style={styles.card}>
           <AppText variant="caption" tone="muted">
-            رقم الطلب #{order._id.slice(-6).toUpperCase()}
+            رقم الطلب {orderCode(order._id)}
           </AppText>
           <AppText variant="title" tone="primary">
             {formatPrice(order.total)}

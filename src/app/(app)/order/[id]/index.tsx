@@ -3,15 +3,25 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Linking, ScrollView, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
-import { canCustomerCancel } from "@/convex/lib/orderStatus";
+import { canCustomerCancel, type OrderStatus } from "@/convex/lib/orderStatus";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
-import { OrderTimeline, StatusPill } from "@/components/order-status";
+import { OrderTimeline } from "@/components/order-status";
 import { PriceSummary } from "@/components/price-summary";
 import { Unavailable } from "@/components/unavailable";
 import { confirm } from "@/lib/confirm";
 import { errorMessage } from "@/lib/errors";
+import { orderCode } from "@/lib/order-code";
 import { colors, formatPrice, radius, space } from "@/theme";
+
+const statusHints: Record<OrderStatus, { text: string; color: string }> = {
+  created: { text: "مستنيين المحل يأكد طلبك", color: colors.warningInk },
+  confirmed: { text: "المحل بيجهز طلبك", color: colors.primaryInk },
+  with_driver: { text: "المندوب في الطريق ليك", color: colors.primaryInk },
+  delivered: { text: "وصل، بالهنا والشفا", color: colors.successInk },
+  returned: { text: "الطلب رجع للمحل", color: colors.dangerInk },
+  cancelled: { text: "الطلب اتلغى", color: colors.mutedInk },
+};
 
 export default function OrderTracking() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -44,12 +54,12 @@ export default function OrderTracking() {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <Stack.Screen options={{ title: `طلب #${order._id.slice(-6).toUpperCase()}` }} />
+      <Stack.Screen options={{ title: `طلب ${orderCode(order._id)}` }} />
       <View style={styles.card}>
-        <View style={styles.row}>
-          <AppText variant="title">{order.shopName}</AppText>
-          <StatusPill status={order.status} />
-        </View>
+        <AppText variant="title">{order.shopName}</AppText>
+        <AppText variant="subtitle" style={{ color: statusHints[order.status].color }}>
+          {statusHints[order.status].text}
+        </AppText>
         <OrderTimeline order={order} />
       </View>
 

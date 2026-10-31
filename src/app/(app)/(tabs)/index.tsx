@@ -57,7 +57,7 @@ export default function Home() {
                     التوصيل {formatPrice(address.deliveryFee)}
                   </AppText>
                 ) : null}
-                <Ionicons name="chevron-down" size={14} color={colors.muted} />
+                <Ionicons name="chevron-back" size={14} color={colors.muted} />
               </Pressable>
             </View>
             <View style={styles.search}>
