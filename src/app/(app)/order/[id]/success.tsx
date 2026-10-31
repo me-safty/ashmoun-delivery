@@ -5,11 +5,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
+import { Unavailable } from "@/components/unavailable";
 import { colors, formatPrice, radius, space } from "@/theme";
 
 export default function OrderSuccess() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const order = useQuery(api.orders.get, { orderId: id });
+
+  if (order === null) return <Unavailable message="الطلب ده مش موجود" />;
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -17,9 +20,9 @@ export default function OrderSuccess() {
       <View style={styles.badge}>
         <AppText style={styles.check}>✓</AppText>
       </View>
-      <AppText variant="display">تم تأكيد طلبك</AppText>
+      <AppText variant="display">تم إرسال طلبك بنجاح</AppText>
       <AppText tone="muted" style={styles.center}>
-        {order ? `طلبك من ${order.shopName} وصل للمحل. هنبلغك أول ما يتأكد.` : "..."}
+        {order ? `طلبك من ${order.shopName} وصل للمحل، وهيأكده في أقرب وقت.` : "..."}
       </AppText>
       {order ? (
         <View style={styles.card}>
