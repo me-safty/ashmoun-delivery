@@ -96,7 +96,7 @@ export default function AdminOrder() {
               )
             }
             style={styles.link}>
-            <AppText variant="caption" tone="primary">
+            <AppText variant="caption" tone="primaryInk">
               📍 افتح الموقع على الخريطة
             </AppText>
           </Pressable>
@@ -125,7 +125,7 @@ export default function AdminOrder() {
           </View>
         ))}
         {order.note ? (
-          <AppText variant="caption" tone="warning">
+          <AppText variant="caption" tone="warningInk">
             ملاحظات: {order.note}
           </AppText>
         ) : null}

@@ -49,7 +49,7 @@ export default function Drivers() {
               void setActive({ driverId: driver._id, active: !driver.active }).catch((e) => setError(errorMessage(e)))
             }
             style={styles.toggle}>
-            <AppText variant="caption" tone={driver.active ? "success" : "muted"}>
+            <AppText variant="caption" tone={driver.active ? "successInk" : "mutedInk"}>
               {driver.active ? "متاح" : "مش متاح"}
             </AppText>
           </Pressable>

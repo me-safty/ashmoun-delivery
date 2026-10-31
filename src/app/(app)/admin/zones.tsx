@@ -53,7 +53,7 @@ function ZoneRow({ zone }: { zone: Doc<"zones"> }) {
           accessibilityState={{ checked: zone.active }}
           onPress={() => void save({ active: !zone.active })}
           style={styles.toggle}>
-          <AppText variant="caption" tone={zone.active ? "success" : "muted"}>
+          <AppText variant="caption" tone={zone.active ? "successInk" : "mutedInk"}>
             {zone.active ? "التوصيل شغال" : "متوقف"}
           </AppText>
         </Pressable>

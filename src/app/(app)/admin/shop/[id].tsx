@@ -63,7 +63,7 @@ function ProductRow({ product }: { product: Doc<"products"> }) {
           accessibilityState={{ checked: product.available }}
           onPress={() => void save({ available: !product.available })}
           style={styles.toggle}>
-          <AppText variant="caption" tone={product.available ? "success" : "muted"}>
+          <AppText variant="caption" tone={product.available ? "successInk" : "mutedInk"}>
             {product.available ? "متاح" : "غير متاح"}
           </AppText>
         </Pressable>

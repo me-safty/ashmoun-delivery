@@ -71,7 +71,7 @@ export default function AdminOrders() {
 function AdminLink({ label, onPress }: { label: string; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="link" onPress={onPress} style={styles.link}>
-      <AppText variant="caption" tone="primary">
+      <AppText variant="caption" tone="primaryInk">
         {label}
       </AppText>
     </Pressable>
