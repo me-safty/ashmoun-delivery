@@ -13,9 +13,9 @@ import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
-import { colors, fonts } from "@/theme";
+import { colors, stackScreenOptions } from "@/theme";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -43,7 +43,13 @@ export default function RootLayout() {
     Cairo_900Black,
   });
 
-  if (!fontsLoaded && fontError === null) return null;
+  const fontsReady = fontsLoaded || fontError !== null;
+
+  useEffect(() => {
+    if (fontsReady) SplashScreen.hideAsync();
+  }, [fontsReady]);
+
+  if (!fontsReady) return null;
 
   return (
     <ConvexAuthProvider client={convex} storage={Platform.OS === "web" ? undefined : secureStorage}>
@@ -63,28 +69,16 @@ function RootStack() {
   const staleSession = isAuthenticated && me === null;
 
   useEffect(() => {
-    if (!loading) SplashScreen.hideAsync();
-  }, [loading]);
-
-  useEffect(() => {
     if (staleSession) void signOut();
   }, [staleSession, signOut]);
 
-  if (loading) return null;
+  if (loading) return <ActivityIndicator style={styles.root} color={colors.primary} />;
 
   const signedIn = isAuthenticated && me != null;
   const hasAddress = me?.hasAddress ?? false;
 
   return (
-    <Stack
-      screenOptions={{
-        contentStyle: { backgroundColor: colors.background },
-        headerShadowVisible: false,
-        headerStyle: { backgroundColor: colors.background },
-        headerTitleStyle: { fontFamily: fonts.bold, color: colors.ink },
-        headerTintColor: colors.ink,
-        headerBackButtonDisplayMode: "minimal",
-      }}>
+    <Stack screenOptions={stackScreenOptions}>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       </Stack.Protected>
