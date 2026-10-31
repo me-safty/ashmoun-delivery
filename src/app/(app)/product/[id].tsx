@@ -21,16 +21,23 @@ export default function Product() {
   if (data === null || !data.product.available) return <Unavailable message="المنتج ده مش متاح دلوقتي" />;
 
   const { product, shop } = data;
-  const selections = Object.entries(selected).map(([groupKey, optionKeys]) => ({ groupKey, optionKeys }));
+  // Keep only keys that still exist, so an option removed while the sheet is open can't block pricing.
+  const selections = product.optionGroups.map((group) => ({
+    groupKey: group.key,
+    optionKeys: (selected[group.key] ?? []).filter((key) => group.options.some((o) => o.key === key)),
+  }));
   const priced = priceLine(product, selections);
 
-  function toggle(groupKey: string, optionKey: string, max: number) {
+  function toggle(group: (typeof product.optionGroups)[number], optionKey: string) {
     setSelected((current) => {
-      const keys = current[groupKey] ?? [];
-      if (keys.includes(optionKey)) return { ...current, [groupKey]: keys.filter((k) => k !== optionKey) };
-      if (max === 1) return { ...current, [groupKey]: [optionKey] };
-      if (keys.length >= max) return current;
-      return { ...current, [groupKey]: [...keys, optionKey] };
+      const keys = current[group.key] ?? [];
+      if (group.max === 1) {
+        const clearing = group.min === 0 && keys.includes(optionKey);
+        return { ...current, [group.key]: clearing ? [] : [optionKey] };
+      }
+      if (keys.includes(optionKey)) return { ...current, [group.key]: keys.filter((k) => k !== optionKey) };
+      if (keys.length >= group.max) return current;
+      return { ...current, [group.key]: [...keys, optionKey] };
     });
   }
 
@@ -52,7 +59,7 @@ export default function Product() {
             <View style={styles.groupHeader}>
               <AppText variant="subtitle">{group.name}</AppText>
               <AppText variant="caption" tone={group.min > 0 ? "primary" : "muted"}>
-                {group.min > 0 ? "مطلوب" : `اختياري · لحد ${group.max}`}
+                {groupHint(group)}
               </AppText>
             </View>
             {group.options.map((option) => {
@@ -62,7 +69,7 @@ export default function Product() {
                   key={option.key}
                   accessibilityRole={group.max === 1 ? "radio" : "checkbox"}
                   accessibilityState={{ checked: isOn }}
-                  onPress={() => toggle(group.key, option.key, group.max)}
+                  onPress={() => toggle(group, option.key)}
                   style={[styles.option, isOn && styles.optionOn]}>
                   <View style={[styles.mark, group.max === 1 && styles.markRound, isOn && styles.markOn]} />
                   <AppText style={styles.optionName}>{option.name}</AppText>
@@ -96,6 +103,12 @@ export default function Product() {
       </ScrollView>
     </>
   );
+}
+
+function groupHint({ min, max }: { min: number; max: number }) {
+  if (min === 0) return `اختياري · لحد ${max}`;
+  if (min === max) return min === 1 ? "مطلوب" : `مطلوب · اختار ${min}`;
+  return `مطلوب · من ${min} لحد ${max}`;
 }
 
 function StepButton({ label, onPress }: { label: string; onPress: () => void }) {
