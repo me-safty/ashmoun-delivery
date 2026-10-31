@@ -73,7 +73,7 @@ export default function Home() {
                 onChangeText={setSearch}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
-                style={styles.searchInput}
+                style={[styles.searchInput, webNoOutline]}
               />
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
@@ -126,6 +126,10 @@ function normalizeSearch(text: string) {
   return text.toLowerCase().replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
 }
 
+// RN's style types don't allow outlineStyle "none", which is the only way to drop the
+// browser's two-tone focus ring; the pill shows focus instead.
+const webNoOutline: object = Platform.OS === "web" ? { outlineStyle: "none" } : {};
+
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   return (
     <Pressable
@@ -159,8 +163,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     minHeight: 46,
-    outlineWidth: 0,
-    outlineColor: "transparent",
+
     fontFamily: fonts.medium,
     fontSize: 15,
     color: colors.ink,

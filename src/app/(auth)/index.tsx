@@ -74,6 +74,6 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   form: { gap: space.lg },
-  links: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap" },
+  links: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", columnGap: space.lg },
   link: { paddingVertical: space.md },
 });

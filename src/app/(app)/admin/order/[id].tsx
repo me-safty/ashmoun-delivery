@@ -204,7 +204,7 @@ export default function AdminOrder() {
           <View style={[styles.footerInner, adminPage, { maxWidth: ADMIN_MAX_WIDTH - space.lg * 2 }]}>
             {error ? <AppText tone="danger">{error}</AppText> : null}
             {forward.includes("with_driver") && selectedDriverId === null ? (
-              <AppText variant="caption" tone="mutedInk">
+              <AppText variant="caption" tone="mutedInk" style={wide ? styles.footerHint : undefined}>
                 اختار مندوب الأول
               </AppText>
             ) : null}
@@ -259,6 +259,7 @@ const styles = StyleSheet.create({
   radioOn: { borderColor: colors.primary, backgroundColor: colors.primary },
   footerInner: { gap: space.sm },
   footerButton: { alignSelf: "flex-end", width: 360 },
+  footerHint: { alignSelf: "flex-end", width: 360 },
   footer: {
     paddingHorizontal: space.lg,
     paddingTop: space.md,

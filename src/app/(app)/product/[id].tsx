@@ -142,7 +142,11 @@ export default function Product() {
           <Button
             style={styles.addButton}
             disabled={priced.kind !== "ok"}
-            label={priced.kind === "ok" ? `أضف للسلة · ${formatPrice(priced.unitPrice * quantity)}` : "اختار المطلوب"}
+            label={
+              priced.kind === "ok"
+                ? `${narrow ? "أضف" : "أضف للسلة"} · ${formatPrice(priced.unitPrice * quantity)}`
+                : "اختار المطلوب"
+            }
             onPress={addToCart}
           />
         </View>
