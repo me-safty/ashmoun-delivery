@@ -1,21 +1,40 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { internalAction, internalQuery } from "./_generated/server";
-import { statusLabels } from "./lib/orderStatus";
+import { internalAction, internalMutation, internalQuery } from "./_generated/server";
+import { orderStatus, statusLabels } from "./lib/orderStatus";
 
 export const orderRecipient = internalQuery({
   args: { orderId: v.id("orders") },
   handler: async (ctx, { orderId }) => {
     const order = await ctx.db.get(orderId);
-    const user = order === null ? null : await ctx.db.get(order.userId);
-    if (order === null || user === null) return null;
-    return { tokens: user.pushTokens ?? [], status: order.status, shopName: order.shopName };
+    if (order === null) return null;
+    const tokens = await ctx.db
+      .query("pushTokens")
+      .withIndex("by_user", (q) => q.eq("userId", order.userId))
+      .collect();
+    return { tokens: tokens.map((t) => t.token), shopName: order.shopName };
   },
 });
 
+export const forgetTokens = internalMutation({
+  args: { tokens: v.array(v.string()) },
+  handler: async (ctx, { tokens }) => {
+    for (const token of tokens) {
+      const row = await ctx.db
+        .query("pushTokens")
+        .withIndex("by_token", (q) => q.eq("token", token))
+        .unique();
+      if (row !== null) await ctx.db.delete(row._id);
+    }
+  },
+});
+
+type PushTicket = { status: "ok" } | { status: "error"; message: string; details?: { error?: string } };
+
+// The status is passed in so quick successive changes each announce their own step.
 export const orderStatusChanged = internalAction({
-  args: { orderId: v.id("orders") },
-  handler: async (ctx, { orderId }) => {
+  args: { orderId: v.id("orders"), status: orderStatus },
+  handler: async (ctx, { orderId, status }) => {
     const recipient = await ctx.runQuery(internal.push.orderRecipient, { orderId });
     if (recipient === null || recipient.tokens.length === 0) return;
     const response = await fetch("https://exp.host/--/api/v2/push/send", {
@@ -25,12 +44,21 @@ export const orderStatusChanged = internalAction({
         recipient.tokens.map((to) => ({
           to,
           title: recipient.shopName,
-          body: `حالة طلبك: ${statusLabels[recipient.status]}`,
+          body: `حالة طلبك: ${statusLabels[status]}`,
           data: { orderId },
           sound: "default",
+          channelId: "orders",
         })),
       ),
     });
     if (!response.ok) throw new Error(`Expo push failed: ${response.status} ${await response.text()}`);
+    const { data: tickets }: { data: PushTicket[] } = await response.json();
+    const unregistered = recipient.tokens.filter((_, i) => {
+      const ticket = tickets[i];
+      return ticket?.status === "error" && ticket.details?.error === "DeviceNotRegistered";
+    });
+    if (unregistered.length > 0) await ctx.runMutation(internal.push.forgetTokens, { tokens: unregistered });
+    const failures = tickets.filter((t) => t.status === "error" && t.details?.error !== "DeviceNotRegistered");
+    if (failures.length > 0) throw new Error(`Expo push tickets failed: ${JSON.stringify(failures)}`);
   },
 });

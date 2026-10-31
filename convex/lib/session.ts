@@ -9,7 +9,6 @@ export async function requireUser(ctx: QueryCtx) {
   return user;
 }
 
-
 export async function requireAdmin(ctx: QueryCtx) {
   const user = await requireUser(ctx);
   if (user.role !== "admin") throw new ConvexError("غير مسموح");

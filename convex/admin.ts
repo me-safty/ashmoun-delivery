@@ -6,6 +6,7 @@ import { canTransition, orderStatus } from "./lib/orderStatus";
 import { requireAdmin } from "./lib/session";
 
 const ACTIVE = ["created", "confirmed", "with_driver"] as const;
+const DONE = ["delivered", "returned", "cancelled"] as const;
 
 export const orders = query({
   args: { view: v.union(v.literal("active"), v.literal("done")) },
@@ -22,8 +23,19 @@ export const orders = query({
       );
       return groups.flat().sort((a, b) => a._creationTime - b._creationTime);
     }
-    const done = await ctx.db.query("orders").order("desc").take(100);
-    return done.filter((o) => !(ACTIVE as readonly string[]).includes(o.status));
+    const groups = await Promise.all(
+      DONE.map((status) =>
+        ctx.db
+          .query("orders")
+          .withIndex("by_status", (q) => q.eq("status", status))
+          .order("desc")
+          .take(100),
+      ),
+    );
+    return groups
+      .flat()
+      .sort((a, b) => b._creationTime - a._creationTime)
+      .slice(0, 100);
   },
 });
 
@@ -55,7 +67,7 @@ export const setStatus = mutation({
       driver,
       history: [...order.history, { status, at: Date.now(), by: admin._id }],
     });
-    await ctx.scheduler.runAfter(0, internal.push.orderStatusChanged, { orderId: order._id });
+    await ctx.scheduler.runAfter(0, internal.push.orderStatusChanged, { orderId: order._id, status });
   },
 });
 

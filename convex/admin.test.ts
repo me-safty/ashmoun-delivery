@@ -1,5 +1,5 @@
 import { convexTest } from "convex-test";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { api, internal } from "./_generated/api";
 import schema from "./schema";
 import { modules } from "./test.setup";
@@ -71,11 +71,45 @@ test("admin.orders lists active orders oldest first and finished ones separately
   expect((await asAdmin.query(api.admin.orders, { view: "done" })).map((o) => o._id)).toEqual([orderId]);
 });
 
-test("savePushToken keeps valid tokens, newest first, without duplicates", async () => {
-  const { asCustomer, t, customerId } = await setup();
-  await asCustomer.mutation(api.users.savePushToken, { token: "ExponentPushToken[a]" });
-  await asCustomer.mutation(api.users.savePushToken, { token: "ExponentPushToken[b]" });
-  await asCustomer.mutation(api.users.savePushToken, { token: "ExponentPushToken[a]" });
+test("a device's push token belongs to whoever signed in last, and is dropped on sign-out", async () => {
+  const { t, asCustomer, asAdmin, customerId, adminId } = await setup();
+  const owners = () => t.run(async (ctx) => (await ctx.db.query("pushTokens").collect()).map((r) => [r.token, r.userId]));
+  await asCustomer.mutation(api.users.savePushToken, { token: "ExponentPushToken[device1]" });
+  await asCustomer.mutation(api.users.savePushToken, { token: "ExponentPushToken[device1]" });
+  expect(await owners()).toEqual([["ExponentPushToken[device1]", customerId]]);
+  await asAdmin.mutation(api.users.savePushToken, { token: "ExponentPushToken[device1]" });
+  expect(await owners()).toEqual([["ExponentPushToken[device1]", adminId]]);
+  await asCustomer.mutation(api.users.removePushToken, { token: "ExponentPushToken[device1]" });
+  expect(await owners()).toHaveLength(1);
+  await asAdmin.mutation(api.users.removePushToken, { token: "ExponentPushToken[device1]" });
+  expect(await owners()).toEqual([]);
   await expect(asCustomer.mutation(api.users.savePushToken, { token: "garbage" })).rejects.toThrow();
-  expect((await t.run((ctx) => ctx.db.get(customerId)))?.pushTokens).toEqual(["ExponentPushToken[a]", "ExponentPushToken[b]"]);
+});
+
+test("pushes announce the status that triggered them and forget unregistered devices", async () => {
+  vi.useFakeTimers();
+  const { t, asCustomer, asAdmin, orderId, driverId } = await setup();
+  await asCustomer.mutation(api.users.savePushToken, { token: "ExponentPushToken[live]" });
+  await asCustomer.mutation(api.users.savePushToken, { token: "ExponentPushToken[gone]" });
+  const bodies: string[] = [];
+  vi.stubGlobal("fetch", async (_url: string, init: { body: string }) => {
+    const messages: { to: string; body: string }[] = JSON.parse(init.body);
+    bodies.push(...messages.filter((m) => m.to.endsWith("[live]")).map((m) => m.body));
+    return new Response(
+      JSON.stringify({
+        data: messages.map((m) =>
+          m.to.endsWith("[gone]") ? { status: "error", message: "gone", details: { error: "DeviceNotRegistered" } } : { status: "ok" },
+        ),
+      }),
+    );
+  });
+  await asAdmin.mutation(api.admin.setStatus, { orderId, status: "confirmed" });
+  await asAdmin.mutation(api.admin.setStatus, { orderId, status: "with_driver", driverId });
+  await t.finishAllScheduledFunctions(vi.runAllTimers);
+  expect(bodies).toEqual(["حالة طلبك: مؤكد", "حالة طلبك: مع المندوب"]);
+  expect(await t.run(async (ctx) => (await ctx.db.query("pushTokens").collect()).map((r) => r.token))).toEqual([
+    "ExponentPushToken[live]",
+  ]);
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
 });

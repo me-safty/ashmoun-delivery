@@ -39,10 +39,17 @@ export default defineSchema({
     phoneVerificationTime: v.optional(v.number()),
     isAnonymous: v.optional(v.boolean()),
     role: v.optional(v.union(v.literal("customer"), v.literal("admin"))),
-    pushTokens: v.optional(v.array(v.string())),
   })
     .index("email", ["email"])
     .index("phone", ["phone"]),
+
+  // One row per device; a token moves to whoever signed in last on that device.
+  pushTokens: defineTable({
+    token: v.string(),
+    userId: v.id("users"),
+  })
+    .index("by_token", ["token"])
+    .index("by_user", ["userId"]),
 
   zones: defineTable({
     name: v.string(),

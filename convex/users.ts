@@ -23,14 +23,30 @@ export const me = query({
   },
 });
 
-const MAX_PUSH_TOKENS = 5;
+const pushToken = /^Expo(nent)?PushToken\[.+\]$/;
 
 export const savePushToken = mutation({
   args: { token: v.string() },
   handler: async (ctx, { token }) => {
     const user = await requireUser(ctx);
-    if (!/^Expo(nent)?PushToken\[.+\]$/.test(token)) throw new ConvexError("رمز إشعارات غير صحيح");
-    const tokens = [token, ...(user.pushTokens ?? []).filter((t) => t !== token)].slice(0, MAX_PUSH_TOKENS);
-    await ctx.db.patch(user._id, { pushTokens: tokens });
+    if (!pushToken.test(token)) throw new ConvexError("رمز إشعارات غير صحيح");
+    const existing = await ctx.db
+      .query("pushTokens")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+    if (existing === null) await ctx.db.insert("pushTokens", { token, userId: user._id });
+    else if (existing.userId !== user._id) await ctx.db.patch(existing._id, { userId: user._id });
+  },
+});
+
+export const removePushToken = mutation({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const user = await requireUser(ctx);
+    const existing = await ctx.db
+      .query("pushTokens")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+    if (existing?.userId === user._id) await ctx.db.delete(existing._id);
   },
 });
