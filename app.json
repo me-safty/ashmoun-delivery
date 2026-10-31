@@ -47,6 +47,12 @@
         {
           "locationWhenInUsePermission": "بنستخدم موقعك عشان المندوب يوصلك أسرع."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#D9480F"
+        }
       ]
     ],
     "experiments": {
