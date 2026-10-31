@@ -141,6 +141,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     minHeight: 46,
+    outlineWidth: 0,
     fontFamily: fonts.medium,
     fontSize: 15,
     color: colors.ink,
