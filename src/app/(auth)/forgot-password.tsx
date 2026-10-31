@@ -40,7 +40,7 @@ export default function ForgotPassword() {
   function resetPassword() {
     if (!sentTo) return;
     void run(
-      () => signIn("password", { flow: "reset-verification", phone: sentTo, code: toLatinDigits(code).trim(), newPassword }),
+      () => signIn("password", { flow: "reset-verification", phone: sentTo, code, newPassword }),
       "الكود غلط أو انتهى، اطلب كود جديد",
     );
   }
@@ -74,9 +74,8 @@ export default function ForgotPassword() {
         label="الكود"
         keyboardType="number-pad"
         autoComplete="one-time-code"
-        maxLength={6}
         value={code}
-        onChangeText={setCode}
+        onChangeText={(text) => setCode(toLatinDigits(text).replace(/\D/g, "").slice(0, 6))}
       />
       <TextField
         label="كلمة المرور الجديدة"
