@@ -87,6 +87,8 @@ export const addDriver = mutation({
     const phone = normalizePhone(args.phone);
     if (name.length < 2) throw new ConvexError("اكتب اسم المندوب");
     if (!phone) throw new ConvexError("رقم الموبايل غير صحيح");
+    const drivers = await ctx.db.query("drivers").collect();
+    if (drivers.some((d) => d.phone === phone)) throw new ConvexError("فيه مندوب بالرقم ده قبل كده");
     return await ctx.db.insert("drivers", { name, phone, active: true });
   },
 });
