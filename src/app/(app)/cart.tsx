@@ -7,6 +7,8 @@ import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { EmojiTile } from "@/components/emoji-tile";
 import { PriceSummary } from "@/components/price-summary";
+import { StepButton } from "@/components/step-button";
+import { MAX_QUANTITY } from "@/convex/lib/pricing";
 import { useCart, useCartQuote } from "@/lib/cart";
 import { colors, formatPrice, radius, space } from "@/theme";
 
@@ -49,35 +51,44 @@ export default function Cart() {
               </AppText>
             </View>
             <View style={styles.stepper}>
-              <Step label="−" onPress={() => setQuantity(line.key, line.quantity - 1)} />
+              <StepButton
+                icon={line.quantity === 1 ? "trash-outline" : "remove"}
+                label={line.quantity === 1 ? "شيل من السلة" : "قلل الكمية"}
+                onPress={() => setQuantity(line.key, line.quantity - 1)}
+              />
               <AppText variant="subtitle">{line.quantity}</AppText>
-              <Step label="+" onPress={() => setQuantity(line.key, line.quantity + 1)} />
+              <StepButton
+                icon="add"
+                label="زود الكمية"
+                disabled={line.quantity >= MAX_QUANTITY}
+                onPress={() => setQuantity(line.key, line.quantity + 1)}
+              />
             </View>
           </View>
         ))}
         <PriceSummary subtotal={priced?.subtotal} deliveryFee={address?.deliveryFee} />
         {quote?.kind === "invalid" ? <AppText tone="danger">{quote.message}</AppText> : null}
-        {priced && belowMinimum ? (
-          <AppText tone="danger">
-            أقل طلب من {shop.name} هو {formatPrice(priced.minOrder)}، ضيف {formatPrice(priced.minOrder - priced.subtotal)}{" "}
-            كمان.
-          </AppText>
-        ) : null}
       </ScrollView>
       <View style={styles.footer}>
-        <Button label="إتمام الطلب" disabled={!priced || belowMinimum} onPress={() => router.push("/checkout")} />
+        {priced && belowMinimum ? (
+          <View style={styles.minimum}>
+            <AppText variant="caption" tone="warning" style={styles.minimumText}>
+              ضيف {formatPrice(priced.minOrder - priced.subtotal)} كمان عشان توصل لأقل طلب ({formatPrice(priced.minOrder)})
+            </AppText>
+            <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={8}>
+              <AppText variant="caption" tone="primary">
+                ضيف حاجات
+              </AppText>
+            </Pressable>
+          </View>
+        ) : null}
+        <Button
+          label={priced && address ? `إتمام الطلب · ${formatPrice(priced.subtotal + address.deliveryFee)}` : "إتمام الطلب"}
+          disabled={!priced || belowMinimum}
+          onPress={() => router.push("/checkout")}
+        />
       </View>
     </SafeAreaView>
-  );
-}
-
-function Step({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={styles.step}>
-      <AppText variant="subtitle" tone="primary">
-        {label}
-      </AppText>
-    </Pressable>
   );
 }
 
@@ -98,13 +109,14 @@ const styles = StyleSheet.create({
   },
   lineBody: { flex: 1, gap: 2 },
   stepper: { flexDirection: "row", alignItems: "center", gap: space.sm },
-  step: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.primarySoft,
+  footer: { padding: space.lg, gap: space.sm, borderTopWidth: 1, borderTopColor: colors.border },
+  minimum: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: space.sm,
+    padding: space.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.warningSoft,
   },
-  footer: { padding: space.lg },
+  minimumText: { flex: 1 },
 });

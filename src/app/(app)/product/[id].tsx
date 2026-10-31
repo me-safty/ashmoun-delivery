@@ -1,4 +1,3 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -10,6 +9,8 @@ import { MAX_QUANTITY, priceLine } from "@/convex/lib/pricing";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { EmojiTile } from "@/components/emoji-tile";
+import { StepButton } from "@/components/step-button";
+import { todayHoursLabel } from "@/components/shop-status";
 import { Unavailable } from "@/components/unavailable";
 import { useCart } from "@/lib/cart";
 import { confirm } from "@/lib/confirm";
@@ -120,35 +121,39 @@ export default function Product() {
         ))}
 
       </ScrollView>
-      <View style={styles.footer}>
-        <View style={styles.stepper}>
-          <StepButton
-            icon="remove"
-            label="قلل الكمية"
-            disabled={quantity <= 1}
-            onPress={() => setQuantity((q) => Math.max(1, q - 1))}
-          />
-          <AppText variant="title">{quantity}</AppText>
-          <StepButton
-            icon="add"
-            label="زود الكمية"
-            disabled={quantity >= MAX_QUANTITY}
-            onPress={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))}
+      {shopOpen ? (
+        <View style={styles.footer}>
+          <View style={styles.stepper}>
+            <StepButton
+              icon="remove"
+              label="قلل الكمية"
+              disabled={quantity <= 1}
+              onPress={() => setQuantity((q) => Math.max(1, q - 1))}
+            />
+            <AppText variant="title">{quantity}</AppText>
+            <StepButton
+              icon="add"
+              label="زود الكمية"
+              disabled={quantity >= MAX_QUANTITY}
+              onPress={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))}
+            />
+          </View>
+          <Button
+            style={styles.addButton}
+            disabled={priced.kind !== "ok"}
+            label={priced.kind === "ok" ? `أضف للسلة · ${formatPrice(priced.unitPrice * quantity)}` : "اختار المطلوب"}
+            onPress={addToCart}
           />
         </View>
-        <Button
-          style={styles.addButton}
-          disabled={!shopOpen || priced.kind !== "ok"}
-          label={
-            !shopOpen
-              ? "المحل مقفول دلوقتي"
-              : priced.kind === "ok"
-                ? `أضف للسلة · ${formatPrice(priced.unitPrice * quantity)}`
-                : "اختار المطلوب"
-          }
-          onPress={addToCart}
-        />
-      </View>
+      ) : (
+        <View style={styles.footer}>
+          <View style={styles.closedNotice}>
+            <AppText variant="subtitle" tone="warning">
+              المحل مقفول دلوقتي · مواعيد النهارده {todayHoursLabel(shop, now)}
+            </AppText>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -157,29 +162,6 @@ function groupHint({ min, max }: { min: number; max: number }) {
   if (min === 0) return `اختياري · لحد ${max}`;
   if (min === max) return min === 1 ? "مطلوب" : `مطلوب · اختار ${min}`;
   return `مطلوب · من ${min} لحد ${max}`;
-}
-
-function StepButton({
-  icon,
-  label,
-  disabled,
-  onPress,
-}: {
-  icon: "add" | "remove";
-  label: string;
-  disabled: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      disabled={disabled}
-      onPress={onPress}
-      style={[styles.step, disabled && styles.stepDisabled]}>
-      <Ionicons name={icon} size={20} color={colors.primary} />
-    </Pressable>
-  );
 }
 
 const styles = StyleSheet.create({
@@ -196,6 +178,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   addButton: { flex: 1 },
+  closedNotice: {
+    flex: 1,
+    minHeight: 52,
+    justifyContent: "center",
+    paddingHorizontal: space.lg,
+    borderRadius: radius.md,
+    backgroundColor: colors.warningSoft,
+  },
   content: { padding: space.xl, gap: space.xl },
   header: { gap: space.sm, alignItems: "flex-start" },
   group: { gap: space.sm },
@@ -216,13 +206,4 @@ const styles = StyleSheet.create({
   markRound: { borderRadius: 10 },
   markOn: { borderColor: colors.primary, backgroundColor: colors.primary },
   stepper: { flexDirection: "row", alignItems: "center", gap: space.lg },
-  step: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.primarySoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  stepDisabled: { opacity: 0.4 },
 });
