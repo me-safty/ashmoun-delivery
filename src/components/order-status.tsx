@@ -44,8 +44,10 @@ export function OrderTimeline({ order }: { order: Pick<Doc<"orders">, "status" |
         const done = at !== undefined;
         const current = status === order.status;
         const failed = current && ended;
+        const last = index === steps.length - 1;
+        const nextFailed = ended && index === steps.length - 2;
         return (
-          <View key={status} style={styles.step}>
+          <View key={status} style={[styles.step, last && styles.lastStep]}>
             <View style={styles.rail}>
               <View
                 style={[
@@ -55,11 +57,11 @@ export function OrderTimeline({ order }: { order: Pick<Doc<"orders">, "status" |
                   failed && styles.dotFailed,
                 ]}
               />
-              {index < steps.length - 1 ? (
-                <View style={[styles.line, reachedAt.has(steps[index + 1]) && styles.lineDone]} />
-              ) : null}
+              {last ? null : (
+                <View style={[styles.line, reachedAt.has(steps[index + 1]) && !nextFailed && styles.lineDone]} />
+              )}
             </View>
-            <View style={styles.stepBody}>
+            <View style={[styles.stepBody, last && styles.lastStepBody]}>
               <AppText variant={current ? "subtitle" : "body"} tone={done ? (failed ? "danger" : "ink") : "muted"}>
                 {statusLabels[status]}
               </AppText>
@@ -88,4 +90,6 @@ const styles = StyleSheet.create({
   line: { flex: 1, width: 2, backgroundColor: colors.border, marginVertical: 2 },
   lineDone: { backgroundColor: colors.primary },
   stepBody: { flex: 1, paddingBottom: space.md },
+  lastStep: { minHeight: 0 },
+  lastStepBody: { paddingBottom: 0 },
 });
