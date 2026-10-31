@@ -123,8 +123,9 @@ const styles = StyleSheet.create({
   },
   chips: { gap: space.sm },
   chip: {
+    minHeight: 44,
+    justifyContent: "center",
     paddingHorizontal: space.lg,
-    paddingVertical: space.sm,
     borderRadius: radius.pill,
     backgroundColor: colors.surface,
     borderWidth: 1,

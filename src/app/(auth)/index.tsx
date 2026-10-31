@@ -34,14 +34,7 @@ export default function Login() {
 
   return (
     <FormScreen
-      footer={
-        <>
-          <Button label="تسجيل الدخول" loading={submitting} onPress={submit} />
-          <Link href="/register" asChild>
-            <Button kind="secondary" label="معندكش حساب؟ سجل دلوقتي" />
-          </Link>
-        </>
-      }>
+      footer={<Button label="تسجيل الدخول" loading={submitting} onPress={submit} />}>
       <Brand />
       <View style={styles.form}>
         <AppText variant="title">أهلاً بيك تاني</AppText>
@@ -62,11 +55,18 @@ export default function Login() {
           onSubmitEditing={submit}
         />
         {error ? <AppText tone="danger">{error}</AppText> : null}
-        <Link href="/forgot-password" style={styles.forgot}>
-          <AppText variant="caption" tone="primary">
-            نسيت كلمة المرور؟
-          </AppText>
-        </Link>
+        <View style={styles.links}>
+          <Link href="/forgot-password" style={styles.link}>
+            <AppText variant="caption" tone="primary">
+              نسيت كلمة المرور؟
+            </AppText>
+          </Link>
+          <Link href="/register" style={styles.link}>
+            <AppText variant="caption" tone="primary">
+              معندكش حساب؟ سجل دلوقتي
+            </AppText>
+          </Link>
+        </View>
       </View>
     </FormScreen>
   );
@@ -74,5 +74,6 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   form: { gap: space.lg },
-  forgot: { alignSelf: "flex-start" },
+  links: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap" },
+  link: { paddingVertical: space.md },
 });
