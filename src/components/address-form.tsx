@@ -67,6 +67,8 @@ export function AddressForm({ onSaved }: { onSaved?: () => void }) {
       <AppText variant="subtitle">المنطقة</AppText>
       {zones === undefined ? (
         <ActivityIndicator color={colors.primary} />
+      ) : zones.length === 0 ? (
+        <AppText tone="danger">التوصيل متوقف حالياً في كل المناطق، جرب تاني بعدين.</AppText>
       ) : (
         <View style={styles.zones}>
           {zones.map((zone) => {
