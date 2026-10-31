@@ -9,12 +9,18 @@ import { useCallback, useEffect } from "react";
 import { Platform } from "react-native";
 import { api } from "@/convex/_generated/api";
 
-// This device's token, remembered so sign-out can detach it from the account.
 let deviceToken: string | null = null;
 
 // expo-notifications throws on web when reading the last response.
 const useLastNotificationResponse =
   Platform.OS === "web" ? () => null : Notifications.useLastNotificationResponse;
+
+async function currentPushToken() {
+  if (Platform.OS === "web" || !Device.isDevice) return null;
+  if (!(await Notifications.getPermissionsAsync()).granted) return null;
+  const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
+  return projectId ? (await Notifications.getExpoPushTokenAsync({ projectId })).data : null;
+}
 
 async function getPushToken() {
   if (Platform.OS === "web" || !Device.isDevice) return null;
@@ -61,7 +67,8 @@ export function useSignOut() {
   const { signOut } = useAuthActions();
   const removePushToken = useMutation(api.users.removePushToken);
   return useCallback(async () => {
-    if (deviceToken) await removePushToken({ token: deviceToken }).catch(() => {});
+    const token = deviceToken ?? (await currentPushToken().catch(() => null));
+    if (token) await removePushToken({ token }).catch(() => {});
     deviceToken = null;
     await signOut();
   }, [removePushToken, signOut]);
