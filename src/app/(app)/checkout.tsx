@@ -9,7 +9,7 @@ import { Button } from "@/components/button";
 import { FormScreen } from "@/components/form-screen";
 import { PriceSummary } from "@/components/price-summary";
 import { TextField } from "@/components/text-field";
-import { cartSubtotal, useCart } from "@/lib/cart";
+import { useCart, useCartQuote } from "@/lib/cart";
 import { errorMessage } from "@/lib/errors";
 import { colors, radius, space } from "@/theme";
 
@@ -17,6 +17,8 @@ export default function Checkout() {
   const { shop, lines, clear } = useCart();
   const addresses = useQuery(api.addresses.mine);
   const place = useMutation(api.orders.place);
+  const quote = useCartQuote();
+  const priced = quote?.kind === "ok" ? quote : undefined;
   const [chosenId, setChosenId] = useState<Id<"addresses"> | null>(null);
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export default function Checkout() {
   return (
     <FormScreen
       footer={
-        <Button label="تأكيد الطلب" loading={placing} disabled={!shop || !address} onPress={submit} />
+        <Button label="تأكيد الطلب" loading={placing} disabled={!shop || !address || !priced} onPress={submit} />
       }>
       <Stack.Screen options={{ title: "إتمام الطلب" }} />
       <AppText variant="subtitle">التوصيل إلى</AppText>
@@ -83,10 +85,12 @@ export default function Checkout() {
         placeholder="مثلاً: من غير بصل"
         value={note}
         onChangeText={setNote}
+        maxLength={300}
         multiline
       />
 
-      <PriceSummary subtotal={cartSubtotal(lines)} deliveryFee={address?.deliveryFee} />
+      <PriceSummary subtotal={priced?.subtotal} deliveryFee={address?.deliveryFee} />
+      {quote?.kind === "invalid" ? <AppText tone="danger">{quote.message}</AppText> : null}
       {error ? <AppText tone="danger">{error}</AppText> : null}
     </FormScreen>
   );

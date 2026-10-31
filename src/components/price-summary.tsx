@@ -2,13 +2,14 @@ import { StyleSheet, View } from "react-native";
 import { colors, formatPrice, radius, space } from "@/theme";
 import { AppText } from "./app-text";
 
-export function PriceSummary({ subtotal, deliveryFee }: { subtotal: number; deliveryFee: number | undefined }) {
+export function PriceSummary({ subtotal, deliveryFee }: { subtotal: number | undefined; deliveryFee: number | undefined }) {
+  const known = subtotal !== undefined && deliveryFee !== undefined;
   return (
     <View style={styles.card}>
-      <Row label="المجموع" value={formatPrice(subtotal)} />
+      <Row label="المجموع" value={subtotal === undefined ? "..." : formatPrice(subtotal)} />
       <Row label="التوصيل" value={deliveryFee === undefined ? "..." : formatPrice(deliveryFee)} />
       <View style={styles.divider} />
-      <Row label="الإجمالي" value={formatPrice(subtotal + (deliveryFee ?? 0))} strong />
+      <Row label="الإجمالي" value={known ? formatPrice(subtotal + deliveryFee) : "..."} strong />
     </View>
   );
 }

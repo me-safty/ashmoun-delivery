@@ -39,6 +39,24 @@ async function setup() {
 
 const line = (productId: Id<"products">, quantity = 1) => ({ productId, quantity, selections: [] });
 
+describe("orders.quote", () => {
+  test("prices the cart from current product data", async () => {
+    const { t, asUser, market, milk } = await setup();
+    await t.run((ctx) => ctx.db.patch(milk, { price: 50 }));
+    expect(await asUser.query(api.orders.quote, { shopId: market, items: [line(milk, 2)] })).toEqual({
+      kind: "ok", unitPrices: [50], subtotal: 100, minOrder: 40,
+    });
+  });
+
+  test("explains a removed product instead of blaming the one-shop rule", async () => {
+    const { t, asUser, market, milk } = await setup();
+    await t.run((ctx) => ctx.db.delete(milk));
+    expect(await asUser.query(api.orders.quote, { shopId: market, items: [line(milk)] })).toMatchObject({
+      kind: "invalid", message: expect.stringContaining("اتشال"),
+    });
+  });
+});
+
 describe("orders.place", () => {
   test("prices items on the server and adds the zone delivery fee", async () => {
     const { asUser, market, addressId, milk, bread } = await setup();

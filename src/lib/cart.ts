@@ -1,7 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useQuery } from "convex/react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { MAX_QUANTITY } from "@/convex/lib/pricing";
 
 export type CartSelection = { groupKey: string; optionKeys: string[] };
 
@@ -34,7 +37,6 @@ function lineKey(productId: string, selections: CartSelection[]) {
   return `${productId}#${normalized}`;
 }
 
-// One shop per order: adding from another shop replaces the cart (the caller confirms first).
 export const useCart = create<CartState>()(
   persist(
     (set) => ({
@@ -48,7 +50,7 @@ export const useCart = create<CartState>()(
           return {
             shop,
             lines: existing
-              ? lines.map((l) => (l.key === key ? { ...l, quantity: Math.min(20, l.quantity + line.quantity) } : l))
+              ? lines.map((l) => (l.key === key ? { ...l, quantity: Math.min(MAX_QUANTITY, l.quantity + line.quantity) } : l))
               : [...lines, { ...line, key }],
           };
         }),
@@ -57,7 +59,7 @@ export const useCart = create<CartState>()(
           const lines =
             quantity <= 0
               ? state.lines.filter((l) => l.key !== key)
-              : state.lines.map((l) => (l.key === key ? { ...l, quantity: Math.min(20, quantity) } : l));
+              : state.lines.map((l) => (l.key === key ? { ...l, quantity: Math.min(MAX_QUANTITY, quantity) } : l));
           return lines.length === 0 ? { shop: null, lines } : { lines };
         }),
       clear: () => set({ shop: null, lines: [] }),
@@ -68,6 +70,21 @@ export const useCart = create<CartState>()(
 
 export function cartSubtotal(lines: CartLine[]) {
   return lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
+}
+
+// Saved unit prices can go stale; the cart and checkout show the server's current prices.
+export function useCartQuote() {
+  const shop = useCart((s) => s.shop);
+  const lines = useCart((s) => s.lines);
+  return useQuery(
+    api.orders.quote,
+    shop && lines.length > 0
+      ? {
+          shopId: shop.id,
+          items: lines.map((l) => ({ productId: l.productId, quantity: l.quantity, selections: l.selections })),
+        }
+      : "skip",
+  );
 }
 
 export function cartCount(lines: CartLine[]) {

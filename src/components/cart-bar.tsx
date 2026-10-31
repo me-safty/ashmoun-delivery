@@ -1,12 +1,13 @@
 import { router } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
-import { cartCount, cartSubtotal, useCart } from "@/lib/cart";
+import { cartCount, cartSubtotal, useCart, useCartQuote } from "@/lib/cart";
 import { colors, formatPrice, radius, space } from "@/theme";
 import { AppText } from "./app-text";
 
 export function CartBar() {
   const lines = useCart((s) => s.lines);
   const shop = useCart((s) => s.shop);
+  const quote = useCartQuote();
   if (!shop || lines.length === 0) return null;
 
   return (
@@ -25,7 +26,7 @@ export function CartBar() {
         </AppText>
       </View>
       <AppText variant="subtitle" tone="onPrimary">
-        {formatPrice(cartSubtotal(lines))}
+        {formatPrice(quote?.kind === "ok" ? quote.subtotal : cartSubtotal(lines))}
       </AppText>
     </Pressable>
   );

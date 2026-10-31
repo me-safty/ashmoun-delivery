@@ -7,16 +7,16 @@ import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { EmojiTile } from "@/components/emoji-tile";
 import { PriceSummary } from "@/components/price-summary";
-import { cartSubtotal, useCart } from "@/lib/cart";
+import { useCart, useCartQuote } from "@/lib/cart";
 import { colors, formatPrice, radius, space } from "@/theme";
 
 export default function Cart() {
   const { shop, lines, setQuantity } = useCart();
   const addresses = useQuery(api.addresses.mine);
-  const shopData = useQuery(api.catalog.shop, shop ? { shopId: shop.id } : "skip");
+  const quote = useCartQuote();
   const address = addresses?.find((a) => a.isDefault) ?? addresses?.[0];
-  const subtotal = cartSubtotal(lines);
-  const minOrder = shopData?.shop.minOrder ?? 0;
+  const priced = quote?.kind === "ok" ? quote : undefined;
+  const belowMinimum = priced !== undefined && priced.subtotal < priced.minOrder;
 
   if (!shop || lines.length === 0) {
     return (
@@ -34,7 +34,7 @@ export default function Cart() {
     <SafeAreaView style={styles.screen} edges={["bottom"]}>
       <Stack.Screen options={{ title: `السلة · ${shop.name}` }} />
       <ScrollView contentContainerStyle={styles.content}>
-        {lines.map((line) => (
+        {lines.map((line, index) => (
           <View key={line.key} style={styles.line}>
             <EmojiTile emoji={line.emoji} tint={colors.primarySoft} size={52} />
             <View style={styles.lineBody}>
@@ -45,7 +45,7 @@ export default function Cart() {
                 </AppText>
               ) : null}
               <AppText variant="caption" tone="primary">
-                {formatPrice(line.unitPrice * line.quantity)}
+                {formatPrice((priced?.unitPrices[index] ?? line.unitPrice) * line.quantity)}
               </AppText>
             </View>
             <View style={styles.stepper}>
@@ -55,15 +55,17 @@ export default function Cart() {
             </View>
           </View>
         ))}
-        <PriceSummary subtotal={subtotal} deliveryFee={address?.deliveryFee} />
-        {subtotal < minOrder ? (
+        <PriceSummary subtotal={priced?.subtotal} deliveryFee={address?.deliveryFee} />
+        {quote?.kind === "invalid" ? <AppText tone="danger">{quote.message}</AppText> : null}
+        {priced && belowMinimum ? (
           <AppText tone="danger">
-            أقل طلب من {shop.name} هو {formatPrice(minOrder)}، ضيف {formatPrice(minOrder - subtotal)} كمان.
+            أقل طلب من {shop.name} هو {formatPrice(priced.minOrder)}، ضيف {formatPrice(priced.minOrder - priced.subtotal)}{" "}
+            كمان.
           </AppText>
         ) : null}
       </ScrollView>
       <View style={styles.footer}>
-        <Button label="إتمام الطلب" disabled={subtotal < minOrder} onPress={() => router.push("/checkout")} />
+        <Button label="إتمام الطلب" disabled={!priced || belowMinimum} onPress={() => router.push("/checkout")} />
       </View>
     </SafeAreaView>
   );
