@@ -1,7 +1,7 @@
 import type { PropsWithChildren, ReactNode } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { space } from "@/theme";
+import { colors, space } from "@/theme";
 
 type Props = PropsWithChildren<{ footer?: ReactNode }>;
 
@@ -25,5 +25,13 @@ export function FormScreen({ children, footer }: Props) {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   content: { padding: space.xl, gap: space.lg },
-  footer: { paddingHorizontal: space.xl, paddingBottom: space.lg, gap: space.sm },
+  footer: {
+    paddingHorizontal: space.xl,
+    paddingTop: space.md,
+    paddingBottom: space.lg,
+    gap: space.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.background,
+  },
 });

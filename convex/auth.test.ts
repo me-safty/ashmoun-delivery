@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { api } from "./_generated/api";
-import { authTest } from "./test/setup";
+import { authTest } from "./test.setup";
 
 afterEach(() => {
   vi.unstubAllEnvs();

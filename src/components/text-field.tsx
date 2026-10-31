@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, View, type TextInputProps } from "react-native";
+import { Platform, StyleSheet, TextInput, View, type TextInputProps } from "react-native";
 import { colors, fonts, radius, space } from "@/theme";
 import { AppText } from "./app-text";
 
@@ -27,6 +27,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.medium,
     fontSize: 16,
     color: colors.ink,
-    textAlign: "right",
+    // Native RTL already aligns inputs to the right; web inputs use dir="auto".
+    textAlign: Platform.OS === "web" ? "right" : undefined,
   },
 });

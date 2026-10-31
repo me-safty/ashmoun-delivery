@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { cairoTime, isOpenAt, isShopOpen } from "./hours";
+import { cairoTime, isOpenAt, isShopOpen, todayRanges } from "./hours";
 
 // 2026-11-04 is a Wednesday (day 3). Egypt is UTC+2 in late October (DST ended).
 const cairo = (iso: string) => new Date(`${iso}+02:00`).getTime();
@@ -42,4 +42,18 @@ test("paused shop is closed even inside its hours", () => {
   const hours = [{ day: 3, open: 0, close: 0 }];
   expect(isShopOpen({ hours, paused: false }, cairo("2026-11-04T12:00:00"))).toBe(true);
   expect(isShopOpen({ hours, paused: true }, cairo("2026-11-04T12:00:00"))).toBe(false);
+});
+
+describe("todayRanges", () => {
+  test("includes the after-midnight part of yesterday's overnight range", () => {
+    const thursdayNight = [{ day: 4, open: 18 * 60, close: 2 * 60 }];
+    expect(todayRanges(thursdayNight, cairo("2026-11-06T01:00:00"))).toEqual([{ day: 5, open: 0, close: 120 }]);
+    expect(todayRanges(thursdayNight, cairo("2026-11-06T03:00:00"))).toEqual([]);
+    expect(todayRanges(thursdayNight, cairo("2026-11-07T01:00:00"))).toEqual([]);
+  });
+
+  test("a 24h range doesn't spill into the next day", () => {
+    const allDay = [{ day: 3, open: 0, close: 0 }];
+    expect(todayRanges(allDay, cairo("2026-11-05T01:00:00"))).toEqual([]);
+  });
 });

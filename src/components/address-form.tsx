@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "convex/react";
 import * as Location from "expo-location";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -19,7 +19,7 @@ type LocationState =
   | { kind: "set"; lat: number; lng: number }
   | { kind: "denied" };
 
-export function AddressForm({ onSaved }: { onSaved?: () => void }) {
+export function AddressForm({ onSaved, footerExtra }: { onSaved?: () => void; footerExtra?: ReactNode }) {
   const zones = useQuery(api.zones.list);
   const create = useMutation(api.addresses.create);
   const [zoneId, setZoneId] = useState<Id<"zones"> | null>(null);
@@ -63,7 +63,13 @@ export function AddressForm({ onSaved }: { onSaved?: () => void }) {
   }
 
   return (
-    <FormScreen footer={<Button label="حفظ العنوان" loading={saving} onPress={save} />}>
+    <FormScreen
+      footer={
+        <>
+          <Button label="حفظ العنوان" loading={saving} onPress={save} />
+          {footerExtra}
+        </>
+      }>
       <AppText variant="subtitle">المنطقة</AppText>
       {zones === undefined ? (
         <ActivityIndicator color={colors.primary} />
@@ -140,8 +146,9 @@ const styles = StyleSheet.create({
   zoneSelected: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   chips: { flexDirection: "row", gap: space.sm },
   chip: {
+    minHeight: 44,
+    justifyContent: "center",
     paddingHorizontal: space.lg,
-    paddingVertical: space.sm,
     borderRadius: radius.pill,
     backgroundColor: colors.surface,
     borderWidth: 1,
