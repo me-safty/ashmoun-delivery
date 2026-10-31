@@ -42,7 +42,7 @@ export default function Checkout() {
       });
       clear();
       router.dismissAll();
-      router.replace({ pathname: "/order/[id]/success", params: { id: orderId } });
+      router.push({ pathname: "/order/[id]/success", params: { id: orderId } });
     } catch (e) {
       setError(errorMessage(e));
       setPlacing(false);
@@ -53,7 +53,7 @@ export default function Checkout() {
     <FormScreen
       footer={
         <>
-          {error ?? problem ? <AppText tone="danger">{error ?? problem}</AppText> : null}
+          {problem ?? error ? <AppText tone="danger">{problem ?? error}</AppText> : null}
           <Button
             label={priced && address ? `تأكيد الطلب · ${formatPrice(priced.subtotal + address.deliveryFee)}` : "تأكيد الطلب"}
             loading={placing}
