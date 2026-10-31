@@ -116,7 +116,7 @@ describe("orders.cancel", () => {
     const first = await asUser.mutation(api.orders.place, { shopId: market, addressId, note: "", items: [line(milk)] });
     await asUser.mutation(api.orders.cancel, { orderId: first });
     expect((await asUser.query(api.orders.get, { orderId: first }))?.status).toBe("cancelled");
-    await expect(asUser.mutation(api.orders.cancel, { orderId: first })).rejects.toThrow("مينفعش");
+    await expect(asUser.mutation(api.orders.cancel, { orderId: first })).rejects.toThrow("اتلغى قبل كده");
 
     const second = await asUser.mutation(api.orders.place, { shopId: market, addressId, note: "", items: [line(milk)] });
     await t.run((ctx) => ctx.db.patch(second, { status: "confirmed" }));

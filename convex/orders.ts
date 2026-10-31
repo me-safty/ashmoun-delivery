@@ -144,6 +144,7 @@ export const cancel = mutation({
     const user = await requireUser(ctx);
     const order = await ctx.db.get(orderId);
     if (order === null || order.userId !== user._id) throw new ConvexError("الطلب غير موجود");
+    if (order.status === "cancelled") throw new ConvexError("الطلب ده اتلغى قبل كده");
     if (!canCustomerCancel(order.status)) {
       throw new ConvexError("مينفعش تلغي الطلب بعد ما المحل أكده، كلم خدمة العملاء");
     }
