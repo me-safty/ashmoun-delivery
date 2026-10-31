@@ -44,7 +44,10 @@ export default function OrderSuccess() {
       <View style={styles.actions}>
         <Button
           label="تتبع الطلب"
-          onPress={() => router.replace({ pathname: "/order/[id]", params: { id } })}
+          onPress={() => {
+            router.replace("/orders");
+            router.push({ pathname: "/order/[id]", params: { id } });
+          }}
         />
         <Button kind="secondary" label="رجوع للرئيسية" onPress={() => router.replace("/")} />
       </View>
