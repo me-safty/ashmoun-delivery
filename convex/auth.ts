@@ -13,8 +13,10 @@ const ResetCode = Email({
     const [n] = crypto.getRandomValues(new Uint32Array(1));
     return String(n % 1_000_000).padStart(6, "0");
   },
+  // Convex Auth rate-limits code attempts by `params.email ?? params.phone`; refusing
+  // `email` keeps the limit keyed on the account's phone.
   async authorize(params, account) {
-    if (params.phone !== account.providerAccountId) {
+    if (params.email !== undefined || params.phone !== account.providerAccountId) {
       throw new Error("Reset code does not match this phone");
     }
   },
