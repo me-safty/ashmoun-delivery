@@ -1,7 +1,7 @@
 import { useQuery } from "convex/react";
 import { Link } from "expo-router";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { ActivityIndicator, FlatList, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -118,7 +118,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.medium,
     fontSize: 15,
     color: colors.ink,
-    textAlign: "right",
+    // Native RTL already aligns inputs to the right; web inputs use dir="auto".
+    textAlign: Platform.OS === "web" ? "right" : undefined,
   },
   chips: { gap: space.sm },
   chip: {

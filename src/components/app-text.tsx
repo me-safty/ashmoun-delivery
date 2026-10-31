@@ -1,6 +1,9 @@
 import { StyleSheet, Text, type TextProps } from "react-native";
 import { colors, fonts } from "@/theme";
 
+// Strings with only digits or emoji would otherwise resolve to LTR on web (dir="auto").
+const styles = StyleSheet.create({ base: { writingDirection: "rtl" } });
+
 const variants = StyleSheet.create({
   display: { fontFamily: fonts.black, fontSize: 28, lineHeight: 42 },
   title: { fontFamily: fonts.bold, fontSize: 20, lineHeight: 32 },
@@ -18,7 +21,7 @@ export function AppText({ variant = "body", tone = "ink", style, ...props }: Pro
   return (
     <Text
       {...props}
-      style={[variants[variant], { color: colors[tone] }, style]}
+      style={[styles.base, variants[variant], { color: colors[tone] }, style]}
     />
   );
 }

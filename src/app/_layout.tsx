@@ -8,7 +8,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/cairo";
 import { ConvexReactClient, useConvexAuth, useQuery } from "convex/react";
-import { Stack } from "expo-router";
+import { LocaleProvider, Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -80,17 +80,19 @@ function RootStack() {
   const hasAddress = me?.hasAddress ?? false;
 
   return (
-    <Stack screenOptions={stackScreenOptions}>
-      <Stack.Protected guard={!signedIn}>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      </Stack.Protected>
-      <Stack.Protected guard={signedIn && !hasAddress}>
-        <Stack.Screen name="welcome-address" options={{ title: "عنوان التوصيل" }} />
-      </Stack.Protected>
-      <Stack.Protected guard={signedIn && hasAddress}>
-        <Stack.Screen name="(app)" options={{ headerShown: false }} />
-      </Stack.Protected>
-    </Stack>
+    <LocaleProvider direction="rtl">
+      <Stack screenOptions={stackScreenOptions}>
+        <Stack.Protected guard={!signedIn}>
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        </Stack.Protected>
+        <Stack.Protected guard={signedIn && !hasAddress}>
+          <Stack.Screen name="welcome-address" options={{ title: "عنوان التوصيل" }} />
+        </Stack.Protected>
+        <Stack.Protected guard={signedIn && hasAddress}>
+          <Stack.Screen name="(app)" options={{ headerShown: false }} />
+        </Stack.Protected>
+      </Stack>
+    </LocaleProvider>
   );
 }
 
