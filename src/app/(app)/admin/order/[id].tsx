@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { nextStatuses, statusLabels, type OrderStatus } from "@/convex/lib/orderStatus";
+import { adminPage, useWideAdmin } from "@/components/admin-grid";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { OrderTimeline, StatusPill } from "@/components/order-status";
@@ -33,6 +34,7 @@ export default function AdminOrder() {
   const [driverId, setDriverId] = useState<Id<"drivers"> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<OrderStatus | null>(null);
+  const wide = useWideAdmin();
 
   if (order === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
   if (order === null) return <Unavailable message="الطلب ده مش موجود" />;
@@ -73,139 +75,147 @@ export default function AdminOrder() {
   return (
     <SafeAreaView style={styles.screen} edges={["bottom"]}>
       <Stack.Screen options={{ title: orderCode(order._id) }} />
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.card}>
-          <View style={styles.row}>
-            <AppText variant="title">{order.shopName}</AppText>
-            <StatusPill status={order.status} />
-          </View>
-          <View style={styles.row}>
-            <AppText variant="subtitle" style={styles.flex}>
-              {order.customerName}
-            </AppText>
-            <Button
-              kind="secondary"
-              label="اتصل"
-              onPress={() =>
-                void openUrl(`tel:${order.customerPhone}`, `الجهاز ده مش بيدعم الاتصال، رقم العميل ${order.customerPhone}`)
-              }
-            />
-          </View>
-          <AppText>
-            <AppText variant="subtitle">{order.address.zoneName}</AppText> — {order.address.label} ·{" "}
-            {order.address.street}
-            {order.address.landmark ? ` · ${order.address.landmark}` : ""}
-          </AppText>
-          {order.address.location ? (
-            <Button
-              kind="secondary"
-              label="📍 افتح الموقع على الخريطة"
-              onPress={() =>
-                void openUrl(
-                  `https://maps.google.com/?q=${order.address.location?.lat},${order.address.location?.lng}`,
-                  "مقدرناش نفتح الخريطة",
-                )
-              }
-            />
-          ) : null}
-          {order.driver ? (
-            <Pressable
-              accessibilityRole="link"
-              onPress={() => void openUrl(`tel:${order.driver?.phone}`, `رقم المندوب ${order.driver?.phone}`)}
-              style={styles.link}>
-              <AppText variant="caption" tone="primaryInk">
-                🛵 {order.driver.name} · {order.driver.phone}
-              </AppText>
-            </Pressable>
-          ) : null}
-        </View>
-
-        {order.note ? (
-          <View style={styles.note}>
-            <AppText variant="subtitle" tone="warningInk">
-              ملاحظة العميل
-            </AppText>
-            <AppText tone="warningInk">{order.note}</AppText>
-          </View>
-        ) : null}
-
-        <View style={styles.card}>
-          {order.items.map((item, index) => (
-            <View key={`${item.productId}-${index}`} style={styles.row}>
-              <View style={styles.flex}>
-                <AppText>
-                  {item.quantity}× {item.name}
-                </AppText>
-                {item.optionsLabel ? (
-                  <AppText variant="caption" tone="muted">
-                    {item.optionsLabel}
-                  </AppText>
-                ) : null}
+      <ScrollView contentContainerStyle={[styles.content, adminPage]}>
+        <View style={wide ? styles.columns : styles.stack}>
+          <View style={styles.column}>
+            <View style={styles.card}>
+              <View style={styles.row}>
+                <AppText variant="title">{order.shopName}</AppText>
+                <StatusPill status={order.status} />
               </View>
-              <AppText>{formatPrice(item.unitPrice * item.quantity)}</AppText>
-            </View>
-          ))}
-        </View>
-        <PriceSummary subtotal={order.subtotal} deliveryFee={order.deliveryFee} />
-
-        {next.includes("with_driver") ? (
-          <View style={styles.card}>
-            <AppText variant="subtitle">اختار المندوب</AppText>
-            {activeDrivers.length === 0 ? <AppText tone="muted">مفيش مندوبين متاحين</AppText> : null}
-            {activeDrivers.map((driver) => {
-              const selected = driver._id === selectedDriverId;
-              return (
+              <View style={styles.row}>
+                <AppText variant="subtitle" style={styles.flex}>
+                  {order.customerName}
+                </AppText>
+                <Button
+                  kind="secondary"
+                  label="اتصل"
+                  onPress={() =>
+                    void openUrl(`tel:${order.customerPhone}`, `الجهاز ده مش بيدعم الاتصال، رقم العميل ${order.customerPhone}`)
+                  }
+                />
+              </View>
+              <AppText>
+                <AppText variant="subtitle">{order.address.zoneName}</AppText> — {order.address.label} ·{" "}
+                {order.address.street}
+                {order.address.landmark ? ` · ${order.address.landmark}` : ""}
+              </AppText>
+              {order.address.location ? (
+                <Button
+                  kind="secondary"
+                  label="📍 افتح الموقع على الخريطة"
+                  onPress={() =>
+                    void openUrl(
+                      `https://maps.google.com/?q=${order.address.location?.lat},${order.address.location?.lng}`,
+                      "مقدرناش نفتح الخريطة",
+                    )
+                  }
+                />
+              ) : null}
+              {order.driver ? (
                 <Pressable
-                  key={driver._id}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected }}
-                  onPress={() => setDriverId(driver._id)}
-                  style={[styles.option, selected && styles.optionOn]}>
-                  <View style={[styles.radio, selected && styles.radioOn]} />
-                  <View style={styles.flex}>
-                    <AppText variant="subtitle">🛵 {driver.name}</AppText>
-                    <AppText variant="caption" tone="muted">
-                      {driver.phone}
-                    </AppText>
-                  </View>
+                  accessibilityRole="link"
+                  onPress={() => void openUrl(`tel:${order.driver?.phone}`, `رقم المندوب ${order.driver?.phone}`)}
+                  style={styles.link}>
+                  <AppText variant="caption" tone="primaryInk">
+                    🛵 {order.driver.name} · {order.driver.phone}
+                  </AppText>
                 </Pressable>
-              );
-            })}
+              ) : null}
+            </View>
+
+            {order.note ? (
+              <View style={styles.note}>
+                <AppText variant="subtitle" tone="warningInk">
+                  ملاحظة العميل
+                </AppText>
+                <AppText tone="warningInk">{order.note}</AppText>
+              </View>
+            ) : null}
+
+            <View style={styles.card}>
+              {order.items.map((item, index) => (
+                <View key={`${item.productId}-${index}`} style={styles.row}>
+                  <View style={styles.flex}>
+                    <AppText>
+                      {item.quantity}× {item.name}
+                    </AppText>
+                    {item.optionsLabel ? (
+                      <AppText variant="caption" tone="muted">
+                        {item.optionsLabel}
+                      </AppText>
+                    ) : null}
+                  </View>
+                  <AppText>{formatPrice(item.unitPrice * item.quantity)}</AppText>
+                </View>
+              ))}
+            </View>
+            <PriceSummary subtotal={order.subtotal} deliveryFee={order.deliveryFee} />
+
           </View>
-        ) : null}
+          <View style={styles.column}>
+            {next.includes("with_driver") ? (
+              <View style={styles.card}>
+                <AppText variant="subtitle">اختار المندوب</AppText>
+                {activeDrivers.length === 0 ? <AppText tone="muted">مفيش مندوبين متاحين</AppText> : null}
+                {activeDrivers.map((driver) => {
+                  const selected = driver._id === selectedDriverId;
+                  return (
+                    <Pressable
+                      key={driver._id}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected }}
+                      onPress={() => setDriverId(driver._id)}
+                      style={[styles.option, selected && styles.optionOn]}>
+                      <View style={[styles.radio, selected && styles.radioOn]} />
+                      <View style={styles.flex}>
+                        <AppText variant="subtitle">🛵 {driver.name}</AppText>
+                        <AppText variant="caption" tone="muted">
+                          {driver.phone}
+                        </AppText>
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ) : null}
 
-        <View style={styles.card}>
-          <OrderTimeline order={order} />
+            <View style={styles.card}>
+              <OrderTimeline order={order} />
+            </View>
+
+            {destructive.map((status) => (
+              <Button
+                key={status}
+                kind="danger"
+                label={actionLabels[status]}
+                loading={busy === status}
+                disabled={busy !== null}
+                onPress={() => void move(status)}
+              />
+            ))}
+          </View>
         </View>
-
-        {destructive.map((status) => (
-          <Button
-            key={status}
-            kind="danger"
-            label={actionLabels[status]}
-            loading={busy === status}
-            disabled={busy !== null}
-            onPress={() => void move(status)}
-          />
-        ))}
       </ScrollView>
       {forward.length > 0 || error ? (
         <View style={styles.footer}>
-          {error ? <AppText tone="danger">{error}</AppText> : null}
-          {forward.includes("with_driver") && selectedDriverId === null ? (
-            <AppText variant="caption" tone="mutedInk">
-              اختار مندوب الأول
-            </AppText>
-          ) : null}
-          {forward.map((status) => (
-            <Button
-              key={status}
-              label={actionLabels[status]}
-              loading={busy === status}
-              disabled={busy !== null || (status === "with_driver" && selectedDriverId === null)}
-              onPress={() => void move(status)}
-            />
-          ))}
+          <View style={[styles.footerInner, adminPage]}>
+            {error ? <AppText tone="danger">{error}</AppText> : null}
+            {forward.includes("with_driver") && selectedDriverId === null ? (
+              <AppText variant="caption" tone="mutedInk">
+                اختار مندوب الأول
+              </AppText>
+            ) : null}
+            {forward.map((status) => (
+              <Button
+                key={status}
+                label={actionLabels[status]}
+                loading={busy === status}
+                disabled={busy !== null || (status === "with_driver" && selectedDriverId === null)}
+                onPress={() => void move(status)}
+              />
+            ))}
+          </View>
         </View>
       ) : null}
     </SafeAreaView>
@@ -215,7 +225,10 @@ export default function AdminOrder() {
 const styles = StyleSheet.create({
   loading: { marginTop: space.xxl },
   screen: { flex: 1 },
-  content: { padding: space.lg, gap: space.md, paddingBottom: space.xxl },
+  content: { padding: space.lg, paddingBottom: space.xxl },
+  stack: { gap: space.md },
+  columns: { flexDirection: "row", gap: space.lg, alignItems: "flex-start" },
+  column: { flex: 1, gap: space.md },
   card: {
     gap: space.sm,
     padding: space.lg,
@@ -241,8 +254,8 @@ const styles = StyleSheet.create({
   optionOn: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.faint },
   radioOn: { borderColor: colors.primary, backgroundColor: colors.primary },
+  footerInner: { gap: space.sm },
   footer: {
-    gap: space.sm,
     paddingHorizontal: space.lg,
     paddingTop: space.md,
     paddingBottom: space.lg,

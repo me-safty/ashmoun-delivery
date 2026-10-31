@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
+import { adminPage, useAdminColumns } from "@/components/admin-grid";
 import { AppText } from "@/components/app-text";
 import { StatusPill } from "@/components/order-status";
 import { orderCode } from "@/lib/order-code";
@@ -19,12 +20,16 @@ const timeFormat = new Intl.DateTimeFormat("ar-EG-u-nu-latn", {
 export default function AdminOrders() {
   const [view, setView] = useState<"active" | "done">("active");
   const orders = useQuery(api.admin.orders, { view });
+  const columns = useAdminColumns();
 
   return (
     <FlatList
+      key={columns}
+      numColumns={columns}
       data={orders ?? []}
       keyExtractor={(o) => o._id}
-      contentContainerStyle={styles.list}
+      contentContainerStyle={[styles.list, adminPage]}
+      columnWrapperStyle={columns > 1 ? styles.columns : undefined}
       ListHeaderComponent={
         <View style={styles.header}>
           <View style={styles.segments}>
@@ -49,7 +54,7 @@ export default function AdminOrders() {
         <Pressable
           accessibilityRole="link"
           onPress={() => router.push({ pathname: "/admin/order/[id]", params: { id: item._id } })}
-          style={styles.card}>
+          style={[styles.card, columns > 1 && { flex: 1, maxWidth: `${100 / columns}%` }]}>
           <View style={styles.row}>
             <AppText variant="subtitle">
               {orderCode(item._id)} · {item.shopName}
@@ -108,6 +113,7 @@ const styles = StyleSheet.create({
   },
   segmentOn: { backgroundColor: colors.primary, borderColor: colors.primary },
   link: { minHeight: 44, justifyContent: "center" },
+  columns: { gap: space.md },
   card: {
     gap: space.xs,
     padding: space.lg,
