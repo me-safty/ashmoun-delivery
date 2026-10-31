@@ -45,7 +45,9 @@ export default function Drivers() {
           <Pressable
             accessibilityRole="switch"
             accessibilityState={{ checked: driver.active }}
-            onPress={() => void setActive({ driverId: driver._id, active: !driver.active })}
+            onPress={() =>
+              void setActive({ driverId: driver._id, active: !driver.active }).catch((e) => setError(errorMessage(e)))
+            }
             style={styles.toggle}>
             <AppText variant="caption" tone={driver.active ? "success" : "muted"}>
               {driver.active ? "متاح" : "مش متاح"}

@@ -60,7 +60,7 @@ export default function AdminOrder() {
     }
   }
 
-  const openUrl = (url: string) => Linking.openURL(url).catch(() => setError("الجهاز ده مش بيدعم الاتصال"));
+  const openUrl = (url: string, failure: string) => Linking.openURL(url).catch(() => setError(failure));
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
@@ -79,7 +79,7 @@ export default function AdminOrder() {
         </AppText>
         <View style={styles.row}>
           <AppText variant="subtitle">{order.customerName}</AppText>
-          <Button kind="secondary" label={`اتصل ${order.customerPhone}`} onPress={() => void openUrl(`tel:${order.customerPhone}`)} />
+          <Button kind="secondary" label={`اتصل ${order.customerPhone}`} onPress={() => void openUrl(`tel:${order.customerPhone}`, `الجهاز ده مش بيدعم الاتصال، رقم العميل ${order.customerPhone}`)} />
         </View>
         <AppText>
           {order.address.label} · {order.address.zoneName} — {order.address.street}
@@ -89,7 +89,10 @@ export default function AdminOrder() {
           <Pressable
             accessibilityRole="link"
             onPress={() =>
-              void openUrl(`https://maps.google.com/?q=${order.address.location?.lat},${order.address.location?.lng}`)
+              void openUrl(
+                `https://maps.google.com/?q=${order.address.location?.lat},${order.address.location?.lng}`,
+                "مقدرناش نفتح الخريطة",
+              )
             }
             style={styles.link}>
             <AppText variant="caption" tone="primary">
