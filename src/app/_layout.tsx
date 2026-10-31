@@ -8,12 +8,12 @@ import {
   useFonts,
 } from "@expo-google-fonts/cairo";
 import { ConvexReactClient, useConvexAuth, useQuery } from "convex/react";
-import { LocaleProvider, Stack } from "expo-router";
+import { LocaleProvider, Stack, useSegments } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
-import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
+import { useEffect, type PropsWithChildren } from "react";
+import { ActivityIndicator, Platform, StyleSheet, useWindowDimensions, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import { useCart } from "@/lib/cart";
 import { usePushNotifications } from "@/lib/push";
@@ -57,11 +57,25 @@ export default function RootLayout() {
 
   return (
     <ConvexAuthProvider client={convex} storage={Platform.OS === "web" ? undefined : secureStorage}>
-      <View style={styles.root}>
+      <WebFrame>
         <StatusBar style="dark" />
         <RootStack />
-      </View>
+      </WebFrame>
     </ConvexAuthProvider>
+  );
+}
+
+const PHONE_WIDTH = 480;
+
+// On wide web screens the customer app sits in a phone-width column; admin pages use the full width.
+function WebFrame({ children }: PropsWithChildren) {
+  const segments: readonly string[] = useSegments();
+  const { width } = useWindowDimensions();
+  const framed = Platform.OS === "web" && width > PHONE_WIDTH && !segments.includes("admin");
+  return (
+    <View style={[styles.root, framed && styles.backdrop]}>
+      <View style={[styles.root, framed && styles.column]}>{children}</View>
+    </View>
   );
 }
 
@@ -107,4 +121,12 @@ function RootStack() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
+  backdrop: { backgroundColor: colors.border, alignItems: "center" },
+  column: {
+    width: "100%",
+    maxWidth: PHONE_WIDTH,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: colors.border,
+  },
 });
