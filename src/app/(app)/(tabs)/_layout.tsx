@@ -29,6 +29,7 @@ export default function TabsLayout() {
       }}>
       <Tabs.Screen name="index" options={{ title: "الرئيسية", headerShown: false, tabBarIcon: icon("home") }} />
       <Tabs.Screen name="categories" options={{ title: "الأقسام", tabBarIcon: icon("grid") }} />
+      <Tabs.Screen name="orders" options={{ title: "طلباتي", tabBarIcon: icon("receipt") }} />
       <Tabs.Screen name="profile" options={{ title: "حسابي", tabBarIcon: icon("person") }} />
     </Tabs>
   );
