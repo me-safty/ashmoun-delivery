@@ -67,7 +67,6 @@ export default function RootLayout() {
 
 const PHONE_WIDTH = 480;
 
-// On wide web screens the customer app sits in a phone-width column; admin pages use the full width.
 function WebFrame({ children }: PropsWithChildren) {
   const segments: readonly string[] = useSegments();
   const { width } = useWindowDimensions();
@@ -122,11 +121,5 @@ function RootStack() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   backdrop: { backgroundColor: colors.border, alignItems: "center" },
-  column: {
-    width: "100%",
-    maxWidth: PHONE_WIDTH,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: colors.border,
-  },
+  column: { width: "100%", maxWidth: PHONE_WIDTH },
 });
