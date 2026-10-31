@@ -22,10 +22,10 @@ export default function Home() {
   const address = addresses?.find((a) => a.isDefault) ?? addresses?.[0];
 
   const visibleShops = useMemo(() => {
-    const term = search.trim();
+    const term = normalizeSearch(search.trim());
     return (shops ?? [])
       .filter((s) => (categoryId ? s.categoryId === categoryId : true))
-      .filter((s) => (term ? s.name.includes(term) || s.description.includes(term) : true))
+      .filter((s) => (term ? normalizeSearch(`${s.name} ${s.description}`).includes(term) : true))
       .sort((a, b) => Number(isShopOpen(b, now)) - Number(isShopOpen(a, now)));
   }, [shops, categoryId, search, now]);
 
@@ -87,6 +87,11 @@ export default function Home() {
       />
     </SafeAreaView>
   );
+}
+
+// Matches أحمد/احمد, مدرسة/مدرسه, على/علي and Latin case.
+function normalizeSearch(text: string) {
+  return text.toLowerCase().replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
 }
 
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
