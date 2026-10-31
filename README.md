@@ -44,11 +44,11 @@ pnpm test        # vitest + convex-test
   - `development`: dev client;
   - `preview`: internal Android APK and iOS ad-hoc;
   - `production`: store builds.
-- **`EXPO_PUBLIC_CONVEX_URL`:** an EAS environment variable for each environment.
+- **`EXPO_PUBLIC_CONVEX_URL`:** an EAS environment variable. `development` and `preview` point at the Convex dev deployment. `production` is not set yet: create a production Convex deployment (`pnpm exec convex deploy`), set its auth env vars, seed it, then run `eas env:create --environment production`.
 
 ```sh
 pnpm dlx eas-cli build -p android --profile preview   # installable APK
-pnpm dlx eas-cli update --channel preview              # over-the-air JS update
+pnpm dlx eas-cli update --channel preview --environment preview   # over-the-air JS update
 ```
 
 iOS builds and store submission need an Apple Developer account. Play Store submission needs a Google Play Console account.
