@@ -31,3 +31,12 @@ export const radius = { sm: 10, md: 16, lg: 24, pill: 999 } as const;
 export function formatPrice(amount: number) {
   return `${Number.isInteger(amount) ? amount : amount.toFixed(2)} ج.م`;
 }
+
+export const stackScreenOptions = {
+  contentStyle: { backgroundColor: colors.background },
+  headerShadowVisible: false,
+  headerStyle: { backgroundColor: colors.background },
+  headerTitleStyle: { fontFamily: fonts.bold, color: colors.ink },
+  headerTintColor: colors.ink,
+  headerBackButtonDisplayMode: "minimal",
+} as const;
