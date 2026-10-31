@@ -3,21 +3,22 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
 import { priceLine } from "@/convex/lib/pricing";
 import { AppText } from "@/components/app-text";
 import { EmojiTile } from "@/components/emoji-tile";
+import { Unavailable } from "@/components/unavailable";
 import { colors, formatPrice, radius, space } from "@/theme";
 
 type Selected = Record<string, string[]>;
 
 export default function Product() {
-  const { id } = useLocalSearchParams<{ id: Id<"products"> }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const data = useQuery(api.catalog.product, { productId: id });
   const [selected, setSelected] = useState<Selected>({});
   const [quantity, setQuantity] = useState(1);
 
   if (data === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
+  if (data === null || !data.product.available) return <Unavailable message="المنتج ده مش متاح دلوقتي" />;
 
   const { product, shop } = data;
   const selections = Object.entries(selected).map(([groupKey, optionKeys]) => ({ groupKey, optionKeys }));

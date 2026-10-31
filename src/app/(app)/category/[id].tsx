@@ -2,14 +2,13 @@ import { useQuery } from "convex/react";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, FlatList, StyleSheet } from "react-native";
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
 import { AppText } from "@/components/app-text";
 import { ShopCard } from "@/components/shop-card";
 import { useNow } from "@/lib/use-now";
 import { colors, space } from "@/theme";
 
 export default function CategoryShops() {
-  const { id } = useLocalSearchParams<{ id: Id<"categories"> }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const now = useNow();
   const category = useQuery(api.catalog.category, { categoryId: id });
   const shops = useQuery(api.catalog.shops, { categoryId: id });

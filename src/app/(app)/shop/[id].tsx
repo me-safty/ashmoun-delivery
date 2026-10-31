@@ -2,19 +2,20 @@ import { useQuery } from "convex/react";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
 import { AppText } from "@/components/app-text";
 import { EmojiTile } from "@/components/emoji-tile";
+import { Unavailable } from "@/components/unavailable";
 import { ShopStatusBadge, shopState, todayHoursLabel } from "@/components/shop-status";
 import { useNow } from "@/lib/use-now";
 import { colors, formatPrice, radius, space } from "@/theme";
 
 export default function Shop() {
-  const { id } = useLocalSearchParams<{ id: Id<"shops"> }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const now = useNow();
   const data = useQuery(api.catalog.shop, { shopId: id });
 
   if (data === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
+  if (data === null) return <Unavailable message="المحل ده مش متاح دلوقتي" />;
 
   const { shop, sections } = data;
   const state = shopState(shop, now);

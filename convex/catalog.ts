@@ -1,4 +1,4 @@
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import { query } from "./_generated/server";
 import { requireUser } from "./lib/session";
 
@@ -11,9 +11,11 @@ export const categories = query({
 });
 
 export const shops = query({
-  args: { categoryId: v.optional(v.id("categories")) },
-  handler: async (ctx, { categoryId }) => {
+  args: { categoryId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
     await requireUser(ctx);
+    const categoryId = args.categoryId === undefined ? null : ctx.db.normalizeId("categories", args.categoryId);
+    if (args.categoryId !== undefined && categoryId === null) return [];
     return categoryId
       ? await ctx.db
           .query("shops")
@@ -24,27 +26,30 @@ export const shops = query({
 });
 
 export const category = query({
-  args: { categoryId: v.id("categories") },
-  handler: async (ctx, { categoryId }) => {
+  args: { categoryId: v.string() },
+  handler: async (ctx, args) => {
     await requireUser(ctx);
-    return await ctx.db.get(categoryId);
+    const categoryId = ctx.db.normalizeId("categories", args.categoryId);
+    return categoryId === null ? null : await ctx.db.get(categoryId);
   },
 });
 
+// Route params arrive as plain strings, so a stale or malformed id returns null.
 export const shop = query({
-  args: { shopId: v.id("shops") },
-  handler: async (ctx, { shopId }) => {
+  args: { shopId: v.string() },
+  handler: async (ctx, args) => {
     await requireUser(ctx);
-    const shop = await ctx.db.get(shopId);
-    if (shop === null) throw new ConvexError("المحل غير موجود");
+    const shopId = ctx.db.normalizeId("shops", args.shopId);
+    const shop = shopId === null ? null : await ctx.db.get(shopId);
+    if (shop === null) return null;
     const [sections, products] = await Promise.all([
       ctx.db
         .query("menuSections")
-        .withIndex("by_shop", (q) => q.eq("shopId", shopId))
+        .withIndex("by_shop", (q) => q.eq("shopId", shop._id))
         .collect(),
       ctx.db
         .query("products")
-        .withIndex("by_shop", (q) => q.eq("shopId", shopId))
+        .withIndex("by_shop", (q) => q.eq("shopId", shop._id))
         .collect(),
     ]);
     return {
@@ -60,13 +65,13 @@ export const shop = query({
 });
 
 export const product = query({
-  args: { productId: v.id("products") },
-  handler: async (ctx, { productId }) => {
+  args: { productId: v.string() },
+  handler: async (ctx, args) => {
     await requireUser(ctx);
-    const product = await ctx.db.get(productId);
-    if (product === null) throw new ConvexError("المنتج غير موجود");
-    const shop = await ctx.db.get(product.shopId);
-    if (shop === null) throw new ConvexError("المحل غير موجود");
+    const productId = ctx.db.normalizeId("products", args.productId);
+    const product = productId === null ? null : await ctx.db.get(productId);
+    const shop = product === null ? null : await ctx.db.get(product.shopId);
+    if (product === null || shop === null) return null;
     return { product, shop };
   },
 });

@@ -17,6 +17,8 @@ import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import { colors, stackScreenOptions } from "@/theme";
 
+export { ErrorBoundary } from "expo-router";
+
 SplashScreen.preventAutoHideAsync();
 
 if (Platform.OS === "web") {
