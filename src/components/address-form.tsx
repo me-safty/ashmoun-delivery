@@ -32,9 +32,9 @@ export function AddressForm({ onSaved }: { onSaved?: () => void }) {
 
   async function locate() {
     setLocation({ kind: "locating" });
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") return setLocation({ kind: "denied" });
     try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") return setLocation({ kind: "denied" });
       const { coords } = await Location.getCurrentPositionAsync({});
       setLocation({ kind: "set", lat: coords.latitude, lng: coords.longitude });
     } catch {
