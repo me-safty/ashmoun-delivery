@@ -38,13 +38,13 @@ function ProductRow({ product }: { product: Doc<"products"> }) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const parsed = Number(price);
-  const changed = price !== "" && parsed !== product.price;
+  const changed = price !== "" && Number.isFinite(parsed) && parsed !== product.price;
 
-  async function save(price: number, available: boolean) {
+  async function save(change: { price: number } | { available: boolean }) {
     setError(null);
     setSaving(true);
     try {
-      await updateProduct({ productId: product._id, price, available });
+      await updateProduct({ productId: product._id, ...change });
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -61,7 +61,7 @@ function ProductRow({ product }: { product: Doc<"products"> }) {
         <Pressable
           accessibilityRole="switch"
           accessibilityState={{ checked: product.available }}
-          onPress={() => void save(product.price, !product.available)}
+          onPress={() => void save({ available: !product.available })}
           style={styles.toggle}>
           <AppText variant="caption" tone={product.available ? "success" : "muted"}>
             {product.available ? "متاح" : "غير متاح"}
@@ -77,7 +77,7 @@ function ProductRow({ product }: { product: Doc<"products"> }) {
           style={styles.input}
         />
         <AppText tone="muted">ج.م</AppText>
-        <Button kind="secondary" label="حفظ" disabled={!changed} loading={saving} onPress={() => void save(parsed, product.available)} />
+        <Button kind="secondary" label="حفظ" disabled={!changed} loading={saving} onPress={() => void save({ price: parsed })} />
       </View>
       {error ? <AppText tone="danger">{error}</AppText> : null}
     </View>

@@ -11,13 +11,17 @@ export const zones = query({
 });
 
 export const updateZone = mutation({
-  args: { zoneId: v.id("zones"), deliveryFee: v.number(), active: v.boolean() },
+  args: { zoneId: v.id("zones"), deliveryFee: v.optional(v.number()), active: v.optional(v.boolean()) },
   handler: async (ctx, { zoneId, deliveryFee, active }) => {
     await requireAdmin(ctx);
-    if (!Number.isFinite(deliveryFee) || deliveryFee < 0 || deliveryFee > 200) {
+    if (deliveryFee !== undefined && (!Number.isFinite(deliveryFee) || deliveryFee < 0 || deliveryFee > 200)) {
       throw new ConvexError("رسوم التوصيل لازم تكون بين 0 و 200 ج.م");
     }
-    await ctx.db.patch(zoneId, { deliveryFee, active });
+    // In a Convex patch an undefined value deletes the field, so send only what changed.
+    await ctx.db.patch(zoneId, {
+      ...(deliveryFee === undefined ? {} : { deliveryFee }),
+      ...(active === undefined ? {} : { active }),
+    });
   },
 });
 
@@ -30,19 +34,28 @@ export const setShopPaused = mutation({
 });
 
 export const updateProduct = mutation({
-  args: { productId: v.id("products"), price: v.number(), available: v.boolean() },
+  args: { productId: v.id("products"), price: v.optional(v.number()), available: v.optional(v.boolean()) },
   handler: async (ctx, { productId, price, available }) => {
     await requireAdmin(ctx);
-    if (!Number.isFinite(price) || price <= 0 || price > 100_000) throw new ConvexError("سعر غير صحيح");
-    const product = await ctx.db.get(productId);
-    if (product === null) throw new ConvexError("المنتج غير موجود");
-    const cheapest = product.optionGroups.reduce(
-      (sum, group) => sum + Math.min(0, ...group.options.map((o) => o.priceDelta)),
-      price,
-    );
-    if (cheapest < 0) {
-      throw new ConvexError(`السعر لازم يكون ${price - cheapest} ج.م على الأقل عشان اختيارات الخصم`);
+    if (price !== undefined) {
+      if (!Number.isFinite(price) || price <= 0 || price > 100_000) throw new ConvexError("سعر غير صحيح");
+      const product = await ctx.db.get(productId);
+      if (product === null) throw new ConvexError("المنتج غير موجود");
+      const largestDiscount = product.optionGroups.reduce((sum, group) => {
+        const discounts = group.options
+          .map((o) => o.priceDelta)
+          .filter((delta) => delta < 0)
+          .sort((a, b) => a - b)
+          .slice(0, group.max);
+        return sum + discounts.reduce((a, b) => a + b, 0);
+      }, 0);
+      if (price + largestDiscount < 0) {
+        throw new ConvexError(`السعر لازم يكون ${-largestDiscount} ج.م على الأقل عشان اختيارات الخصم`);
+      }
     }
-    await ctx.db.patch(productId, { price, available });
+    await ctx.db.patch(productId, {
+      ...(price === undefined ? {} : { price }),
+      ...(available === undefined ? {} : { available }),
+    });
   },
 });

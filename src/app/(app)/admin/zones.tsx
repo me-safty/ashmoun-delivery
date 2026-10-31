@@ -28,13 +28,13 @@ function ZoneRow({ zone }: { zone: Doc<"zones"> }) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const parsed = Number(fee);
-  const changed = fee !== "" && parsed !== zone.deliveryFee;
+  const changed = fee !== "" && Number.isFinite(parsed) && parsed !== zone.deliveryFee;
 
-  async function save(deliveryFee: number, active: boolean) {
+  async function save(change: { deliveryFee: number } | { active: boolean }) {
     setError(null);
     setSaving(true);
     try {
-      await updateZone({ zoneId: zone._id, deliveryFee, active });
+      await updateZone({ zoneId: zone._id, ...change });
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -51,7 +51,7 @@ function ZoneRow({ zone }: { zone: Doc<"zones"> }) {
         <Pressable
           accessibilityRole="switch"
           accessibilityState={{ checked: zone.active }}
-          onPress={() => void save(zone.deliveryFee, !zone.active)}
+          onPress={() => void save({ active: !zone.active })}
           style={styles.toggle}>
           <AppText variant="caption" tone={zone.active ? "success" : "muted"}>
             {zone.active ? "التوصيل شغال" : "متوقف"}
@@ -67,7 +67,7 @@ function ZoneRow({ zone }: { zone: Doc<"zones"> }) {
           style={styles.input}
         />
         <AppText tone="muted">ج.م</AppText>
-        <Button kind="secondary" label="حفظ" disabled={!changed} loading={saving} onPress={() => void save(parsed, zone.active)} />
+        <Button kind="secondary" label="حفظ" disabled={!changed} loading={saving} onPress={() => void save({ deliveryFee: parsed })} />
       </View>
       {error ? <AppText tone="danger">{error}</AppText> : null}
     </View>
