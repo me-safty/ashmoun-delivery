@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { geoPoint } from "./schema";
@@ -6,10 +7,11 @@ import { requireUser } from "./lib/session";
 export const mine = query({
   args: {},
   handler: async (ctx) => {
-    const user = await requireUser(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) return [];
     const addresses = await ctx.db
       .query("addresses")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
     return await Promise.all(
       addresses.map(async (address) => {
