@@ -9,6 +9,9 @@ test("normalizes Egyptian mobile formats to 01XXXXXXXXX", () => {
   expect(normalizePhone("201012345678")).toBe("01012345678");
   expect(normalizePhone("\u202A+20 101 234 5678\u202C")).toBe("01012345678");
   expect(normalizePhone("\u200E01012345678")).toBe("01012345678");
+  expect(normalizePhone("\u061C01012345678")).toBe("01012345678");
+  expect(normalizePhone("۰۱۰۱۲۳۴۵۶۷۸")).toBe("01012345678");
+  expect(normalizePhone("+20 010 1234 5678")).toBe("01012345678");
 });
 
 test("rejects non-mobile or malformed numbers", () => {
