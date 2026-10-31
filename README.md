@@ -44,7 +44,7 @@ pnpm test        # vitest + convex-test
   - `development`: dev client;
   - `preview`: internal Android APK and iOS ad-hoc;
   - `production`: store builds.
-- **`EXPO_PUBLIC_CONVEX_URL`:** an EAS environment variable. `development` and `preview` point at the Convex dev deployment. `production` is not set yet: create a production Convex deployment (`pnpm exec convex deploy`), set its auth env vars, seed it, then run `eas env:create --environment production`.
+- **`EXPO_PUBLIC_CONVEX_URL`:** an EAS environment variable. `development` and `preview` point at the Convex dev deployment; `production` points at the production deployment.
 
 ```sh
 pnpm dlx eas-cli build -p android --profile preview   # installable APK
@@ -52,6 +52,17 @@ pnpm dlx eas-cli update --channel preview --environment preview   # over-the-air
 ```
 
 iOS builds and store submission need an Apple Developer account. Play Store submission needs a Google Play Console account.
+
+## Production backend
+The production Convex deployment lives in the same Convex project. It has its own auth keys and seed data.
+
+```sh
+pnpm exec convex deploy                                        # push functions + schema after backend changes
+pnpm exec convex run --prod admin:promote '{"phone":"01xxxxxxxxx"}'
+pnpm exec convex env list --prod                               # JWT_PRIVATE_KEY, JWKS, SITE_URL
+```
+
+Run `convex deploy` before publishing an EAS build or update that depends on new backend functions.
 
 ## Push notifications
 Every admin status change sends an Expo push to the customer's devices. Push needs a dev or preview build on a real device. Android also needs FCM credentials uploaded to EAS (`eas credentials`).
