@@ -43,8 +43,8 @@ describe("orders.quote", () => {
   test("prices the cart from current product data", async () => {
     const { t, asUser, market, milk } = await setup();
     await t.run((ctx) => ctx.db.patch(milk, { price: 50 }));
-    expect(await asUser.query(api.orders.quote, { shopId: market, items: [line(milk, 2)] })).toEqual({
-      kind: "ok", unitPrices: [50], subtotal: 100, minOrder: 40,
+    expect(await asUser.query(api.orders.quote, { shopId: market, items: [line(milk, 2)] })).toMatchObject({
+      kind: "ok", unitPrices: [50], subtotal: 100, minOrder: 40, paused: false,
     });
   });
 
@@ -82,6 +82,14 @@ describe("orders.place", () => {
     const { asUser, sweets, addressId, basbousa } = await setup();
     await expect(
       asUser.mutation(api.orders.place, { shopId: sweets, addressId, note: "", items: [line(basbousa)] }),
+    ).rejects.toThrow("واقف");
+  });
+
+  test("rejects a shop outside its hours", async () => {
+    const { t, asUser, market, addressId, milk } = await setup();
+    await t.run((ctx) => ctx.db.patch(market, { hours: [] }));
+    await expect(
+      asUser.mutation(api.orders.place, { shopId: market, addressId, note: "", items: [line(milk)] }),
     ).rejects.toThrow("مقفول");
   });
 

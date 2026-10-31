@@ -41,11 +41,12 @@ export default function AdminShops() {
               <Ionicons name="chevron-back" size={16} color={colors.faint} />
             </Pressable>
             <ToggleRow
-              label={shop.paused ? "واقف مؤقتاً" : "بيستقبل طلبات"}
-              value={!shop.paused}
-              onValueChange={(receiving) => {
+              label="إيقاف مؤقت"
+              value={shop.paused}
+              warn
+              onValueChange={(paused) => {
                 setError(null);
-                void setPaused({ shopId: shop._id, paused: !receiving }).catch((e) => setError(errorMessage(e)));
+                void setPaused({ shopId: shop._id, paused }).catch((e) => setError(errorMessage(e)));
               }}
             />
           </View>

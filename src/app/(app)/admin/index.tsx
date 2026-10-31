@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   links: { flexDirection: "row", flexWrap: "wrap", gap: space.md },
   segments: { flexDirection: "row", gap: space.sm },
   segment: {
-    minHeight: 40,
+    minHeight: 44,
     justifyContent: "center",
     paddingHorizontal: space.lg,
     borderRadius: radius.pill,

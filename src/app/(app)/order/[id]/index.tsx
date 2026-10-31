@@ -63,7 +63,7 @@ export default function OrderTracking() {
         <OrderTimeline order={order} />
       </View>
 
-      {order.driver ? (
+      {order.driver && order.status === "with_driver" ? (
         <View style={styles.card}>
           <AppText variant="caption" tone="muted">
             المندوب

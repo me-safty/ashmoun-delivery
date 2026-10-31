@@ -54,7 +54,15 @@ export const quote = query({
     if (shop === null) return { kind: "invalid" as const, message: "المحل ده مش متاح دلوقتي" };
     try {
       const { items, subtotal } = await priceCart(ctx, shop, args.items);
-      return { kind: "ok" as const, unitPrices: items.map((i) => i.unitPrice), subtotal, minOrder: shop.minOrder };
+      return {
+        kind: "ok" as const,
+        unitPrices: items.map((i) => i.unitPrice),
+        subtotal,
+        minOrder: shop.minOrder,
+        // The client decides open/closed from these so the answer follows the clock.
+        hours: shop.hours,
+        paused: shop.paused,
+      };
     } catch (error) {
       if (error instanceof ConvexError && typeof error.data === "string") {
         return { kind: "invalid" as const, message: error.data };
@@ -81,6 +89,7 @@ export const place = mutation({
     const shop = await ctx.db.get(args.shopId);
     if (shop === null) throw new ConvexError("المحل غير موجود");
     const now = Date.now();
+    if (shop.paused) throw new ConvexError("المحل واقف استقبال طلبات مؤقتاً");
     if (!isShopOpen(shop, now)) throw new ConvexError("المحل مقفول دلوقتي");
 
     const note = args.note.trim();

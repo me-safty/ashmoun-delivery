@@ -28,7 +28,7 @@ export function ShopCard({ shop, now }: { shop: Doc<"shops">; now: number }) {
         </AppText>
         <AppText variant="caption" tone="muted">
           ⭐ {shop.rating.toFixed(1)} · {shop.prepMinutes} دقيقة
-          {shop.minOrder > 0 ? ` · أقل طلب ${formatPrice(shop.minOrder)}` : ""}
+          {shop.minOrder > 0 ? ` · أقل\u00A0طلب\u00A0${formatPrice(shop.minOrder)}` : ""}
         </AppText>
       </View>
     </Pressable>

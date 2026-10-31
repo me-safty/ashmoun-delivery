@@ -45,11 +45,19 @@ export default function OrderSuccess() {
         <Button
           label="تتبع الطلب"
           onPress={() => {
-            router.replace("/orders");
+            router.dismissAll();
+            router.navigate("/orders");
             router.push({ pathname: "/order/[id]", params: { id } });
           }}
         />
-        <Button kind="secondary" label="رجوع للرئيسية" onPress={() => router.replace("/")} />
+        <Button
+          kind="secondary"
+          label="رجوع للرئيسية"
+          onPress={() => {
+            router.dismissAll();
+            router.navigate("/");
+          }}
+        />
       </View>
     </SafeAreaView>
   );

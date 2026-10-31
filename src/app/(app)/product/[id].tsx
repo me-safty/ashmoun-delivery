@@ -1,7 +1,7 @@
 import { useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
 import { isShopOpen } from "@/convex/lib/hours";
@@ -25,6 +25,7 @@ export default function Product() {
   const [selected, setSelected] = useState<Selected>({});
   const [quantity, setQuantity] = useState(1);
   const now = useNow();
+  const narrow = useWindowDimensions().width < 360;
 
   if (data === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
   if (data === null || !data.product.available) return <Unavailable message="المنتج ده مش متاح دلوقتي" />;
@@ -74,7 +75,7 @@ export default function Product() {
         quantity,
       },
     );
-    router.back();
+    router.dismissTo({ pathname: "/shop/[id]", params: { id: shop._id } });
   }
 
   return (
@@ -122,8 +123,8 @@ export default function Product() {
 
       </ScrollView>
       {shopOpen ? (
-        <View style={styles.footer}>
-          <View style={styles.stepper}>
+        <View style={[styles.footer, narrow && styles.footerNarrow]}>
+          <View style={[styles.stepper, narrow && styles.stepperNarrow]}>
             <StepButton
               icon="remove"
               label="قلل الكمية"
@@ -141,14 +142,18 @@ export default function Product() {
           <Button
             style={styles.addButton}
             disabled={priced.kind !== "ok"}
-            label={priced.kind === "ok" ? `أضف للسلة · ${formatPrice(priced.unitPrice * quantity)}` : "اختار المطلوب"}
+            label={
+              priced.kind === "ok"
+                ? `${narrow ? "أضف" : "أضف للسلة"} · ${formatPrice(priced.unitPrice * quantity)}`
+                : "اختار المطلوب"
+            }
             onPress={addToCart}
           />
         </View>
       ) : (
         <View style={styles.footer}>
           <View style={styles.closedNotice}>
-            <AppText variant="subtitle" tone="warning">
+            <AppText variant="subtitle" tone="warningInk">
               {shop.paused
                 ? "المحل واقف استقبال طلبات مؤقتاً"
                 : `المحل مقفول دلوقتي · مواعيد النهارده ${todayHoursLabel(shop, now)}`}
@@ -180,6 +185,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   addButton: { flex: 1 },
+  footerNarrow: { gap: space.sm, paddingHorizontal: space.lg },
+  stepperNarrow: { gap: space.sm },
   closedNotice: {
     flex: 1,
     minHeight: 52,

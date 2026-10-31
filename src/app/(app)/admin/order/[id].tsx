@@ -70,6 +70,32 @@ export default function AdminOrder() {
     }
   }
 
+  const driverPicker = next.includes("with_driver") ? (
+    <View style={styles.card}>
+      <AppText variant="subtitle">اختار المندوب</AppText>
+      {activeDrivers.length === 0 ? <AppText tone="muted">مفيش مندوبين متاحين</AppText> : null}
+      {activeDrivers.map((driver) => {
+        const selected = driver._id === selectedDriverId;
+        return (
+          <Pressable
+            key={driver._id}
+            accessibilityRole="radio"
+            accessibilityState={{ selected }}
+            onPress={() => setDriverId(driver._id)}
+            style={[styles.option, selected && styles.optionOn]}>
+            <View style={[styles.radio, selected && styles.radioOn]} />
+            <View style={styles.flex}>
+              <AppText variant="subtitle">🛵 {driver.name}</AppText>
+              <AppText variant="caption" tone="muted">
+                {driver.phone}
+              </AppText>
+            </View>
+          </Pressable>
+        );
+      })}
+    </View>
+  ) : null;
+
   const openUrl = (url: string, failure: string) => Linking.openURL(url).catch(() => setError(failure));
 
   return (
@@ -78,6 +104,7 @@ export default function AdminOrder() {
       <ScrollView contentContainerStyle={[styles.content, adminPage]}>
         <View style={wide ? styles.columns : styles.stack}>
           <View style={wide ? styles.column : styles.stack}>
+            {wide ? null : driverPicker}
             <View style={styles.card}>
               <View style={styles.row}>
                 <AppText variant="title">{order.shopName}</AppText>
@@ -153,31 +180,7 @@ export default function AdminOrder() {
             <PriceSummary subtotal={order.subtotal} deliveryFee={order.deliveryFee} />
           </View>
           <View style={wide ? styles.column : styles.stack}>
-            {next.includes("with_driver") ? (
-              <View style={styles.card}>
-                <AppText variant="subtitle">اختار المندوب</AppText>
-                {activeDrivers.length === 0 ? <AppText tone="muted">مفيش مندوبين متاحين</AppText> : null}
-                {activeDrivers.map((driver) => {
-                  const selected = driver._id === selectedDriverId;
-                  return (
-                    <Pressable
-                      key={driver._id}
-                      accessibilityRole="radio"
-                      accessibilityState={{ selected }}
-                      onPress={() => setDriverId(driver._id)}
-                      style={[styles.option, selected && styles.optionOn]}>
-                      <View style={[styles.radio, selected && styles.radioOn]} />
-                      <View style={styles.flex}>
-                        <AppText variant="subtitle">🛵 {driver.name}</AppText>
-                        <AppText variant="caption" tone="muted">
-                          {driver.phone}
-                        </AppText>
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            ) : null}
+            {wide ? driverPicker : null}
 
             <View style={styles.card}>
               <OrderTimeline order={order} />
@@ -201,13 +204,14 @@ export default function AdminOrder() {
           <View style={[styles.footerInner, adminPage, { maxWidth: ADMIN_MAX_WIDTH - space.lg * 2 }]}>
             {error ? <AppText tone="danger">{error}</AppText> : null}
             {forward.includes("with_driver") && selectedDriverId === null ? (
-              <AppText variant="caption" tone="mutedInk">
+              <AppText variant="caption" tone="mutedInk" style={wide ? styles.footerHint : undefined}>
                 اختار مندوب الأول
               </AppText>
             ) : null}
             {forward.map((status) => (
               <Button
                 key={status}
+                style={wide ? styles.footerButton : undefined}
                 label={actionLabels[status]}
                 loading={busy === status}
                 disabled={busy !== null || (status === "with_driver" && selectedDriverId === null)}
@@ -254,6 +258,8 @@ const styles = StyleSheet.create({
   radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.faint },
   radioOn: { borderColor: colors.primary, backgroundColor: colors.primary },
   footerInner: { gap: space.sm },
+  footerButton: { alignSelf: "flex-end", width: 360 },
+  footerHint: { alignSelf: "flex-end", width: 360 },
   footer: {
     paddingHorizontal: space.lg,
     paddingTop: space.md,

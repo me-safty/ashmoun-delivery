@@ -113,3 +113,9 @@ test("pushes announce the status that triggered them and forget unregistered dev
   vi.unstubAllGlobals();
   vi.useRealTimers();
 });
+
+test("a driver phone can only be added once", async () => {
+  const { asAdmin } = await setup();
+  await asAdmin.mutation(api.admin.addDriver, { name: "كريم", phone: "01234567890" });
+  await expect(asAdmin.mutation(api.admin.addDriver, { name: "كريم تاني", phone: "+20 123 456 7890" })).rejects.toThrow("قبل كده");
+});

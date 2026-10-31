@@ -34,7 +34,23 @@ export default function Login() {
 
   return (
     <FormScreen
-      footer={<Button label="تسجيل الدخول" loading={submitting} onPress={submit} />}>
+      footer={
+        <>
+          <Button label="تسجيل الدخول" loading={submitting} onPress={submit} />
+          <View style={styles.links}>
+            <Link href="/forgot-password" style={styles.link}>
+              <AppText variant="caption" tone="primaryInk">
+                نسيت كلمة المرور؟
+              </AppText>
+            </Link>
+            <Link href="/register" style={styles.link}>
+              <AppText variant="caption" tone="primaryInk">
+                معندكش حساب؟ سجل دلوقتي
+              </AppText>
+            </Link>
+          </View>
+        </>
+      }>
       <Brand />
       <View style={styles.form}>
         <AppText variant="title">أهلاً بيك تاني</AppText>
@@ -55,18 +71,6 @@ export default function Login() {
           onSubmitEditing={submit}
         />
         {error ? <AppText tone="danger">{error}</AppText> : null}
-        <View style={styles.links}>
-          <Link href="/forgot-password" style={styles.link}>
-            <AppText variant="caption" tone="primary">
-              نسيت كلمة المرور؟
-            </AppText>
-          </Link>
-          <Link href="/register" style={styles.link}>
-            <AppText variant="caption" tone="primary">
-              معندكش حساب؟ سجل دلوقتي
-            </AppText>
-          </Link>
-        </View>
       </View>
     </FormScreen>
   );
@@ -74,6 +78,6 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   form: { gap: space.lg },
-  links: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap" },
-  link: { paddingVertical: space.md },
+  links: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", columnGap: space.lg },
+  link: { paddingVertical: space.sm },
 });

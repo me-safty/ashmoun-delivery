@@ -9,7 +9,8 @@ import { EmojiTile } from "@/components/emoji-tile";
 import { PriceSummary } from "@/components/price-summary";
 import { StepButton } from "@/components/step-button";
 import { MAX_QUANTITY } from "@/convex/lib/pricing";
-import { useCart, useCartQuote } from "@/lib/cart";
+import { cartProblem, useCart, useCartQuote } from "@/lib/cart";
+import { useNow } from "@/lib/use-now";
 import { colors, formatPrice, radius, space } from "@/theme";
 
 export default function Cart() {
@@ -19,6 +20,7 @@ export default function Cart() {
   const address = addresses?.find((a) => a.isDefault && a.zoneActive) ?? addresses?.find((a) => a.zoneActive);
   const priced = quote?.kind === "ok" ? quote : undefined;
   const belowMinimum = priced !== undefined && priced.subtotal < priced.minOrder;
+  const problem = cartProblem(quote, useNow());
 
   if (!shop || lines.length === 0) {
     return (
@@ -46,7 +48,7 @@ export default function Cart() {
                   {line.optionsLabel}
                 </AppText>
               ) : null}
-              <AppText variant="caption" tone="primary">
+              <AppText variant="caption" tone="primaryInk">
                 {formatPrice((priced?.unitPrices[index] ?? line.unitPrice) * line.quantity)}
               </AppText>
             </View>
@@ -66,17 +68,22 @@ export default function Cart() {
             </View>
           </View>
         ))}
+        {address ? (
+          <AppText variant="caption" tone="mutedInk">
+            التوصيل إلى {address.label} · {address.zoneName}
+          </AppText>
+        ) : null}
         <PriceSummary subtotal={priced?.subtotal} deliveryFee={address?.deliveryFee} />
-        {quote?.kind === "invalid" ? <AppText tone="danger">{quote.message}</AppText> : null}
       </ScrollView>
       <View style={styles.footer}>
+        {problem ? <AppText tone="danger">{problem}</AppText> : null}
         {priced && belowMinimum ? (
           <View style={styles.minimum}>
-            <AppText variant="caption" tone="warning" style={styles.minimumText}>
+            <AppText variant="caption" tone="warningInk" style={styles.minimumText}>
               ضيف {formatPrice(priced.minOrder - priced.subtotal)} كمان عشان توصل لأقل طلب ({formatPrice(priced.minOrder)})
             </AppText>
-            <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={8}>
-              <AppText variant="caption" tone="primary">
+            <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={8} style={styles.addMore}>
+              <AppText variant="caption" tone="primaryInk">
                 ضيف حاجات
               </AppText>
             </Pressable>
@@ -84,7 +91,7 @@ export default function Cart() {
         ) : null}
         <Button
           label={priced && address ? `إتمام الطلب · ${formatPrice(priced.subtotal + address.deliveryFee)}` : "إتمام الطلب"}
-          disabled={!priced || belowMinimum}
+          disabled={!priced || belowMinimum || problem !== null}
           onPress={() => router.push("/checkout")}
         />
       </View>
@@ -119,4 +126,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.warningSoft,
   },
   minimumText: { flex: 1 },
+  addMore: { minHeight: 44, justifyContent: "center" },
 });
