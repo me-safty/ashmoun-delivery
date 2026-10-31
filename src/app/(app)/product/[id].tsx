@@ -74,7 +74,8 @@ export default function Product() {
         quantity,
       },
     );
-    router.back();
+    if (router.canGoBack()) router.back();
+    else router.replace({ pathname: "/shop/[id]", params: { id: shop._id } });
   }
 
   return (
