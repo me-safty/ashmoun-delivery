@@ -97,6 +97,7 @@ export default function Profile() {
         </View>
       ))}
       {error ? <AppText tone="danger">{error}</AppText> : null}
+      {me?.isAdmin ? <Button kind="secondary" label="🛠️ لوحة التحكم" onPress={() => router.push("/admin")} /> : null}
       <Button kind="danger" label="تسجيل الخروج" onPress={() => void signOut()} />
     </ScrollView>
   );
