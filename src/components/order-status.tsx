@@ -55,7 +55,9 @@ export function OrderTimeline({ order }: { order: Pick<Doc<"orders">, "status" |
                   failed && styles.dotFailed,
                 ]}
               />
-              {index < steps.length - 1 ? <View style={[styles.line, done && styles.lineDone]} /> : null}
+              {index < steps.length - 1 ? (
+                <View style={[styles.line, reachedAt.has(steps[index + 1]) && styles.lineDone]} />
+              ) : null}
             </View>
             <View style={styles.stepBody}>
               <AppText variant={current ? "subtitle" : "body"} tone={done ? (failed ? "danger" : "ink") : "muted"}>
