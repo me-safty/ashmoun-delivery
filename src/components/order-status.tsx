@@ -5,19 +5,19 @@ import { colors, radius, space } from "@/theme";
 import { AppText } from "./app-text";
 
 const pill = {
-  created: { tone: "warning", background: colors.warningSoft },
-  confirmed: { tone: "primary", background: colors.primarySoft },
-  with_driver: { tone: "primary", background: colors.primarySoft },
-  delivered: { tone: "success", background: colors.successSoft },
-  returned: { tone: "danger", background: colors.dangerSoft },
-  cancelled: { tone: "muted", background: colors.border },
+  created: { ink: colors.warningInk, background: colors.warningSoft },
+  confirmed: { ink: colors.primaryInk, background: colors.primarySoft },
+  with_driver: { ink: colors.primaryInk, background: colors.primarySoft },
+  delivered: { ink: colors.successInk, background: colors.successSoft },
+  returned: { ink: colors.dangerInk, background: colors.dangerSoft },
+  cancelled: { ink: colors.mutedInk, background: colors.border },
 } as const;
 
 export function StatusPill({ status }: { status: OrderStatus }) {
-  const { tone, background } = pill[status];
+  const { ink, background } = pill[status];
   return (
     <View style={[styles.pill, { backgroundColor: background }]}>
-      <AppText variant="caption" tone={tone}>
+      <AppText variant="caption" style={{ color: ink }}>
         {statusLabels[status]}
       </AppText>
     </View>
@@ -26,7 +26,7 @@ export function StatusPill({ status }: { status: OrderStatus }) {
 
 const flow: OrderStatus[] = ["created", "confirmed", "with_driver", "delivered"];
 
-const timeFormat = new Intl.DateTimeFormat("ar-EG", {
+const timeFormat = new Intl.DateTimeFormat("ar-EG-u-nu-latn", {
   timeZone: "Africa/Cairo",
   hour: "numeric",
   minute: "2-digit",

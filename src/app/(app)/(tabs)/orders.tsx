@@ -6,7 +6,7 @@ import { AppText } from "@/components/app-text";
 import { StatusPill } from "@/components/order-status";
 import { colors, formatPrice, radius, space } from "@/theme";
 
-const dateFormat = new Intl.DateTimeFormat("ar-EG", {
+const dateFormat = new Intl.DateTimeFormat("ar-EG-u-nu-latn", {
   timeZone: "Africa/Cairo",
   day: "numeric",
   month: "short",
