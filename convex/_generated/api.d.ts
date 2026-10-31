@@ -19,6 +19,7 @@ import type * as lib_phone from "../lib/phone.js";
 import type * as lib_pricing from "../lib/pricing.js";
 import type * as lib_session from "../lib/session.js";
 import type * as lib_sms from "../lib/sms.js";
+import type * as orders from "../orders.js";
 import type * as seed from "../seed.js";
 import type * as users from "../users.js";
 import type * as verificationCodes from "../verificationCodes.js";
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   "lib/pricing": typeof lib_pricing;
   "lib/session": typeof lib_session;
   "lib/sms": typeof lib_sms;
+  orders: typeof orders;
   seed: typeof seed;
   users: typeof users;
   verificationCodes: typeof verificationCodes;
