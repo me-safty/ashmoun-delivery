@@ -149,7 +149,9 @@ export default function Product() {
         <View style={styles.footer}>
           <View style={styles.closedNotice}>
             <AppText variant="subtitle" tone="warning">
-              المحل مقفول دلوقتي · مواعيد النهارده {todayHoursLabel(shop, now)}
+              {shop.paused
+                ? "المحل واقف استقبال طلبات مؤقتاً"
+                : `المحل مقفول دلوقتي · مواعيد النهارده ${todayHoursLabel(shop, now)}`}
             </AppText>
           </View>
         </View>

@@ -69,6 +69,12 @@
         "projectId": "2a94122e-33e9-428e-b76a-29bd67f41fed"
       }
     },
-    "owner": "mohamed_safty"
+    "owner": "mohamed_safty",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2a94122e-33e9-428e-b76a-29bd67f41fed"
+    }
   }
 }

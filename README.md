@@ -1,56 +1,57 @@
-# Welcome to your Expo app 👋
+# توصيل أشمون — Ashmoun Delivery
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Order-delivery app for Ashmoun (Menoufia) and its villages. Customers order from local shops and pay cash on delivery. Admins run orders, drivers, zones and menus from the same app.
 
-## Get started
+Expo SDK 58 (Expo Router, TypeScript), Convex (database, functions, auth), and EAS (builds and updates). The app is Arabic-only and right-to-left.
 
-1. Install dependencies
+## MVP rules
+- **Payment:** cash on delivery only.
+- **Delivery fee:** set per zone. Ashmoun city is 10 EGP and the villages are 15–20 EGP. Admins can edit fees.
+- **One shop per order:** the cart holds items from a single shop, and the server rejects orders that mix shops.
+- **Order statuses:** تم الإنشاء → مؤكد → مع المندوب → تم التسليم / مرتجع. An order can also be cancelled (ملغي) before it reaches the driver. Customers can cancel only while the order is still تم الإنشاء.
+- **Shop hours:** shops open and close automatically from their weekly hours in Cairo time. Admins can also pause a shop.
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+## Run locally
+```sh
+pnpm install
+pnpm exec convex dev        # first run: creates .env.local with EXPO_PUBLIC_CONVEX_URL
+pnpm exec convex run seed:run   # dummy zones, categories, shops, menus, drivers (idempotent)
+pnpm start                  # press w for web, or open a dev build
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Convex Auth needs these deployment env vars: `JWT_PRIVATE_KEY`, `JWKS` and `SITE_URL`. See https://labs.convex.dev/auth/setup.
 
-### Other setup steps
+### Make an admin
+Sign up in the app, then run:
+```sh
+pnpm exec convex run admin:promote '{"phone":"01xxxxxxxxx"}'
+```
+Admins get "🛠️ لوحة التحكم" under حسابي.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+### Password reset codes
+No SMS provider is connected yet. `convex/lib/sms.ts` writes each reset code to the Convex logs (Dashboard → Logs, search `sms:not-configured`). Swap in a real provider there.
 
-## Learn more
+## Checks
+```sh
+pnpm typecheck
+pnpm lint
+pnpm test        # vitest + convex-test
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## EAS
+- **Project:** `@mohamed_safty/ashmoun-delivery`.
+- **Build profiles (`eas.json`):**
+  - `development`: dev client;
+  - `preview`: internal Android APK and iOS ad-hoc;
+  - `production`: store builds.
+- **`EXPO_PUBLIC_CONVEX_URL`:** an EAS environment variable. `development` and `preview` point at the Convex dev deployment. `production` is not set yet: create a production Convex deployment (`pnpm exec convex deploy`), set its auth env vars, seed it, then run `eas env:create --environment production`.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```sh
+pnpm dlx eas-cli build -p android --profile preview   # installable APK
+pnpm dlx eas-cli update --channel preview --environment preview   # over-the-air JS update
+```
 
-## Join the community
+iOS builds and store submission need an Apple Developer account. Play Store submission needs a Google Play Console account.
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Push notifications
+Every admin status change sends an Expo push to the customer's devices. Push needs a dev or preview build on a real device. Android also needs FCM credentials uploaded to EAS (`eas credentials`).
