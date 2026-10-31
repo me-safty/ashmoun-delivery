@@ -37,6 +37,11 @@ export function isOpenAt(hours: WeeklyHours, at: number) {
   });
 }
 
+export function todayRanges(hours: WeeklyHours, at: number) {
+  const { day } = cairoTime(at);
+  return hours.filter((range) => range.day === day);
+}
+
 export function isShopOpen(
   shop: { hours: WeeklyHours; paused: boolean },
   at: number,
