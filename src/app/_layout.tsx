@@ -1,3 +1,4 @@
+import { ConvexAuthProvider, useAuthActions } from "@convex-dev/auth/react";
 import {
   Cairo_400Regular,
   Cairo_500Medium,
@@ -6,13 +7,15 @@ import {
   Cairo_900Black,
   useFonts,
 } from "@expo-google-fonts/cairo";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexReactClient, useConvexAuth, useQuery } from "convex/react";
 import { Stack } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { Platform, StyleSheet, View } from "react-native";
-import { colors, fonts } from "@/theme";
+import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
+import { api } from "@/convex/_generated/api";
+import { colors, stackScreenOptions } from "@/theme";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,6 +28,12 @@ const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
 if (!convexUrl) throw new Error("EXPO_PUBLIC_CONVEX_URL is not set; run `pnpm exec convex dev`.");
 const convex = new ConvexReactClient(convexUrl, { unsavedChangesWarning: false });
 
+const secureStorage = {
+  getItem: SecureStore.getItemAsync,
+  setItem: SecureStore.setItemAsync,
+  removeItem: SecureStore.deleteItemAsync,
+};
+
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     Cairo_400Regular,
@@ -33,30 +42,53 @@ export default function RootLayout() {
     Cairo_700Bold,
     Cairo_900Black,
   });
-  const ready = fontsLoaded || fontError !== null;
+
+  const fontsReady = fontsLoaded || fontError !== null;
 
   useEffect(() => {
-    if (ready) SplashScreen.hideAsync();
-  }, [ready]);
+    if (fontsReady) SplashScreen.hideAsync();
+  }, [fontsReady]);
 
-  if (!ready) return null;
+  if (!fontsReady) return null;
 
   return (
-    <ConvexProvider client={convex}>
+    <ConvexAuthProvider client={convex} storage={Platform.OS === "web" ? undefined : secureStorage}>
       <View style={styles.root}>
         <StatusBar style="dark" />
-        <Stack
-          screenOptions={{
-            contentStyle: { backgroundColor: colors.background },
-            headerShadowVisible: false,
-            headerStyle: { backgroundColor: colors.background },
-            headerTitleStyle: { fontFamily: fonts.bold, color: colors.ink },
-            headerTintColor: colors.ink,
-            headerBackButtonDisplayMode: "minimal",
-          }}
-        />
+        <RootStack />
       </View>
-    </ConvexProvider>
+    </ConvexAuthProvider>
+  );
+}
+
+function RootStack() {
+  const { isLoading, isAuthenticated } = useConvexAuth();
+  const me = useQuery(api.users.me, isAuthenticated ? {} : "skip");
+  const { signOut } = useAuthActions();
+  const loading = isLoading || (isAuthenticated && me === undefined);
+  const staleSession = isAuthenticated && me === null;
+
+  useEffect(() => {
+    if (staleSession) void signOut();
+  }, [staleSession, signOut]);
+
+  if (loading) return <ActivityIndicator style={styles.root} color={colors.primary} />;
+
+  const signedIn = isAuthenticated && me != null;
+  const hasAddress = me?.hasAddress ?? false;
+
+  return (
+    <Stack screenOptions={stackScreenOptions}>
+      <Stack.Protected guard={!signedIn}>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      </Stack.Protected>
+      <Stack.Protected guard={signedIn && !hasAddress}>
+        <Stack.Screen name="welcome-address" options={{ title: "عنوان التوصيل" }} />
+      </Stack.Protected>
+      <Stack.Protected guard={signedIn && hasAddress}>
+        <Stack.Screen name="(app)" options={{ headerShown: false }} />
+      </Stack.Protected>
+    </Stack>
   );
 }
 
