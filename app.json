@@ -41,7 +41,13 @@
           "forcesRTL": true
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "بنستخدم موقعك عشان المندوب يوصلك أسرع."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
