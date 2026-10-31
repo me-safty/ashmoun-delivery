@@ -6,7 +6,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "reac
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
 import { isShopOpen } from "@/convex/lib/hours";
-import { priceLine } from "@/convex/lib/pricing";
+import { MAX_QUANTITY, priceLine } from "@/convex/lib/pricing";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { EmojiTile } from "@/components/emoji-tile";
@@ -132,8 +132,8 @@ export default function Product() {
           <StepButton
             icon="add"
             label="زود الكمية"
-            disabled={quantity >= 20}
-            onPress={() => setQuantity((q) => Math.min(20, q + 1))}
+            disabled={quantity >= MAX_QUANTITY}
+            onPress={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))}
           />
         </View>
         <Button

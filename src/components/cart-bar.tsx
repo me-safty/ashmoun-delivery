@@ -1,17 +1,25 @@
 import { router } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cartCount, cartSubtotal, useCart, useCartQuote } from "@/lib/cart";
 import { colors, formatPrice, radius, space } from "@/theme";
 import { AppText } from "./app-text";
 
-export function CartBar() {
+// Lists that show the bar reserve this much bottom space so their last row stays reachable.
+export const CART_BAR_SPACE = 96;
+
+export function CartBar({ overSafeArea = false }: { overSafeArea?: boolean }) {
+  const insets = useSafeAreaInsets();
   const lines = useCart((s) => s.lines);
   const shop = useCart((s) => s.shop);
   const quote = useCartQuote();
   if (!shop || lines.length === 0) return null;
 
   return (
-    <Pressable style={styles.bar} accessibilityRole="button" onPress={() => router.push("/cart")}>
+    <Pressable
+      style={[styles.bar, overSafeArea && { bottom: space.lg + insets.bottom }]}
+      accessibilityRole="button"
+      onPress={() => router.push("/cart")}>
       <View style={styles.count}>
         <AppText variant="subtitle" tone="primary">
           {cartCount(lines)}
