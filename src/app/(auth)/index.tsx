@@ -1,0 +1,77 @@
+import { useAuthActions } from "@convex-dev/auth/react";
+import { Link } from "expo-router";
+import { useState } from "react";
+import { StyleSheet, View } from "react-native";
+import { normalizePhone } from "@/convex/lib/phone";
+import { AppText } from "@/components/app-text";
+import { Brand } from "@/components/brand";
+import { Button } from "@/components/button";
+import { FormScreen } from "@/components/form-screen";
+import { TextField } from "@/components/text-field";
+import { errorMessage } from "@/lib/errors";
+import { space } from "@/theme";
+
+export default function Login() {
+  const { signIn } = useAuthActions();
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function submit() {
+    const normalized = normalizePhone(phone);
+    if (!normalized) return setError("رقم الموبايل غير صحيح");
+    setError(null);
+    setSubmitting(true);
+    try {
+      await signIn("password", { flow: "signIn", phone: normalized, password });
+    } catch (e) {
+      setError(errorMessage(e, "رقم الموبايل أو كلمة المرور غلط"));
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <FormScreen
+      footer={
+        <>
+          <Button label="تسجيل الدخول" loading={submitting} onPress={submit} />
+          <Link href="/register" asChild>
+            <Button kind="secondary" label="معندكش حساب؟ سجل دلوقتي" />
+          </Link>
+        </>
+      }>
+      <Brand />
+      <View style={styles.form}>
+        <AppText variant="title">أهلاً بيك تاني</AppText>
+        <TextField
+          label="رقم الموبايل"
+          placeholder="01xxxxxxxxx"
+          keyboardType="phone-pad"
+          autoComplete="tel"
+          value={phone}
+          onChangeText={setPhone}
+        />
+        <TextField
+          label="كلمة المرور"
+          secureTextEntry
+          autoComplete="current-password"
+          value={password}
+          onChangeText={setPassword}
+          onSubmitEditing={submit}
+        />
+        {error ? <AppText tone="danger">{error}</AppText> : null}
+        <Link href="/forgot-password" style={styles.forgot}>
+          <AppText variant="caption" tone="primary">
+            نسيت كلمة المرور؟
+          </AppText>
+        </Link>
+      </View>
+    </FormScreen>
+  );
+}
+
+const styles = StyleSheet.create({
+  form: { gap: space.lg },
+  forgot: { alignSelf: "flex-start" },
+});
