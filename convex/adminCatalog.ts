@@ -21,14 +21,6 @@ export const updateZone = mutation({
   },
 });
 
-export const shops = query({
-  args: {},
-  handler: async (ctx) => {
-    await requireAdmin(ctx);
-    return await ctx.db.query("shops").collect();
-  },
-});
-
 export const setShopPaused = mutation({
   args: { shopId: v.id("shops"), paused: v.boolean() },
   handler: async (ctx, { shopId, paused }) => {
@@ -42,6 +34,15 @@ export const updateProduct = mutation({
   handler: async (ctx, { productId, price, available }) => {
     await requireAdmin(ctx);
     if (!Number.isFinite(price) || price <= 0 || price > 100_000) throw new ConvexError("سعر غير صحيح");
+    const product = await ctx.db.get(productId);
+    if (product === null) throw new ConvexError("المنتج غير موجود");
+    const cheapest = product.optionGroups.reduce(
+      (sum, group) => sum + Math.min(0, ...group.options.map((o) => o.priceDelta)),
+      price,
+    );
+    if (cheapest < 0) {
+      throw new ConvexError(`السعر لازم يكون ${price - cheapest} ج.م على الأقل عشان اختيارات الخصم`);
+    }
     await ctx.db.patch(productId, { price, available });
   },
 });

@@ -41,3 +41,10 @@ test("rejects bad values and non-admins", async () => {
   await expect(asAdmin.mutation(api.adminCatalog.updateProduct, { productId, price: 0, available: true })).rejects.toThrow();
   await expect(asCustomer.mutation(api.adminCatalog.updateZone, { zoneId, deliveryFee: 10, active: true })).rejects.toThrow("غير مسموح");
 });
+
+test("a price can't drop below what discount options subtract", async () => {
+  const { t, asAdmin } = await setup();
+  const kofta = await t.run(async (ctx) => (await ctx.db.query("products").collect()).find((p) => p.name === "كفتة بالكيلو")!._id);
+  await expect(asAdmin.mutation(api.adminCatalog.updateProduct, { productId: kofta, price: 280, available: true })).rejects.toThrow("285");
+  await asAdmin.mutation(api.adminCatalog.updateProduct, { productId: kofta, price: 300, available: true });
+});
