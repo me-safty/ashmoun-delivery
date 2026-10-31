@@ -1,9 +1,9 @@
 /// <reference types="vite/client" />
 import { convexTest } from "convex-test";
 import { vi } from "vitest";
-import schema from "../schema";
+import schema from "./schema";
 
-export const modules = import.meta.glob("../**/*.*s");
+export const modules = import.meta.glob("./**/*.*s");
 
 async function generateJwtKey() {
   const { privateKey } = await crypto.subtle.generateKey(
