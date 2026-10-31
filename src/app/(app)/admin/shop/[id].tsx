@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
   content: { padding: space.lg, gap: space.lg },
   section: { gap: space.sm },
   card: {
+    flexGrow: 1,
     gap: space.sm,
     padding: space.md,
     backgroundColor: colors.surface,

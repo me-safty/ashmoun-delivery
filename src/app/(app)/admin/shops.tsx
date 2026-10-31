@@ -59,6 +59,7 @@ const styles = StyleSheet.create({
   loading: { marginTop: space.xxl },
   content: { padding: space.lg, gap: space.md },
   card: {
+    flexGrow: 1,
     gap: space.xs,
     padding: space.md,
     backgroundColor: colors.surface,

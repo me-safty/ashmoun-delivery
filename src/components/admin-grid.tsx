@@ -2,18 +2,16 @@ import { Children, type ReactNode } from "react";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 import { space } from "@/theme";
 
+export const ADMIN_MAX_WIDTH = 1200;
+
+export const adminPage = { width: "100%", maxWidth: ADMIN_MAX_WIDTH, alignSelf: "center" } as const;
+
 export function useAdminColumns() {
   const { width } = useWindowDimensions();
   return width >= 1100 ? 3 : width >= 720 ? 2 : 1;
 }
 
-export function useWideAdmin() {
-  return useWindowDimensions().width >= 900;
-}
-
-// Centers admin content and caps its width on large monitors.
-export const adminPage = { width: "100%", maxWidth: 1200, alignSelf: "center" } as const;
-
+// Cards inside a cell should set flexGrow: 1 so a row's cards share the tallest height.
 export function AdminGrid({ children }: { children: ReactNode }) {
   const columns = useAdminColumns();
   return (
@@ -26,6 +24,6 @@ export function AdminGrid({ children }: { children: ReactNode }) {
 }
 
 const styles = StyleSheet.create({
-  grid: { flexDirection: "row", flexWrap: "wrap", marginHorizontal: -space.xs },
-  cell: { paddingHorizontal: space.xs, paddingBottom: space.md },
+  grid: { flexDirection: "row", flexWrap: "wrap", margin: -space.md / 2 },
+  cell: { padding: space.md / 2 },
 });

@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
   content: { padding: space.lg, gap: space.md },
   form: { gap: space.md, width: "100%", maxWidth: 480 },
   card: {
+    flexGrow: 1,
     flexDirection: "row",
     alignItems: "center",
     gap: space.md,
