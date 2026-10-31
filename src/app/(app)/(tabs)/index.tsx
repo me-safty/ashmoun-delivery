@@ -9,6 +9,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { isShopOpen } from "@/convex/lib/hours";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
+import { CartBar } from "@/components/cart-bar";
 import { ShopCard } from "@/components/shop-card";
 import { useNow } from "@/lib/use-now";
 import { colors, fonts, formatPrice, radius, space } from "@/theme";
@@ -104,6 +105,7 @@ export default function Home() {
           )
         }
       />
+      <CartBar />
     </SafeAreaView>
   );
 }
@@ -125,7 +127,7 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  list: { padding: space.lg, gap: space.md },
+  list: { padding: space.lg, paddingBottom: 96, gap: space.md },
   header: { gap: space.lg },
   search: {
     minHeight: 48,
