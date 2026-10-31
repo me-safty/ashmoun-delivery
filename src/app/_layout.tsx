@@ -16,6 +16,7 @@ import { useEffect } from "react";
 import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import { useCart } from "@/lib/cart";
+import { usePushNotifications } from "@/lib/push";
 import { colors, stackScreenOptions } from "@/theme";
 
 export { ErrorBoundary } from "expo-router";
@@ -80,9 +81,11 @@ function RootStack() {
     if (!loading && !isAuthenticated) useCart.getState().clear();
   }, [loading, isAuthenticated]);
 
+  const signedIn = isAuthenticated && me != null;
+  usePushNotifications(signedIn);
+
   if (loading) return <ActivityIndicator style={styles.root} color={colors.primary} />;
 
-  const signedIn = isAuthenticated && me != null;
   const hasAddress = me?.hasAddress ?? false;
 
   return (
