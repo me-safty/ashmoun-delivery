@@ -24,6 +24,7 @@ export const me = query({
 });
 
 const pushToken = /^Expo(nent)?PushToken\[.+\]$/;
+const MAX_PUSH_TOKENS = 5;
 
 export const savePushToken = mutation({
   args: { token: v.string() },
@@ -36,6 +37,12 @@ export const savePushToken = mutation({
       .unique();
     if (existing === null) await ctx.db.insert("pushTokens", { token, userId: user._id });
     else if (existing.userId !== user._id) await ctx.db.patch(existing._id, { userId: user._id });
+    const mine = await ctx.db
+      .query("pushTokens")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .order("desc")
+      .collect();
+    for (const stale of mine.slice(MAX_PUSH_TOKENS)) await ctx.db.delete(stale._id);
   },
 });
 

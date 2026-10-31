@@ -31,7 +31,16 @@ export const forgetTokens = internalMutation({
 
 type PushTicket = { status: "ok" } | { status: "error"; message: string; details?: { error?: string } };
 
-// The status is passed in so quick successive changes each announce their own step.
+function hasTickets(body: unknown): body is { data: PushTicket[] } {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "data" in body &&
+    Array.isArray(body.data) &&
+    body.data.every((t: unknown) => typeof t === "object" && t !== null && "status" in t)
+  );
+}
+
 export const orderStatusChanged = internalAction({
   args: { orderId: v.id("orders"), status: orderStatus },
   handler: async (ctx, { orderId, status }) => {
@@ -52,7 +61,9 @@ export const orderStatusChanged = internalAction({
       ),
     });
     if (!response.ok) throw new Error(`Expo push failed: ${response.status} ${await response.text()}`);
-    const { data: tickets }: { data: PushTicket[] } = await response.json();
+    const body: unknown = await response.json();
+    if (!hasTickets(body)) throw new Error(`Unexpected Expo push response: ${JSON.stringify(body)}`);
+    const tickets = body.data;
     const unregistered = recipient.tokens.filter((_, i) => {
       const ticket = tickets[i];
       return ticket?.status === "error" && ticket.details?.error === "DeviceNotRegistered";
