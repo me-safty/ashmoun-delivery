@@ -1,6 +1,6 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useState } from "react";
-import { normalizePhone } from "@/convex/lib/phone";
+import { normalizePhone, toLatinDigits } from "@/convex/lib/phone";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { FormScreen } from "@/components/form-screen";
@@ -41,7 +41,7 @@ export default function ForgotPassword() {
     if (!sentTo) return;
     if (newPassword.length < 8) return setError("كلمة المرور لازم تكون 8 حروف أو أرقام على الأقل");
     void run(
-      () => signIn("password", { flow: "reset-verification", phone: sentTo, code: code.trim(), newPassword }),
+      () => signIn("password", { flow: "reset-verification", phone: sentTo, code: toLatinDigits(code).trim(), newPassword }),
       "الكود غلط أو انتهى، اطلب كود جديد",
     );
   }
