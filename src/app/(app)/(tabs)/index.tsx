@@ -1,3 +1,4 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery } from "convex/react";
 import { Link } from "expo-router";
 import { useMemo, useState } from "react";
@@ -7,6 +8,7 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { isShopOpen } from "@/convex/lib/hours";
 import { AppText } from "@/components/app-text";
+import { Button } from "@/components/button";
 import { ShopCard } from "@/components/shop-card";
 import { useNow } from "@/lib/use-now";
 import { colors, fonts, formatPrice, radius, space } from "@/theme";
@@ -49,13 +51,19 @@ export default function Home() {
                 </AppText>
               ) : null}
             </View>
-            <TextInput
-              placeholder="دور على مطعم أو محل"
-              placeholderTextColor={colors.faint}
-              value={search}
-              onChangeText={setSearch}
-              style={styles.search}
-            />
+            <View style={styles.search}>
+              <Ionicons name="search" size={18} color={colors.faint} />
+              <TextInput
+                accessibilityLabel="دور على مطعم أو محل"
+                placeholder="دور على مطعم أو محل"
+                placeholderTextColor={colors.faint}
+                returnKeyType="search"
+                clearButtonMode="while-editing"
+                value={search}
+                onChangeText={setSearch}
+                style={styles.searchInput}
+              />
+            </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
               <Chip label="الكل" selected={categoryId === null} onPress={() => setCategoryId(null)} />
               {categories?.map((c) => (
@@ -81,7 +89,18 @@ export default function Home() {
           shops === undefined ? (
             <ActivityIndicator color={colors.primary} />
           ) : (
-            <AppText tone="muted">مفيش محلات مطابقة</AppText>
+            <View style={styles.empty}>
+              <AppText style={styles.emptyEmoji}>🔍</AppText>
+              <AppText tone="muted">مفيش محلات مطابقة</AppText>
+              <Button
+                kind="secondary"
+                label="امسح البحث"
+                onPress={() => {
+                  setSearch("");
+                  setCategoryId(null);
+                }}
+              />
+            </View>
           )
         }
       />
@@ -110,11 +129,18 @@ const styles = StyleSheet.create({
   header: { gap: space.lg },
   search: {
     minHeight: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
     borderRadius: radius.pill,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: space.lg,
+  },
+  searchInput: {
+    flex: 1,
+    minHeight: 46,
     fontFamily: fonts.medium,
     fontSize: 15,
     color: colors.ink,
@@ -122,6 +148,8 @@ const styles = StyleSheet.create({
     textAlign: Platform.OS === "web" ? "right" : undefined,
   },
   chips: { gap: space.sm },
+  empty: { alignItems: "center", gap: space.sm, paddingVertical: space.xl },
+  emptyEmoji: { fontSize: 40, lineHeight: 56 },
   chip: {
     minHeight: 44,
     justifyContent: "center",

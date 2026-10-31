@@ -7,6 +7,7 @@ import { Button } from "./button";
 export function Unavailable({ message }: { message: string }) {
   return (
     <View style={styles.screen}>
+      <AppText style={styles.emoji}>🔍</AppText>
       <AppText variant="title">{message}</AppText>
       <Button kind="secondary" label="رجوع" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} />
     </View>
@@ -15,4 +16,5 @@ export function Unavailable({ message }: { message: string }) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, alignItems: "center", justifyContent: "center", gap: space.lg, padding: space.xl },
+  emoji: { fontSize: 48, lineHeight: 64 },
 });
