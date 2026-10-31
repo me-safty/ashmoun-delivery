@@ -38,6 +38,7 @@ export default function AdminOrder() {
 
   const next = nextStatuses[order.status];
   const activeDrivers = drivers?.filter((d) => d.active) ?? [];
+  const selectedDriverId = activeDrivers.some((d) => d._id === driverId) ? driverId : null;
 
   async function move(status: OrderStatus) {
     if (!order) return;
@@ -52,7 +53,7 @@ export default function AdminOrder() {
     setError(null);
     setBusy(true);
     try {
-      await setStatus({ orderId: order._id, status, driverId: status === "with_driver" ? (driverId ?? undefined) : undefined });
+      await setStatus({ orderId: order._id, status, driverId: status === "with_driver" ? (selectedDriverId ?? undefined) : undefined });
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -139,9 +140,9 @@ export default function AdminOrder() {
             <Pressable
               key={driver._id}
               accessibilityRole="radio"
-              accessibilityState={{ selected: driver._id === driverId }}
+              accessibilityState={{ selected: driver._id === selectedDriverId }}
               onPress={() => setDriverId(driver._id)}
-              style={[styles.option, driver._id === driverId && styles.optionOn]}>
+              style={[styles.option, driver._id === selectedDriverId && styles.optionOn]}>
               <AppText variant="subtitle">🛵 {driver.name}</AppText>
               <AppText variant="caption" tone="muted">
                 {driver.phone}
@@ -157,7 +158,7 @@ export default function AdminOrder() {
           kind={status === "cancelled" || status === "returned" ? "danger" : "primary"}
           label={actionLabels[status]}
           loading={busy}
-          disabled={status === "with_driver" && driverId === null}
+          disabled={status === "with_driver" && selectedDriverId === null}
           onPress={() => void move(status)}
         />
       ))}

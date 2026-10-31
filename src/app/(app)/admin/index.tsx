@@ -8,7 +8,13 @@ import { StatusPill } from "@/components/order-status";
 import { orderCode } from "@/lib/order-code";
 import { colors, formatPrice, radius, space } from "@/theme";
 
-const timeFormat = new Intl.DateTimeFormat("ar-EG-u-nu-latn", { timeZone: "Africa/Cairo", hour: "numeric", minute: "2-digit" });
+const timeFormat = new Intl.DateTimeFormat("ar-EG-u-nu-latn", {
+  timeZone: "Africa/Cairo",
+  day: "numeric",
+  month: "short",
+  hour: "numeric",
+  minute: "2-digit",
+});
 
 export default function AdminOrders() {
   const [view, setView] = useState<"active" | "done">("active");
