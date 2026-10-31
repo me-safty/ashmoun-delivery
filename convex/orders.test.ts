@@ -109,3 +109,26 @@ describe("orders.place", () => {
     expect(await t.withIdentity({ subject: `${otherId}|s` }).query(api.orders.get, { orderId })).toBeNull();
   });
 });
+
+describe("orders.cancel", () => {
+  test("customers can cancel while the order is created, not after it's confirmed", async () => {
+    const { t, asUser, market, addressId, milk } = await setup();
+    const first = await asUser.mutation(api.orders.place, { shopId: market, addressId, note: "", items: [line(milk)] });
+    await asUser.mutation(api.orders.cancel, { orderId: first });
+    expect((await asUser.query(api.orders.get, { orderId: first }))?.status).toBe("cancelled");
+    await expect(asUser.mutation(api.orders.cancel, { orderId: first })).rejects.toThrow("مينفعش");
+
+    const second = await asUser.mutation(api.orders.place, { shopId: market, addressId, note: "", items: [line(milk)] });
+    await t.run((ctx) => ctx.db.patch(second, { status: "confirmed" }));
+    await expect(asUser.mutation(api.orders.cancel, { orderId: second })).rejects.toThrow("مينفعش");
+  });
+
+  test("other users can't cancel someone's order", async () => {
+    const { t, asUser, market, addressId, milk } = await setup();
+    const orderId = await asUser.mutation(api.orders.place, { shopId: market, addressId, note: "", items: [line(milk)] });
+    const otherId = await t.run(async (ctx) => (await ctx.db.query("users").collect())[1]._id);
+    await expect(
+      t.withIdentity({ subject: `${otherId}|s` }).mutation(api.orders.cancel, { orderId }),
+    ).rejects.toThrow("غير موجود");
+  });
+});
