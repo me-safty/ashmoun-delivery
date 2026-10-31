@@ -18,6 +18,7 @@ export default function Profile() {
   const remove = useMutation(api.addresses.remove);
   const { signOut } = useAuthActions();
   const [error, setError] = useState<string | null>(null);
+  const sortedAddresses = [...(addresses ?? [])].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
 
   async function run(action: () => Promise<unknown>) {
     setError(null);
@@ -42,22 +43,24 @@ export default function Profile() {
 
       <View style={styles.sectionRow}>
         <AppText variant="subtitle">عناويني</AppText>
-        <Pressable accessibilityRole="button" onPress={() => router.push("/address-new")} style={styles.link}>
+        <Pressable accessibilityRole="button" onPress={() => router.push("/address-new")} hitSlop={8} style={styles.link}>
           <AppText variant="caption" tone="primary">
             + أضف عنوان
           </AppText>
         </Pressable>
       </View>
-      {addresses?.map((address) => (
+      {sortedAddresses.map((address) => (
         <View key={address._id} style={[styles.card, address.isDefault && styles.defaultCard]}>
           <View style={styles.sectionRow}>
             <AppText variant="subtitle">
               {address.label} · {address.zoneName}
             </AppText>
             {address.isDefault ? (
-              <AppText variant="caption" tone="primary">
-                العنوان الأساسي
-              </AppText>
+              <View style={styles.defaultPill}>
+                <AppText variant="caption" style={styles.defaultPillText}>
+                  العنوان الأساسي
+                </AppText>
+              </View>
             ) : null}
           </View>
           <AppText tone="muted">
@@ -72,17 +75,19 @@ export default function Profile() {
               <Pressable
                 accessibilityRole="button"
                 onPress={() => void run(() => setDefault({ addressId: address._id }))}
+                hitSlop={8}
                 style={styles.link}>
                 <AppText variant="caption" tone="primary">
                   خليه الأساسي
                 </AppText>
               </Pressable>
             )}
-            {addresses.length > 1 ? (
+            {sortedAddresses.length > 1 ? (
               <Pressable
                 accessibilityRole="button"
                 onPress={() => void onRemove(address._id, address.label)}
-                style={styles.link}>
+                hitSlop={8}
+                style={[styles.link, styles.remove]}>
                 <AppText variant="caption" tone="danger">
                   مسح
                 </AppText>
@@ -109,6 +114,9 @@ const styles = StyleSheet.create({
   },
   defaultCard: { borderColor: colors.primary },
   sectionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: space.sm },
-  actions: { flexDirection: "row", gap: space.lg },
-  link: { paddingVertical: space.sm },
+  actions: { flexDirection: "row", gap: space.sm },
+  link: { minHeight: 44, justifyContent: "center", paddingHorizontal: space.sm },
+  remove: { marginStart: "auto" },
+  defaultPill: { paddingHorizontal: space.sm, borderRadius: radius.pill, backgroundColor: colors.primarySoft },
+  defaultPillText: { color: colors.primaryInk },
 });
