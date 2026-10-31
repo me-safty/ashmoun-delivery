@@ -37,9 +37,14 @@ export function isOpenAt(hours: WeeklyHours, at: number) {
   });
 }
 
+// Today's ranges, plus the after-midnight part of yesterday's overnight range.
 export function todayRanges(hours: WeeklyHours, at: number) {
   const { day } = cairoTime(at);
-  return hours.filter((range) => range.day === day);
+  const yesterday = (day + 6) % 7;
+  const spill = hours
+    .filter((range) => range.day === yesterday && range.close < range.open && range.close > 0)
+    .map((range) => ({ day, open: 0, close: range.close }));
+  return [...spill, ...hours.filter((range) => range.day === day)];
 }
 
 export function isShopOpen(
