@@ -4,6 +4,8 @@ import type { cartSelection, optionGroup } from "../schema";
 type OptionGroup = Infer<typeof optionGroup>;
 type Selection = Infer<typeof cartSelection>;
 
+export const MAX_QUANTITY = 20;
+
 export type PricedLine =
   | { kind: "ok"; unitPrice: number; optionsLabel: string }
   | { kind: "invalid"; reason: string };

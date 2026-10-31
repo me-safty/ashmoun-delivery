@@ -1,13 +1,19 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery } from "convex/react";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
-import { priceLine } from "@/convex/lib/pricing";
+import { isShopOpen } from "@/convex/lib/hours";
+import { MAX_QUANTITY, priceLine } from "@/convex/lib/pricing";
 import { AppText } from "@/components/app-text";
+import { Button } from "@/components/button";
 import { EmojiTile } from "@/components/emoji-tile";
 import { Unavailable } from "@/components/unavailable";
+import { useCart } from "@/lib/cart";
+import { confirm } from "@/lib/confirm";
+import { useNow } from "@/lib/use-now";
 import { colors, formatPrice, radius, space } from "@/theme";
 
 type Selected = Record<string, string[]>;
@@ -17,6 +23,7 @@ export default function Product() {
   const data = useQuery(api.catalog.product, { productId: id });
   const [selected, setSelected] = useState<Selected>({});
   const [quantity, setQuantity] = useState(1);
+  const now = useNow();
 
   if (data === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
   if (data === null || !data.product.available) return <Unavailable message="المنتج ده مش متاح دلوقتي" />;
@@ -28,6 +35,7 @@ export default function Product() {
     optionKeys: (selected[group.key] ?? []).filter((key) => group.options.some((o) => o.key === key)),
   }));
   const priced = priceLine(product, selections);
+  const shopOpen = isShopOpen(shop, now);
 
   function toggle(group: (typeof product.optionGroups)[number], optionKey: string) {
     setSelected((current) => {
@@ -42,8 +50,34 @@ export default function Product() {
     });
   }
 
+  async function addToCart() {
+    if (priced.kind !== "ok") return;
+    const cart = useCart.getState();
+    if (cart.shop && cart.shop.id !== shop._id) {
+      const replace = await confirm({
+        title: "تبدأ سلة جديدة؟",
+        message: `السلة فيها طلب من ${cart.shop.name}. الطلب الواحد بيكون من محل واحد، فلو كملت السلة هتتفضى.`,
+        confirmLabel: "ابدأ سلة جديدة",
+      });
+      if (!replace) return;
+    }
+    cart.add(
+      { id: shop._id, name: shop.name },
+      {
+        productId: product._id,
+        name: product.name,
+        emoji: product.emoji,
+        optionsLabel: priced.optionsLabel,
+        selections: selections.filter((s) => s.optionKeys.length > 0),
+        unitPrice: priced.unitPrice,
+        quantity,
+      },
+    );
+    router.back();
+  }
+
   return (
-    <>
+    <SafeAreaView style={styles.screen} edges={["bottom"]}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <EmojiTile emoji={product.emoji} tint={shop.tint} size={96} />
@@ -85,33 +119,37 @@ export default function Product() {
           </View>
         ))}
 
-        <View style={styles.quantity}>
-          <AppText variant="subtitle">الكمية</AppText>
-          <View style={styles.stepper}>
-            <StepButton
-              icon="remove"
-              label="قلل الكمية"
-              disabled={quantity <= 1}
-              onPress={() => setQuantity((q) => Math.max(1, q - 1))}
-            />
-            <AppText variant="title">{quantity}</AppText>
-            <StepButton
-              icon="add"
-              label="زود الكمية"
-              disabled={quantity >= 20}
-              onPress={() => setQuantity((q) => Math.min(20, q + 1))}
-            />
-          </View>
-        </View>
-
-        <View style={styles.total}>
-          <AppText variant="subtitle">الإجمالي</AppText>
-          <AppText variant="title" tone="primary">
-            {priced.kind === "ok" ? formatPrice(priced.unitPrice * quantity) : "اختار المطلوب"}
-          </AppText>
-        </View>
       </ScrollView>
-    </>
+      <View style={styles.footer}>
+        <View style={styles.stepper}>
+          <StepButton
+            icon="remove"
+            label="قلل الكمية"
+            disabled={quantity <= 1}
+            onPress={() => setQuantity((q) => Math.max(1, q - 1))}
+          />
+          <AppText variant="title">{quantity}</AppText>
+          <StepButton
+            icon="add"
+            label="زود الكمية"
+            disabled={quantity >= MAX_QUANTITY}
+            onPress={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))}
+          />
+        </View>
+        <Button
+          style={styles.addButton}
+          disabled={!shopOpen || priced.kind !== "ok"}
+          label={
+            !shopOpen
+              ? "المحل مقفول دلوقتي"
+              : priced.kind === "ok"
+                ? `أضف للسلة · ${formatPrice(priced.unitPrice * quantity)}`
+                : "اختار المطلوب"
+          }
+          onPress={addToCart}
+        />
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -146,6 +184,18 @@ function StepButton({
 
 const styles = StyleSheet.create({
   loading: { marginTop: space.xxl },
+  screen: { flex: 1 },
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
+    paddingHorizontal: space.xl,
+    paddingVertical: space.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.background,
+  },
+  addButton: { flex: 1 },
   content: { padding: space.xl, gap: space.xl },
   header: { gap: space.sm, alignItems: "flex-start" },
   group: { gap: space.sm },
@@ -165,7 +215,6 @@ const styles = StyleSheet.create({
   mark: { width: 20, height: 20, borderRadius: 6, borderWidth: 2, borderColor: colors.faint },
   markRound: { borderRadius: 10 },
   markOn: { borderColor: colors.primary, backgroundColor: colors.primary },
-  quantity: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   stepper: { flexDirection: "row", alignItems: "center", gap: space.lg },
   step: {
     width: 44,
@@ -176,5 +225,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   stepDisabled: { opacity: 0.4 },
-  total: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
 });

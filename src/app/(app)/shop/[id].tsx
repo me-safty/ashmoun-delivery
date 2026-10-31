@@ -3,6 +3,7 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
+import { CART_BAR_SPACE, CartBar } from "@/components/cart-bar";
 import { EmojiTile } from "@/components/emoji-tile";
 import { Unavailable } from "@/components/unavailable";
 import { ShopStatusBadge, shopState, todayHoursLabel } from "@/components/shop-status";
@@ -87,13 +88,14 @@ export default function Shop() {
           </Pressable>
         )}
       />
+      <CartBar overSafeArea />
     </>
   );
 }
 
 const styles = StyleSheet.create({
   loading: { marginTop: space.xxl },
-  list: { paddingBottom: space.xxl },
+  list: { paddingBottom: CART_BAR_SPACE },
   hero: { padding: space.xl, gap: space.sm, marginBottom: space.sm },
   metaRow: { flexDirection: "row", alignItems: "center", gap: space.sm, flexWrap: "wrap" },
   sectionTitle: { paddingHorizontal: space.lg, paddingTop: space.lg, paddingBottom: space.sm },

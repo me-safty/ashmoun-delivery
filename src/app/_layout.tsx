@@ -15,6 +15,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
+import { useCart } from "@/lib/cart";
 import { colors, stackScreenOptions } from "@/theme";
 
 export { ErrorBoundary } from "expo-router";
@@ -73,6 +74,11 @@ function RootStack() {
   useEffect(() => {
     if (staleSession) void signOut();
   }, [staleSession, signOut]);
+
+  // The cart is stored per device, so it must not carry over to the next account.
+  useEffect(() => {
+    if (!loading && !isAuthenticated) useCart.getState().clear();
+  }, [loading, isAuthenticated]);
 
   if (loading) return <ActivityIndicator style={styles.root} color={colors.primary} />;
 
