@@ -31,11 +31,11 @@ export default function AdminOrders() {
             <Segment label="طلبات شغالة" selected={view === "active"} onPress={() => setView("active")} />
             <Segment label="خلصت" selected={view === "done"} onPress={() => setView("done")} />
           </View>
-          <Pressable accessibilityRole="link" onPress={() => router.push("/admin/drivers")} style={styles.link}>
-            <AppText variant="caption" tone="primary">
-              🛵 المندوبين
-            </AppText>
-          </Pressable>
+          <View style={styles.links}>
+            <AdminLink label="🛵 المندوبين" onPress={() => router.push("/admin/drivers")} />
+            <AdminLink label="📍 المناطق" onPress={() => router.push("/admin/zones")} />
+            <AdminLink label="🏪 المحلات" onPress={() => router.push("/admin/shops")} />
+          </View>
         </View>
       }
       ListEmptyComponent={
@@ -68,6 +68,16 @@ export default function AdminOrders() {
   );
 }
 
+function AdminLink({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="link" onPress={onPress} style={styles.link}>
+      <AppText variant="caption" tone="primary">
+        {label}
+      </AppText>
+    </Pressable>
+  );
+}
+
 function Segment({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   return (
     <Pressable
@@ -84,7 +94,8 @@ function Segment({ label, selected, onPress }: { label: string; selected: boolea
 
 const styles = StyleSheet.create({
   list: { padding: space.lg, gap: space.md },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  header: { gap: space.sm },
+  links: { flexDirection: "row", flexWrap: "wrap", gap: space.md },
   segments: { flexDirection: "row", gap: space.sm },
   segment: {
     minHeight: 40,
@@ -96,7 +107,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   segmentOn: { backgroundColor: colors.primary, borderColor: colors.primary },
-  link: { paddingVertical: space.sm },
+  link: { minHeight: 44, justifyContent: "center" },
   card: {
     gap: space.xs,
     padding: space.lg,
