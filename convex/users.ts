@@ -1,5 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { query } from "./_generated/server";
+import { ConvexError, v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+import { requireUser } from "./lib/session";
 
 export const me = query({
   args: {},
@@ -18,5 +20,17 @@ export const me = query({
       isAdmin: user.role === "admin",
       hasAddress: address !== null,
     };
+  },
+});
+
+const MAX_PUSH_TOKENS = 5;
+
+export const savePushToken = mutation({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const user = await requireUser(ctx);
+    if (!/^Expo(nent)?PushToken\[.+\]$/.test(token)) throw new ConvexError("رمز إشعارات غير صحيح");
+    const tokens = [token, ...(user.pushTokens ?? []).filter((t) => t !== token)].slice(0, MAX_PUSH_TOKENS);
+    await ctx.db.patch(user._id, { pushTokens: tokens });
   },
 });
