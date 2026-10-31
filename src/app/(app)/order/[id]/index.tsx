@@ -60,7 +60,15 @@ export default function OrderTracking() {
           </AppText>
           <View style={styles.row}>
             <AppText variant="subtitle">🛵 {order.driver.name}</AppText>
-            <Button kind="secondary" label="اتصل" onPress={() => void Linking.openURL(`tel:${order.driver?.phone}`)} />
+            <Button
+              kind="secondary"
+              label="اتصل"
+              onPress={() =>
+                void Linking.openURL(`tel:${order.driver?.phone}`).catch(() =>
+                  setError(`الجهاز ده مش بيدعم الاتصال، رقم المندوب ${order.driver?.phone}`),
+                )
+              }
+            />
           </View>
         </View>
       ) : null}
