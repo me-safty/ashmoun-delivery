@@ -51,3 +51,37 @@ export const create = mutation({
     });
   },
 });
+
+export const remove = mutation({
+  args: { addressId: v.id("addresses") },
+  handler: async (ctx, { addressId }) => {
+    const user = await requireUser(ctx);
+    const address = await ctx.db.get(addressId);
+    if (address === null || address.userId !== user._id) throw new ConvexError("العنوان غير موجود");
+    const others = (
+      await ctx.db
+        .query("addresses")
+        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .collect()
+    ).filter((a) => a._id !== address._id);
+    if (others.length === 0) throw new ConvexError("لازم يفضل عندك عنوان واحد على الأقل");
+    await ctx.db.delete(address._id);
+    if (address.isDefault) await ctx.db.patch(others[0]._id, { isDefault: true });
+  },
+});
+
+export const setDefault = mutation({
+  args: { addressId: v.id("addresses") },
+  handler: async (ctx, { addressId }) => {
+    const user = await requireUser(ctx);
+    const address = await ctx.db.get(addressId);
+    if (address === null || address.userId !== user._id) throw new ConvexError("العنوان غير موجود");
+    const mine = await ctx.db
+      .query("addresses")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    for (const a of mine) {
+      if (a.isDefault !== (a._id === address._id)) await ctx.db.patch(a._id, { isDefault: a._id === address._id });
+    }
+  },
+});

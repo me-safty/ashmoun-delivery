@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { Unavailable } from "@/components/unavailable";
+import { orderCode } from "@/lib/order-code";
 import { colors, formatPrice, radius, space } from "@/theme";
 
 export default function OrderSuccess() {
@@ -27,10 +28,13 @@ export default function OrderSuccess() {
       {order ? (
         <View style={styles.card}>
           <AppText variant="caption" tone="muted">
-            رقم الطلب #{order._id.slice(-6).toUpperCase()}
+            رقم الطلب {orderCode(order._id)}
           </AppText>
           <AppText variant="title" tone="primary">
-            {formatPrice(order.total)} كاش عند الاستلام
+            {formatPrice(order.total)}
+          </AppText>
+          <AppText variant="caption" tone="muted">
+            هتدفع كاش عند الاستلام
           </AppText>
           <AppText variant="caption" tone="muted">
             التوصيل إلى {order.address.label} · {order.address.zoneName}
@@ -38,6 +42,13 @@ export default function OrderSuccess() {
         </View>
       ) : null}
       <View style={styles.actions}>
+        <Button
+          label="تتبع الطلب"
+          onPress={() => {
+            router.replace("/orders");
+            router.push({ pathname: "/order/[id]", params: { id } });
+          }}
+        />
         <Button kind="secondary" label="رجوع للرئيسية" onPress={() => router.replace("/")} />
       </View>
     </SafeAreaView>

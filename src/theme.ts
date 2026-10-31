@@ -14,6 +14,12 @@ export const colors = {
   dangerSoft: "#FDE5E5",
   warning: "#B7791F",
   warningSoft: "#FFF3D6",
+  // Darker text for small labels on the matching soft backgrounds (≥ 4.5:1).
+  primaryInk: "#B23A0A",
+  successInk: "#237A35",
+  dangerInk: "#B02525",
+  warningInk: "#8A5A12",
+  mutedInk: "#5F564F",
 } as const;
 
 export const fonts = {

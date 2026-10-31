@@ -10,16 +10,16 @@ export function shopState(shop: Pick<Doc<"shops">, "hours" | "paused">, now: num
 }
 
 const badge = {
-  open: { label: "مفتوح", tone: "success", background: colors.successSoft },
-  closed: { label: "مقفول", tone: "danger", background: colors.dangerSoft },
-  paused: { label: "واقف مؤقتاً", tone: "warning", background: colors.warningSoft },
+  open: { label: "مفتوح", ink: colors.successInk, background: colors.successSoft },
+  closed: { label: "مقفول", ink: colors.dangerInk, background: colors.dangerSoft },
+  paused: { label: "واقف مؤقتاً", ink: colors.warningInk, background: colors.warningSoft },
 } as const;
 
 export function ShopStatusBadge({ state, onTint = false }: { state: ReturnType<typeof shopState>; onTint?: boolean }) {
-  const { label, tone, background } = badge[state];
+  const { label, ink, background } = badge[state];
   return (
     <View style={[styles.badge, { backgroundColor: onTint ? colors.surface : background }]}>
-      <AppText variant="caption" tone={tone}>
+      <AppText variant="caption" style={{ color: ink }}>
         {label}
       </AppText>
     </View>

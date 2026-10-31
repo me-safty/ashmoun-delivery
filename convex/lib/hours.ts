@@ -59,5 +59,5 @@ export function formatMinute(minute: number) {
   const h24 = Math.floor(m / 60);
   const suffix = h24 < 12 ? "ص" : "م";
   const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
-  return `${h12}:${String(m % 60).padStart(2, "0")} ${suffix}`;
+  return `${h12}:${String(m % 60).padStart(2, "0")}\u00A0${suffix}`;
 }

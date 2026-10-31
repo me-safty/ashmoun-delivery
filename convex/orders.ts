@@ -1,7 +1,9 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v, type Infer } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { mutation, query, type QueryCtx } from "./_generated/server";
 import { isShopOpen } from "./lib/hours";
+import { canCustomerCancel } from "./lib/orderStatus";
 import { MAX_QUANTITY, priceLine } from "./lib/pricing";
 import { requireUser } from "./lib/session";
 import { cartSelection } from "./schema";
@@ -120,5 +122,35 @@ export const get = query({
     const order = orderId === null ? null : await ctx.db.get(orderId);
     if (order === null || order.userId !== user._id) return null;
     return order;
+  },
+});
+
+export const mine = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) return [];
+    return await ctx.db
+      .query("orders")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .order("desc")
+      .take(50);
+  },
+});
+
+export const cancel = mutation({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, { orderId }) => {
+    const user = await requireUser(ctx);
+    const order = await ctx.db.get(orderId);
+    if (order === null || order.userId !== user._id) throw new ConvexError("الطلب غير موجود");
+    if (order.status === "cancelled") throw new ConvexError("الطلب ده اتلغى قبل كده");
+    if (!canCustomerCancel(order.status)) {
+      throw new ConvexError("مينفعش تلغي الطلب بعد ما المحل أكده، كلم خدمة العملاء");
+    }
+    await ctx.db.patch(order._id, {
+      status: "cancelled",
+      history: [...order.history, { status: "cancelled", at: Date.now(), by: user._id }],
+    });
   },
 });
