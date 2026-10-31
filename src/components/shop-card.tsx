@@ -12,8 +12,10 @@ export function ShopCard({ shop, now }: { shop: Doc<"shops">; now: number }) {
     <Pressable
       accessibilityRole="link"
       onPress={() => router.push({ pathname: "/shop/[id]", params: { id: shop._id } })}
-      style={[styles.card, state !== "open" && styles.dimmed]}>
-      <EmojiTile emoji={shop.emoji} tint={shop.tint} size={64} />
+      style={styles.card}>
+      <View style={state !== "open" && styles.dimmed}>
+        <EmojiTile emoji={shop.emoji} tint={shop.tint} size={64} />
+      </View>
       <View style={styles.body}>
         <View style={styles.titleRow}>
           <AppText variant="subtitle" numberOfLines={1} style={styles.name}>
@@ -43,7 +45,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  dimmed: { opacity: 0.6 },
+  dimmed: { opacity: 0.45 },
   body: { flex: 1, gap: 2 },
   titleRow: { flexDirection: "row", alignItems: "center", gap: space.sm },
   name: { flexShrink: 1 },

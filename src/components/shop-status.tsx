@@ -12,13 +12,13 @@ export function shopState(shop: Pick<Doc<"shops">, "hours" | "paused">, now: num
 const badge = {
   open: { label: "مفتوح", tone: "success", background: colors.successSoft },
   closed: { label: "مقفول", tone: "danger", background: colors.dangerSoft },
-  paused: { label: "مقفول مؤقتاً", tone: "danger", background: colors.dangerSoft },
+  paused: { label: "واقف مؤقتاً", tone: "warning", background: colors.warningSoft },
 } as const;
 
-export function ShopStatusBadge({ state }: { state: ReturnType<typeof shopState> }) {
+export function ShopStatusBadge({ state, onTint = false }: { state: ReturnType<typeof shopState>; onTint?: boolean }) {
   const { label, tone, background } = badge[state];
   return (
-    <View style={[styles.badge, { backgroundColor: background }]}>
+    <View style={[styles.badge, { backgroundColor: onTint ? colors.surface : background }]}>
       <AppText variant="caption" tone={tone}>
         {label}
       </AppText>

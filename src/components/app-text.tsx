@@ -14,7 +14,7 @@ const variants = StyleSheet.create({
 
 type Props = TextProps & {
   variant?: keyof typeof variants;
-  tone?: "ink" | "muted" | "primary" | "danger" | "success" | "onPrimary";
+  tone?: "ink" | "muted" | "primary" | "danger" | "success" | "warning" | "onPrimary";
 };
 
 export function AppText({ variant = "body", tone = "ink", style, ...props }: Props) {

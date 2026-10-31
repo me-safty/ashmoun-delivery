@@ -34,14 +34,18 @@ export default function Shop() {
             <AppText variant="display">{shop.name}</AppText>
             <AppText tone="muted">{shop.description}</AppText>
             <View style={styles.metaRow}>
-              <ShopStatusBadge state={state} />
+              <ShopStatusBadge state={state} onTint />
               <AppText variant="caption" tone="muted">
                 ⭐ {shop.rating.toFixed(1)} · {shop.prepMinutes} دقيقة · {todayHoursLabel(shop, now)}
               </AppText>
             </View>
-            {state !== "open" ? (
+            {state === "closed" ? (
               <AppText variant="caption" tone="danger">
                 المحل مقفول دلوقتي، تقدر تتفرج على المنيو وتطلب لما يفتح.
+              </AppText>
+            ) : state === "paused" ? (
+              <AppText variant="caption" tone="warning">
+                المحل واقف استقبال طلبات شوية، جرب كمان شوية.
               </AppText>
             ) : null}
           </View>
@@ -55,8 +59,9 @@ export default function Shop() {
           <Pressable
             accessibilityRole="link"
             disabled={!item.available}
+            accessibilityState={{ disabled: !item.available }}
             onPress={() => router.push({ pathname: "/product/[id]", params: { id: item._id } })}
-            style={[styles.product, !item.available && styles.unavailable]}>
+            style={styles.product}>
             <View style={styles.productBody}>
               <AppText variant="subtitle">{item.name}</AppText>
               {item.description ? (
@@ -64,11 +69,21 @@ export default function Shop() {
                   {item.description}
                 </AppText>
               ) : null}
-              <AppText variant="subtitle" tone="primary">
-                {item.available ? formatPrice(item.price) : "غير متاح حالياً"}
-              </AppText>
+              {item.available ? (
+                <AppText variant="subtitle" tone="primary">
+                  {formatPrice(item.price)}
+                </AppText>
+              ) : (
+                <View style={styles.unavailablePill}>
+                  <AppText variant="caption" tone="muted">
+                    غير متاح حالياً
+                  </AppText>
+                </View>
+              )}
             </View>
-            <EmojiTile emoji={item.emoji} tint={shop.tint} size={72} />
+            <View style={!item.available && styles.unavailable}>
+              <EmojiTile emoji={item.emoji} tint={shop.tint} size={72} />
+            </View>
           </Pressable>
         )}
       />
@@ -93,6 +108,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  unavailable: { opacity: 0.5 },
+  unavailable: { opacity: 0.45 },
+  unavailablePill: {
+    alignSelf: "flex-start",
+    paddingHorizontal: space.sm,
+    borderRadius: radius.pill,
+    backgroundColor: colors.border,
+  },
   productBody: { flex: 1, gap: 2 },
 });
