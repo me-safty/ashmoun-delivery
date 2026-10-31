@@ -130,7 +130,7 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ selected }}
+      aria-selected={selected}
       onPress={onPress}
       style={[styles.chip, selected && styles.chipSelected]}>
       <AppText variant="caption" tone={selected ? "onPrimary" : "ink"}>

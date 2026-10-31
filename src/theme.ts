@@ -4,7 +4,7 @@ export const colors = {
   ink: "#1F1A17",
   muted: "#7A6F66",
   faint: "#B3A89E",
-  placeholder: "#8C8279",
+  placeholder: "#746A61",
   border: "#EFE6DC",
   primary: "#D9480F",
   primarySoft: "#FFE8DC",

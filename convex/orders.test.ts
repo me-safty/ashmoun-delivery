@@ -85,6 +85,14 @@ describe("orders.place", () => {
     ).rejects.toThrow("واقف");
   });
 
+  test("rejects a shop outside its hours", async () => {
+    const { t, asUser, market, addressId, milk } = await setup();
+    await t.run((ctx) => ctx.db.patch(market, { hours: [] }));
+    await expect(
+      asUser.mutation(api.orders.place, { shopId: market, addressId, note: "", items: [line(milk)] }),
+    ).rejects.toThrow("مقفول");
+  });
+
   test("rejects a subtotal under the shop's minimum order", async () => {
     const { asUser, market, addressId, bread } = await setup();
     await expect(
