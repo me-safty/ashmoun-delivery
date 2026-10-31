@@ -48,7 +48,7 @@ export default function Cart() {
                   {line.optionsLabel}
                 </AppText>
               ) : null}
-              <AppText variant="caption" tone="primary">
+              <AppText variant="caption" tone="primaryInk">
                 {formatPrice((priced?.unitPrices[index] ?? line.unitPrice) * line.quantity)}
               </AppText>
             </View>
@@ -79,11 +79,11 @@ export default function Cart() {
         {problem ? <AppText tone="danger">{problem}</AppText> : null}
         {priced && belowMinimum ? (
           <View style={styles.minimum}>
-            <AppText variant="caption" tone="warning" style={styles.minimumText}>
+            <AppText variant="caption" tone="warningInk" style={styles.minimumText}>
               ضيف {formatPrice(priced.minOrder - priced.subtotal)} كمان عشان توصل لأقل طلب ({formatPrice(priced.minOrder)})
             </AppText>
-            <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={8}>
-              <AppText variant="caption" tone="primary">
+            <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={8} style={styles.addMore}>
+              <AppText variant="caption" tone="primaryInk">
                 ضيف حاجات
               </AppText>
             </Pressable>
@@ -126,4 +126,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.warningSoft,
   },
   minimumText: { flex: 1 },
+  addMore: { minHeight: 44, justifyContent: "center" },
 });

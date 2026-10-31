@@ -44,7 +44,7 @@ export default function Profile() {
       <View style={styles.sectionRow}>
         <AppText variant="subtitle">عناويني</AppText>
         <Pressable accessibilityRole="button" onPress={() => router.push("/address-new")} hitSlop={8} style={styles.link}>
-          <AppText variant="caption" tone="primary">
+          <AppText variant="caption" tone="primaryInk">
             + أضف عنوان
           </AppText>
         </Pressable>
@@ -77,7 +77,7 @@ export default function Profile() {
                 onPress={() => void run(() => setDefault({ addressId: address._id }))}
                 hitSlop={8}
                 style={styles.link}>
-                <AppText variant="caption" tone="primary">
+                <AppText variant="caption" tone="primaryInk">
                   خليه الأساسي
                 </AppText>
               </Pressable>

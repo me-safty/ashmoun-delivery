@@ -22,6 +22,7 @@ export default function Home() {
   const shops = useQuery(api.catalog.shops, {});
   const [categoryId, setCategoryId] = useState<Id<"categories"> | null>(null);
   const [search, setSearch] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
   const address = addresses?.find((a) => a.isDefault) ?? addresses?.[0];
 
   const visibleShops = useMemo(() => {
@@ -60,16 +61,18 @@ export default function Home() {
                 <Ionicons name="chevron-back" size={14} color={colors.muted} />
               </Pressable>
             </View>
-            <View style={styles.search}>
+            <View style={[styles.search, searchFocused && styles.searchFocused]}>
               <Ionicons name="search" size={18} color={colors.faint} />
               <TextInput
                 accessibilityLabel="دور على مطعم أو محل"
                 placeholder="دور على مطعم أو محل"
-                placeholderTextColor={colors.faint}
+                placeholderTextColor={colors.placeholder}
                 returnKeyType="search"
                 clearButtonMode="while-editing"
                 value={search}
                 onChangeText={setSearch}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
                 style={styles.searchInput}
               />
             </View>
@@ -87,7 +90,7 @@ export default function Home() {
             <View style={styles.sectionRow}>
               <AppText variant="subtitle">المحلات</AppText>
               <Link href="/categories">
-                <AppText variant="caption" tone="primary">
+                <AppText variant="caption" tone="primaryInk">
                   كل الأقسام
                 </AppText>
               </Link>
@@ -125,7 +128,11 @@ function normalizeSearch(text: string) {
 
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} style={[styles.chip, selected && styles.chipSelected]}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={[styles.chip, selected && styles.chipSelected]}>
       <AppText variant="caption" tone={selected ? "onPrimary" : "ink"}>
         {label}
       </AppText>
@@ -148,10 +155,12 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     paddingHorizontal: space.lg,
   },
+  searchFocused: { borderColor: colors.primary },
   searchInput: {
     flex: 1,
     minHeight: 46,
     outlineWidth: 0,
+    outlineColor: "transparent",
     fontFamily: fonts.medium,
     fontSize: 15,
     color: colors.ink,

@@ -45,7 +45,7 @@ export default function Shop() {
                 المحل مقفول دلوقتي، تقدر تتفرج على المنيو وتطلب لما يفتح.
               </AppText>
             ) : state === "paused" ? (
-              <AppText variant="caption" tone="warning">
+              <AppText variant="caption" tone="warningInk">
                 المحل واقف استقبال طلبات شوية، جرب كمان شوية.
               </AppText>
             ) : null}

@@ -78,7 +78,7 @@ export default function ForgotPassword() {
         onChangeText={(text) => setCode(toLatinDigits(text).replace(/\D/g, "").slice(0, 6))}
       />
       <TextField
-        label="كلمة المرور الجديدة"
+        label="كلمة المرور الجديدة (8 على الأقل)"
         secureTextEntry
         autoComplete="new-password"
         value={newPassword}

@@ -57,12 +57,12 @@ export default function Login() {
         {error ? <AppText tone="danger">{error}</AppText> : null}
         <View style={styles.links}>
           <Link href="/forgot-password" style={styles.link}>
-            <AppText variant="caption" tone="primary">
+            <AppText variant="caption" tone="primaryInk">
               نسيت كلمة المرور؟
             </AppText>
           </Link>
           <Link href="/register" style={styles.link}>
-            <AppText variant="caption" tone="primary">
+            <AppText variant="caption" tone="primaryInk">
               معندكش حساب؟ سجل دلوقتي
             </AppText>
           </Link>
