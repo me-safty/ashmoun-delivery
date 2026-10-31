@@ -48,6 +48,7 @@ describe("todayRanges", () => {
   test("includes the after-midnight part of yesterday's overnight range", () => {
     const thursdayNight = [{ day: 4, open: 18 * 60, close: 2 * 60 }];
     expect(todayRanges(thursdayNight, cairo("2026-11-06T01:00:00"))).toEqual([{ day: 5, open: 0, close: 120 }]);
+    expect(todayRanges(thursdayNight, cairo("2026-11-06T03:00:00"))).toEqual([]);
     expect(todayRanges(thursdayNight, cairo("2026-11-07T01:00:00"))).toEqual([]);
   });
 
