@@ -22,7 +22,7 @@ export default function Shop() {
 
   return (
     <>
-      <Stack.Screen options={{ title: shop.name }} />
+      <Stack.Screen options={{ headerStyle: { backgroundColor: shop.tint } }} />
       <SectionList
         sections={sections.map((s) => ({ key: s._id, title: s.name, data: s.products }))}
         keyExtractor={(p) => p._id}

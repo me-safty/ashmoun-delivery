@@ -1,5 +1,6 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery } from "convex/react";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
@@ -43,7 +44,6 @@ export default function Product() {
 
   return (
     <>
-      <Stack.Screen options={{ title: product.name }} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <EmojiTile emoji={product.emoji} tint={shop.tint} size={96} />
@@ -88,9 +88,19 @@ export default function Product() {
         <View style={styles.quantity}>
           <AppText variant="subtitle">الكمية</AppText>
           <View style={styles.stepper}>
-            <StepButton label="−" onPress={() => setQuantity((q) => Math.max(1, q - 1))} />
+            <StepButton
+              icon="remove"
+              label="قلل الكمية"
+              disabled={quantity <= 1}
+              onPress={() => setQuantity((q) => Math.max(1, q - 1))}
+            />
             <AppText variant="title">{quantity}</AppText>
-            <StepButton label="+" onPress={() => setQuantity((q) => Math.min(20, q + 1))} />
+            <StepButton
+              icon="add"
+              label="زود الكمية"
+              disabled={quantity >= 20}
+              onPress={() => setQuantity((q) => Math.min(20, q + 1))}
+            />
           </View>
         </View>
 
@@ -111,12 +121,25 @@ function groupHint({ min, max }: { min: number; max: number }) {
   return `مطلوب · من ${min} لحد ${max}`;
 }
 
-function StepButton({ label, onPress }: { label: string; onPress: () => void }) {
+function StepButton({
+  icon,
+  label,
+  disabled,
+  onPress,
+}: {
+  icon: "add" | "remove";
+  label: string;
+  disabled: boolean;
+  onPress: () => void;
+}) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={styles.step}>
-      <AppText variant="title" tone="primary">
-        {label}
-      </AppText>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      disabled={disabled}
+      onPress={onPress}
+      style={[styles.step, disabled && styles.stepDisabled]}>
+      <Ionicons name={icon} size={20} color={colors.primary} />
     </Pressable>
   );
 }
@@ -152,5 +175,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  stepDisabled: { opacity: 0.4 },
   total: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
 });
