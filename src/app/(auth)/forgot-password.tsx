@@ -39,7 +39,6 @@ export default function ForgotPassword() {
 
   function resetPassword() {
     if (!sentTo) return;
-    if (newPassword.length < 8) return setError("كلمة المرور لازم تكون 8 حروف أو أرقام على الأقل");
     void run(
       () => signIn("password", { flow: "reset-verification", phone: sentTo, code: toLatinDigits(code).trim(), newPassword }),
       "الكود غلط أو انتهى، اطلب كود جديد",

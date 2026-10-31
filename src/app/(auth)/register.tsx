@@ -17,9 +17,7 @@ export default function Register() {
 
   async function submit() {
     const normalized = normalizePhone(phone);
-    if (name.trim().length < 2) return setError("اكتب اسمك");
     if (!normalized) return setError("رقم الموبايل غير صحيح");
-    if (password.length < 8) return setError("كلمة المرور لازم تكون 8 حروف أو أرقام على الأقل");
     setError(null);
     setSubmitting(true);
     try {

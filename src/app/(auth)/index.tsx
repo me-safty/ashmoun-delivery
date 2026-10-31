@@ -19,6 +19,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
 
   async function submit() {
+    if (submitting) return;
     const normalized = normalizePhone(phone);
     if (!normalized) return setError("رقم الموبايل غير صحيح");
     setError(null);
