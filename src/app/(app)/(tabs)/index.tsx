@@ -53,8 +53,8 @@ export default function Home() {
                   {address ? `${address.label} · ${address.zoneName}` : "..."}
                 </AppText>
                 {address ? (
-                  <AppText variant="caption" tone="muted">
-                    التوصيل {formatPrice(address.deliveryFee)}
+                  <AppText variant="caption" tone={address.zoneActive ? "muted" : "danger"}>
+                    {address.zoneActive ? `التوصيل ${formatPrice(address.deliveryFee)}` : "التوصيل متوقف هنا"}
                   </AppText>
                 ) : null}
                 <Ionicons name="chevron-back" size={14} color={colors.muted} />

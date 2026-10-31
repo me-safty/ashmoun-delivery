@@ -16,7 +16,12 @@ export const mine = query({
     return await Promise.all(
       addresses.map(async (address) => {
         const zone = await ctx.db.get(address.zoneId);
-        return { ...address, zoneName: zone?.name ?? "", deliveryFee: zone?.deliveryFee ?? 0 };
+        return {
+          ...address,
+          zoneName: zone?.name ?? "",
+          deliveryFee: zone?.deliveryFee ?? 0,
+          zoneActive: zone?.active ?? false,
+        };
       }),
     );
   },

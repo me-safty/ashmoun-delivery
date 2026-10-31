@@ -16,7 +16,7 @@ export default function Cart() {
   const { shop, lines, setQuantity } = useCart();
   const addresses = useQuery(api.addresses.mine);
   const quote = useCartQuote();
-  const address = addresses?.find((a) => a.isDefault) ?? addresses?.[0];
+  const address = addresses?.find((a) => a.isDefault && a.zoneActive) ?? addresses?.find((a) => a.zoneActive);
   const priced = quote?.kind === "ok" ? quote : undefined;
   const belowMinimum = priced !== undefined && priced.subtotal < priced.minOrder;
 

@@ -23,7 +23,9 @@ export default function Checkout() {
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [placing, setPlacing] = useState(false);
-  const address = addresses?.find((a) => a._id === chosenId) ?? addresses?.find((a) => a.isDefault) ?? addresses?.[0];
+  const deliverable = addresses?.filter((a) => a.zoneActive) ?? [];
+  const address =
+    deliverable.find((a) => a._id === chosenId) ?? deliverable.find((a) => a.isDefault) ?? deliverable[0];
 
   async function submit() {
     if (!shop || !address || placing) return;
@@ -63,7 +65,8 @@ export default function Checkout() {
           <Pressable
             key={a._id}
             accessibilityRole="radio"
-            accessibilityState={{ selected }}
+            accessibilityState={{ selected, disabled: !a.zoneActive }}
+            disabled={!a.zoneActive}
             onPress={() => setChosenId(a._id)}
             style={[styles.option, styles.addressOption, selected && styles.optionOn]}>
             <View style={[styles.radio, selected && styles.radioOn]} />
@@ -76,12 +79,16 @@ export default function Checkout() {
                 {a.landmark ? ` · ${a.landmark}` : ""}
               </AppText>
             </View>
-            <AppText variant="caption" tone="muted">
-              توصيل {formatPrice(a.deliveryFee)}
+            <AppText variant="caption" tone={a.zoneActive ? "muted" : "danger"}>
+              {a.zoneActive ? `توصيل ${formatPrice(a.deliveryFee)}` : "التوصيل متوقف هنا"}
             </AppText>
           </Pressable>
         );
       })}
+
+      {addresses !== undefined && deliverable.length === 0 ? (
+        <Button kind="secondary" label="التوصيل متوقف في عناوينك، أضف عنوان تاني" onPress={() => router.push("/address-new")} />
+      ) : null}
 
       <AppText variant="subtitle">طريقة الدفع</AppText>
       <View style={styles.option}>

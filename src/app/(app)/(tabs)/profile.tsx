@@ -67,8 +67,8 @@ export default function Profile() {
             {address.street}
             {address.landmark ? ` · ${address.landmark}` : ""}
           </AppText>
-          <AppText variant="caption" tone="muted">
-            توصيل {formatPrice(address.deliveryFee)}
+          <AppText variant="caption" tone={address.zoneActive ? "muted" : "danger"}>
+            {address.zoneActive ? `توصيل ${formatPrice(address.deliveryFee)}` : "التوصيل متوقف في المنطقة دي حالياً"}
           </AppText>
           <View style={styles.actions}>
             {address.isDefault ? null : (
