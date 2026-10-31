@@ -1,10 +1,10 @@
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
+import { normalizePhone } from "@/convex/lib/phone";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
-import { FormScreen } from "@/components/form-screen";
 import { TextField } from "@/components/text-field";
 import { ToggleRow } from "@/components/toggle-row";
 import { errorMessage } from "@/lib/errors";
@@ -34,7 +34,7 @@ export default function Drivers() {
   }
 
   return (
-    <FormScreen footer={<Button label="إضافة مندوب" loading={saving} onPress={add} />}>
+    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       {drivers?.map((driver) => (
         <View key={driver._id} style={[styles.card, !driver.active && styles.off]}>
           <View style={styles.body}>
@@ -56,11 +56,18 @@ export default function Drivers() {
       <TextField label="الاسم" value={name} onChangeText={setName} />
       <TextField label="رقم الموبايل" placeholder="01xxxxxxxxx" keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
       {error ? <AppText tone="danger">{error}</AppText> : null}
-    </FormScreen>
+      <Button
+        label="إضافة مندوب"
+        loading={saving}
+        disabled={name.trim().length < 2 || normalizePhone(phone) === null}
+        onPress={add}
+      />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  content: { padding: space.lg, gap: space.md },
   card: {
     flexDirection: "row",
     alignItems: "center",

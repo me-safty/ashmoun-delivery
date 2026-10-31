@@ -71,10 +71,16 @@ function ProductRow({ product }: { product: Doc<"products"> }) {
           keyboardType="decimal-pad"
           value={price}
           onChangeText={(text) => setPrice(cleanNumber(text))}
+          returnKeyType="done"
+          onSubmitEditing={() => {
+            if (changed) void save({ price: parsed });
+          }}
           style={styles.input}
         />
         <AppText tone="muted">ج.م</AppText>
-        <Button kind="secondary" label="حفظ" disabled={!changed} loading={saving} onPress={() => void save({ price: parsed })} />
+        {changed ? (
+          <Button kind="secondary" label="حفظ" loading={saving} onPress={() => void save({ price: parsed })} />
+        ) : null}
       </View>
       {error ? <AppText tone="danger">{error}</AppText> : null}
     </View>

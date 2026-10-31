@@ -61,10 +61,16 @@ function ZoneRow({ zone }: { zone: Doc<"zones"> }) {
           keyboardType="number-pad"
           value={fee}
           onChangeText={(text) => setFee(cleanNumber(text))}
+          returnKeyType="done"
+          onSubmitEditing={() => {
+            if (changed) void save({ deliveryFee: parsed });
+          }}
           style={styles.input}
         />
         <AppText tone="muted">ج.م</AppText>
-        <Button kind="secondary" label="حفظ" disabled={!changed} loading={saving} onPress={() => void save({ deliveryFee: parsed })} />
+        {changed ? (
+          <Button kind="secondary" label="حفظ" loading={saving} onPress={() => void save({ deliveryFee: parsed })} />
+        ) : null}
       </View>
       {error ? <AppText tone="danger">{error}</AppText> : null}
     </View>
