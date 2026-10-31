@@ -1,12 +1,12 @@
 import { useMutation, useQuery } from "convex/react";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { nextStatuses, statusLabels, type OrderStatus } from "@/convex/lib/orderStatus";
-import { adminPage, useWideAdmin } from "@/components/admin-grid";
+import { ADMIN_MAX_WIDTH, adminPage } from "@/components/admin-grid";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { OrderTimeline, StatusPill } from "@/components/order-status";
@@ -34,7 +34,7 @@ export default function AdminOrder() {
   const [driverId, setDriverId] = useState<Id<"drivers"> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<OrderStatus | null>(null);
-  const wide = useWideAdmin();
+  const wide = useWindowDimensions().width >= 900;
 
   if (order === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
   if (order === null) return <Unavailable message="الطلب ده مش موجود" />;
@@ -77,7 +77,7 @@ export default function AdminOrder() {
       <Stack.Screen options={{ title: orderCode(order._id) }} />
       <ScrollView contentContainerStyle={[styles.content, adminPage]}>
         <View style={wide ? styles.columns : styles.stack}>
-          <View style={styles.column}>
+          <View style={wide ? styles.column : styles.stack}>
             <View style={styles.card}>
               <View style={styles.row}>
                 <AppText variant="title">{order.shopName}</AppText>
@@ -151,9 +151,8 @@ export default function AdminOrder() {
               ))}
             </View>
             <PriceSummary subtotal={order.subtotal} deliveryFee={order.deliveryFee} />
-
           </View>
-          <View style={styles.column}>
+          <View style={wide ? styles.column : styles.stack}>
             {next.includes("with_driver") ? (
               <View style={styles.card}>
                 <AppText variant="subtitle">اختار المندوب</AppText>
@@ -199,7 +198,7 @@ export default function AdminOrder() {
       </ScrollView>
       {forward.length > 0 || error ? (
         <View style={styles.footer}>
-          <View style={[styles.footerInner, adminPage]}>
+          <View style={[styles.footerInner, adminPage, { maxWidth: ADMIN_MAX_WIDTH - space.lg * 2 }]}>
             {error ? <AppText tone="danger">{error}</AppText> : null}
             {forward.includes("with_driver") && selectedDriverId === null ? (
               <AppText variant="caption" tone="mutedInk">
