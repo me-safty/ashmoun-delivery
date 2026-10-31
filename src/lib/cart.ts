@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { isOpenAt } from "@/convex/lib/hours";
 import { MAX_QUANTITY } from "@/convex/lib/pricing";
 
 export type CartSelection = { groupKey: string; optionKeys: string[] };
@@ -89,4 +90,13 @@ export function useCartQuote() {
 
 export function cartCount(lines: CartLine[]) {
   return lines.reduce((sum, l) => sum + l.quantity, 0);
+}
+
+// Why the cart can't be ordered right now, or null when it can.
+export function cartProblem(quote: ReturnType<typeof useCartQuote>, now: number) {
+  if (quote === undefined) return null;
+  if (quote.kind === "invalid") return quote.message;
+  if (quote.paused) return "المحل واقف استقبال طلبات مؤقتاً، جرب كمان شوية";
+  if (!isOpenAt(quote.hours, now)) return "المحل مقفول دلوقتي، تقدر تطلب لما يفتح";
+  return null;
 }

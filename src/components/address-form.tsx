@@ -66,6 +66,7 @@ export function AddressForm({ onSaved, footerExtra }: { onSaved?: () => void; fo
     <FormScreen
       footer={
         <>
+          {error ? <AppText tone="danger">{error}</AppText> : null}
           <Button label="حفظ العنوان" loading={saving} onPress={save} />
           {footerExtra}
         </>
@@ -127,7 +128,6 @@ export function AddressForm({ onSaved, footerExtra }: { onSaved?: () => void; fo
         </AppText>
       </Pressable>
 
-      {error ? <AppText tone="danger">{error}</AppText> : null}
     </FormScreen>
   );
 }

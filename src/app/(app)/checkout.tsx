@@ -9,8 +9,9 @@ import { Button } from "@/components/button";
 import { FormScreen } from "@/components/form-screen";
 import { PriceSummary } from "@/components/price-summary";
 import { TextField } from "@/components/text-field";
-import { useCart, useCartQuote } from "@/lib/cart";
+import { cartProblem, useCart, useCartQuote } from "@/lib/cart";
 import { errorMessage } from "@/lib/errors";
+import { useNow } from "@/lib/use-now";
 import { colors, formatPrice, radius, space } from "@/theme";
 
 export default function Checkout() {
@@ -19,6 +20,7 @@ export default function Checkout() {
   const place = useMutation(api.orders.place);
   const quote = useCartQuote();
   const priced = quote?.kind === "ok" ? quote : undefined;
+  const problem = cartProblem(quote, useNow());
   const [chosenId, setChosenId] = useState<Id<"addresses"> | null>(null);
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -50,12 +52,15 @@ export default function Checkout() {
   return (
     <FormScreen
       footer={
-        <Button
-          label={priced && address ? `تأكيد الطلب · ${formatPrice(priced.subtotal + address.deliveryFee)}` : "تأكيد الطلب"}
-          loading={placing}
-          disabled={!shop || !address || !priced}
-          onPress={submit}
-        />
+        <>
+          {error ?? problem ? <AppText tone="danger">{error ?? problem}</AppText> : null}
+          <Button
+            label={priced && address ? `تأكيد الطلب · ${formatPrice(priced.subtotal + address.deliveryFee)}` : "تأكيد الطلب"}
+            loading={placing}
+            disabled={!shop || !address || !priced || problem !== null}
+            onPress={submit}
+          />
+        </>
       }>
       <Stack.Screen options={{ title: "إتمام الطلب" }} />
       <AppText variant="subtitle">التوصيل إلى</AppText>
@@ -108,8 +113,6 @@ export default function Checkout() {
       />
 
       <PriceSummary subtotal={priced?.subtotal} deliveryFee={address?.deliveryFee} />
-      {quote?.kind === "invalid" ? <AppText tone="danger">{quote.message}</AppText> : null}
-      {error ? <AppText tone="danger">{error}</AppText> : null}
     </FormScreen>
   );
 }

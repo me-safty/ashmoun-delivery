@@ -9,7 +9,8 @@ import { EmojiTile } from "@/components/emoji-tile";
 import { PriceSummary } from "@/components/price-summary";
 import { StepButton } from "@/components/step-button";
 import { MAX_QUANTITY } from "@/convex/lib/pricing";
-import { useCart, useCartQuote } from "@/lib/cart";
+import { cartProblem, useCart, useCartQuote } from "@/lib/cart";
+import { useNow } from "@/lib/use-now";
 import { colors, formatPrice, radius, space } from "@/theme";
 
 export default function Cart() {
@@ -19,6 +20,7 @@ export default function Cart() {
   const address = addresses?.find((a) => a.isDefault && a.zoneActive) ?? addresses?.find((a) => a.zoneActive);
   const priced = quote?.kind === "ok" ? quote : undefined;
   const belowMinimum = priced !== undefined && priced.subtotal < priced.minOrder;
+  const problem = cartProblem(quote, useNow());
 
   if (!shop || lines.length === 0) {
     return (
@@ -66,10 +68,15 @@ export default function Cart() {
             </View>
           </View>
         ))}
+        {address ? (
+          <AppText variant="caption" tone="mutedInk">
+            التوصيل إلى {address.label} · {address.zoneName}
+          </AppText>
+        ) : null}
         <PriceSummary subtotal={priced?.subtotal} deliveryFee={address?.deliveryFee} />
-        {quote?.kind === "invalid" ? <AppText tone="danger">{quote.message}</AppText> : null}
       </ScrollView>
       <View style={styles.footer}>
+        {problem ? <AppText tone="danger">{problem}</AppText> : null}
         {priced && belowMinimum ? (
           <View style={styles.minimum}>
             <AppText variant="caption" tone="warning" style={styles.minimumText}>
@@ -84,7 +91,7 @@ export default function Cart() {
         ) : null}
         <Button
           label={priced && address ? `إتمام الطلب · ${formatPrice(priced.subtotal + address.deliveryFee)}` : "إتمام الطلب"}
-          disabled={!priced || belowMinimum}
+          disabled={!priced || belowMinimum || problem !== null}
           onPress={() => router.push("/checkout")}
         />
       </View>
