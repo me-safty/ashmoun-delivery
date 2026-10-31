@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery } from "convex/react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -42,15 +42,23 @@ export default function Home() {
         ListHeaderComponent={
           <View style={styles.header}>
             <View>
-              <AppText variant="caption" tone="muted">
-                التوصيل إلى {address ? `${address.label} · ${address.zoneName}` : "..."}
-              </AppText>
               <AppText variant="title">أهلاً {me?.name} 👋</AppText>
-              {address ? (
-                <AppText variant="caption" tone="primary">
-                  رسوم التوصيل {formatPrice(address.deliveryFee)}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="غير عنوان التوصيل"
+                onPress={() => router.navigate("/profile")}
+                style={styles.addressPill}>
+                <Ionicons name="location" size={16} color={colors.primary} />
+                <AppText variant="caption" numberOfLines={1} style={styles.addressText}>
+                  {address ? `${address.label} · ${address.zoneName}` : "..."}
                 </AppText>
-              ) : null}
+                {address ? (
+                  <AppText variant="caption" tone="muted">
+                    التوصيل {formatPrice(address.deliveryFee)}
+                  </AppText>
+                ) : null}
+                <Ionicons name="chevron-down" size={14} color={colors.muted} />
+              </Pressable>
             </View>
             <View style={styles.search}>
               <Ionicons name="search" size={18} color={colors.faint} />
@@ -163,5 +171,19 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   chipSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  addressPill: {
+    marginTop: space.sm,
+    minHeight: 40,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+    alignSelf: "flex-start",
+    paddingHorizontal: space.md,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  addressText: { flexShrink: 1 },
   sectionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
 });
