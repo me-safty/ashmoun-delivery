@@ -10,6 +10,7 @@ export function FormScreen({ children, footer }: Props) {
     <SafeAreaView style={styles.safe} edges={["bottom"]}>
       <KeyboardAvoidingView style={styles.safe} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView
+          style={styles.safe}
           contentContainerStyle={styles.content}
           contentInsetAdjustmentBehavior="automatic"
           keyboardShouldPersistTaps="handled">

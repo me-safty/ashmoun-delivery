@@ -10,7 +10,7 @@ export function TextField({ label, style, ...props }: Props) {
       <AppText variant="caption" tone="muted">
         {label}
       </AppText>
-      <TextInput placeholderTextColor={colors.faint} style={[styles.input, style]} {...props} />
+      <TextInput accessibilityLabel={label} placeholderTextColor={colors.faint} style={[styles.input, style]} {...props} />
     </View>
   );
 }
