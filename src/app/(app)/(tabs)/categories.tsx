@@ -1,5 +1,5 @@
 import { useQuery } from "convex/react";
-import { Link } from "expo-router";
+import { router } from "expo-router";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet } from "react-native";
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
@@ -18,12 +18,13 @@ export default function Categories() {
       contentContainerStyle={styles.list}
       columnWrapperStyle={styles.row}
       renderItem={({ item }) => (
-        <Link href={{ pathname: "/category/[id]", params: { id: item._id } }} asChild>
-          <Pressable style={[styles.tile, { backgroundColor: item.tint }]}>
-            <AppText style={styles.emoji}>{item.emoji}</AppText>
-            <AppText variant="subtitle">{item.name}</AppText>
-          </Pressable>
-        </Link>
+        <Pressable
+          accessibilityRole="link"
+          onPress={() => router.push({ pathname: "/category/[id]", params: { id: item._id } })}
+          style={[styles.tile, { backgroundColor: item.tint }]}>
+          <AppText style={styles.emoji}>{item.emoji}</AppText>
+          <AppText variant="subtitle">{item.name}</AppText>
+        </Pressable>
       )}
     />
   );

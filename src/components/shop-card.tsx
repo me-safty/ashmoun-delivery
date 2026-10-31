@@ -1,4 +1,4 @@
-import { Link } from "expo-router";
+import { router } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { colors, formatPrice, radius, space } from "@/theme";
@@ -9,26 +9,27 @@ import { ShopStatusBadge, shopState } from "./shop-status";
 export function ShopCard({ shop, now }: { shop: Doc<"shops">; now: number }) {
   const state = shopState(shop, now);
   return (
-    <Link href={{ pathname: "/shop/[id]", params: { id: shop._id } }} asChild>
-      <Pressable style={[styles.card, state !== "open" && styles.dimmed]}>
-        <EmojiTile emoji={shop.emoji} tint={shop.tint} size={64} />
-        <View style={styles.body}>
-          <View style={styles.titleRow}>
-            <AppText variant="subtitle" numberOfLines={1} style={styles.name}>
-              {shop.name}
-            </AppText>
-            <ShopStatusBadge state={state} />
-          </View>
-          <AppText variant="caption" tone="muted" numberOfLines={1}>
-            {shop.description}
+    <Pressable
+      accessibilityRole="link"
+      onPress={() => router.push({ pathname: "/shop/[id]", params: { id: shop._id } })}
+      style={[styles.card, state !== "open" && styles.dimmed]}>
+      <EmojiTile emoji={shop.emoji} tint={shop.tint} size={64} />
+      <View style={styles.body}>
+        <View style={styles.titleRow}>
+          <AppText variant="subtitle" numberOfLines={1} style={styles.name}>
+            {shop.name}
           </AppText>
-          <AppText variant="caption" tone="muted">
-            ⭐ {shop.rating.toFixed(1)} · {shop.prepMinutes} دقيقة
-            {shop.minOrder > 0 ? ` · أقل طلب ${formatPrice(shop.minOrder)}` : ""}
-          </AppText>
+          <ShopStatusBadge state={state} />
         </View>
-      </Pressable>
-    </Link>
+        <AppText variant="caption" tone="muted" numberOfLines={1}>
+          {shop.description}
+        </AppText>
+        <AppText variant="caption" tone="muted">
+          ⭐ {shop.rating.toFixed(1)} · {shop.prepMinutes} دقيقة
+          {shop.minOrder > 0 ? ` · أقل طلب ${formatPrice(shop.minOrder)}` : ""}
+        </AppText>
+      </View>
+    </Pressable>
   );
 }
 

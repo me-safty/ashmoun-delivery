@@ -1,5 +1,5 @@
 import { useQuery } from "convex/react";
-import { Link, Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -51,22 +51,24 @@ export default function Shop() {
           </AppText>
         )}
         renderItem={({ item }) => (
-          <Link href={{ pathname: "/product/[id]", params: { id: item._id } }} asChild disabled={!item.available}>
-            <Pressable style={[styles.product, !item.available && styles.unavailable]}>
-              <View style={styles.productBody}>
-                <AppText variant="subtitle">{item.name}</AppText>
-                {item.description ? (
-                  <AppText variant="caption" tone="muted" numberOfLines={2}>
-                    {item.description}
-                  </AppText>
-                ) : null}
-                <AppText variant="subtitle" tone="primary">
-                  {item.available ? formatPrice(item.price) : "غير متاح حالياً"}
+          <Pressable
+            accessibilityRole="link"
+            disabled={!item.available}
+            onPress={() => router.push({ pathname: "/product/[id]", params: { id: item._id } })}
+            style={[styles.product, !item.available && styles.unavailable]}>
+            <View style={styles.productBody}>
+              <AppText variant="subtitle">{item.name}</AppText>
+              {item.description ? (
+                <AppText variant="caption" tone="muted" numberOfLines={2}>
+                  {item.description}
                 </AppText>
-              </View>
-              <EmojiTile emoji={item.emoji} tint={shop.tint} size={72} />
-            </Pressable>
-          </Link>
+              ) : null}
+              <AppText variant="subtitle" tone="primary">
+                {item.available ? formatPrice(item.price) : "غير متاح حالياً"}
+              </AppText>
+            </View>
+            <EmojiTile emoji={item.emoji} tint={shop.tint} size={72} />
+          </Pressable>
         )}
       />
     </>
