@@ -1,5 +1,6 @@
 import { useQuery } from "convex/react";
 import { router } from "expo-router";
+import { Image } from "expo-image";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet } from "react-native";
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
@@ -22,7 +23,7 @@ export default function Categories() {
           accessibilityRole="link"
           onPress={() => router.push({ pathname: "/category/[id]", params: { id: item._id } })}
           style={[styles.tile, { backgroundColor: item.tint }]}>
-          <AppText style={styles.emoji}>{item.emoji}</AppText>
+          <CategoryArt emoji={item.emoji} />
           <AppText variant="subtitle">{item.name}</AppText>
         </Pressable>
       )}
@@ -30,10 +31,26 @@ export default function Categories() {
   );
 }
 
+// Realistic 3D artwork for the known category emojis; any other emoji falls back to text.
+function CategoryArt({ emoji }: { emoji: string }) {
+  const source = iconSource(emoji);
+  if (source) return <Image source={source} style={styles.art} contentFit="contain" />;
+  return <AppText style={styles.emoji}>{emoji}</AppText>;
+}
+
+function iconSource(emoji: string): number | null {
+  if (emoji.startsWith("🍔")) return require("@/assets/images/icon-hamburger.png");
+  if (emoji.startsWith("🛍") || emoji.startsWith("🛒")) return require("@/assets/images/icon-shopping-cart.png");
+  if (emoji.startsWith("💊")) return require("@/assets/images/icon-pill.png");
+  return null;
+}
+
+
 const styles = StyleSheet.create({
   loading: { marginTop: space.xxl },
   list: { padding: space.lg, gap: space.md },
   row: { gap: space.md },
   tile: { flex: 1, minHeight: 120, borderRadius: radius.lg, padding: space.lg, justifyContent: "space-between" },
   emoji: { fontSize: 40, lineHeight: 56 },
+  art: { width: 64, height: 64 },
 });

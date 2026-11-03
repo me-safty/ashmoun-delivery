@@ -24,14 +24,9 @@ const zones = [
 ] as const;
 
 const categories = [
-  { key: "burger", name: "مطاعم وبرجر", emoji: "🍔", tint: "#FDE7D9" },
-  { key: "pizza", name: "بيتزا وفطير", emoji: "🍕", tint: "#FCE3E1" },
-  { key: "grill", name: "مشويات", emoji: "🍢", tint: "#F6E6D6" },
-  { key: "koshary", name: "كشري وفول", emoji: "🥙", tint: "#FFF1CC" },
-  { key: "sweets", name: "حلويات", emoji: "🍰", tint: "#FBE4EE" },
-  { key: "cafe", name: "عصائر وكافيه", emoji: "🥤", tint: "#DDF3EA" },
-  { key: "market", name: "سوبر ماركت", emoji: "🛒", tint: "#E3EEFB" },
-  { key: "pharmacy", name: "صيدليات", emoji: "💊", tint: "#E6F4F1" },
+  { key: "restaurants", name: "مطاعم", emoji: "🍔", tint: "#FDE7D9" },
+  { key: "groceries", name: "بقالة", emoji: "🛍️", tint: "#E3EEFB" },
+  { key: "pharmacy", name: "صيديليات", emoji: "💊", tint: "#E6F4F1" },
 ] as const;
 
 type CategoryKey = (typeof categories)[number]["key"];
@@ -79,7 +74,7 @@ const shops: {
   menu: { section: string; products: SeedProduct[] }[];
 }[] = [
   {
-    category: "burger",
+    category: "restaurants",
     name: "برجر الميدان",
     description: "برجر لحم بلدي مشوي على الفحم",
     emoji: "🍔",
@@ -135,7 +130,7 @@ const shops: {
     ],
   },
   {
-    category: "pizza",
+    category: "restaurants",
     name: "بيتزا وفطير السلطان",
     description: "بيتزا إيطالي وفطير مشلتت على الفرن البلدي",
     emoji: "🍕",
@@ -168,7 +163,7 @@ const shops: {
     ],
   },
   {
-    category: "grill",
+    category: "restaurants",
     name: "مشويات أبو علي",
     description: "كفتة وطرب وفراخ مشوية",
     emoji: "🍢",
@@ -206,7 +201,7 @@ const shops: {
     ],
   },
   {
-    category: "koshary",
+    category: "restaurants",
     name: "كشري التحرير أشمون",
     description: "كشري وطواجن ومكرونة",
     emoji: "🥙",
@@ -239,7 +234,7 @@ const shops: {
     ],
   },
   {
-    category: "sweets",
+    category: "restaurants",
     name: "حلواني الشروق",
     description: "تورت وجاتوه وحلويات شرقي",
     emoji: "🍰",
@@ -260,7 +255,7 @@ const shops: {
     ],
   },
   {
-    category: "cafe",
+    category: "restaurants",
     name: "عصير ركن الفاكهة",
     description: "عصائر فريش وسموزي",
     emoji: "🥤",
@@ -281,7 +276,7 @@ const shops: {
     ],
   },
   {
-    category: "market",
+    category: "groceries",
     name: "ماركت البركة",
     description: "بقالة وخضار ومنظفات",
     emoji: "🛒",
@@ -337,8 +332,11 @@ const drivers = [
 export const run = internalMutation({
   args: {},
   handler: async (ctx) => {
-    if ((await ctx.db.query("zones").first()) !== null) return "already seeded";
-
+    // Clear previously seeded data so re-running reflects updated seed
+    for (const table of ["products", "menuSections", "shops", "categories", "zones", "drivers"] as const) {
+      const rows = await ctx.db.query(table).collect();
+      for (const row of rows) await ctx.db.delete(row._id);
+    }
     for (const [sortOrder, zone] of zones.entries()) {
       await ctx.db.insert("zones", { ...zone, active: true, sortOrder });
     }

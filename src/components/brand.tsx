@@ -1,15 +1,18 @@
 import { StyleSheet, View } from "react-native";
+import { useLocales } from "expo-localization";
 import { colors, radius, space } from "@/theme";
 import { AppText } from "./app-text";
 
 export function Brand() {
+  const [primary] = useLocales();
+  const isArabic = primary?.languageCode === "ar";
   return (
     <View style={styles.brand}>
       <View style={styles.mark}>
         <AppText style={styles.emoji}>🛵</AppText>
       </View>
       <AppText variant="display">توصيل أشمون</AppText>
-      <AppText tone="muted">أكلك وطلباتك من محلات أشمون والقرى لحد باب البيت، والدفع عند الاستلام.</AppText>
+      <AppText tone="muted">أكلك/{isArabic ? "أوردراتنا" : "Orderatna"} من محلات أشمون والقرى لحد باب البيت، والدفع عند الاستلام.</AppText>
     </View>
   );
 }

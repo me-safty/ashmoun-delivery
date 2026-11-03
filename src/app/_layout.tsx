@@ -1,12 +1,12 @@
 import { ConvexAuthProvider, useAuthActions } from "@convex-dev/auth/react";
 import {
-  Cairo_400Regular,
-  Cairo_500Medium,
-  Cairo_600SemiBold,
-  Cairo_700Bold,
-  Cairo_900Black,
+  BalooBhaijaan2_400Regular,
+  BalooBhaijaan2_500Medium,
+  BalooBhaijaan2_600SemiBold,
+  BalooBhaijaan2_700Bold,
+  BalooBhaijaan2_800ExtraBold,
   useFonts,
-} from "@expo-google-fonts/cairo";
+} from "@expo-google-fonts/baloo-bhaijaan-2";
 import { ConvexReactClient, useConvexAuth, useQuery } from "convex/react";
 import { LocaleProvider, Stack, useSegments } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -40,11 +40,11 @@ const secureStorage = {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    Cairo_400Regular,
-    Cairo_500Medium,
-    Cairo_600SemiBold,
-    Cairo_700Bold,
-    Cairo_900Black,
+    BalooBhaijaan2_400Regular,
+    BalooBhaijaan2_500Medium,
+    BalooBhaijaan2_600SemiBold,
+    BalooBhaijaan2_700Bold,
+    BalooBhaijaan2_800ExtraBold,
   });
 
   const fontsReady = fontsLoaded || fontError !== null;
