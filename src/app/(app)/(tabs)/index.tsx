@@ -1,9 +1,9 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useQuery } from "convex/react";
 import { router } from "expo-router";
-import { useState } from "react";
+import type { ComponentProps } from "react";
+import { useEffect, useState } from "react";
 import {
   Platform,
   Pressable,
@@ -13,6 +13,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+import Svg, { Path } from "react-native-svg";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
@@ -29,12 +30,11 @@ const CATEGORIES: { key: string; label: string; icon: number }[] = [
   { key: "restaurants", label: "المطاعم", icon: require("@/assets/images/icon-hamburger.png") },
   { key: "groceries", label: "البقالة", icon: require("@/assets/images/icon-shopping-cart.png") },
   { key: "pharmacy", label: "صيدليات", icon: require("@/assets/images/icon-pill.png") },
+  { key: "flowers", label: "زهور", icon: require("@/assets/images/icon-bouquet.png") },
 ];
 
 type HeaderShape = {
-  // "ion" for Ionicons, "mdc" for MaterialCommunityIcons
-  family: "ion" | "mdc";
-  icon: string;
+  icon: ComponentProps<typeof Ionicons>["name"];
   size: number;
   top: number;
   right?: number;
@@ -43,15 +43,17 @@ type HeaderShape = {
 };
 
 // Decorative dark shapes scattered across the orange header — one per service line:
-// a sandwich with a drink, a grocery cart, and medicine.
+// a sandwich with a drink, a grocery cart, and a flower.
 const HEADER_SHAPES: HeaderShape[] = [
-  { family: "ion", icon: "fast-food", size: 56, top: -10, right: 132, rotate: 12 },
-  { family: "mdc", icon: "cart-variant", size: 54, top: -4, right: 24, rotate: -10 },
-  { family: "mdc", icon: "medical-bag", size: 50, top: -8, left: 44, rotate: -16 },
+  { icon: "fast-food-outline", size: 90, top: -12, right: 132, rotate: 12 },
+  { icon: "cart-outline", size: 90, top: -6, right: 24, rotate: -10 },
+  { icon: "flower-outline", size: 90, top: -10, left: 44, rotate: -14 },
 ];
 
 // Wave circles that bite into the bottom edge of the orange header.
-const WAVE_COUNT = 9;
+// const WAVE_COUNT = 9;
+
+const SEARCH_WORDS = ["طعام", "البقالة", "وجبات خفيفة", "المزيد"];
 
 export default function Home() {
   const addresses = useQuery(api.addresses.mine);
@@ -59,10 +61,56 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [bannerPage, setBannerPage] = useState(0);
+  const [placeholder, setPlaceholder] = useState(`ابحث عن ${SEARCH_WORDS[0]}`);
   const { width } = useWindowDimensions();
   const bannerWidth = Math.min(width, 480) - space.lg * 2 - 24;
   const bannerStep = bannerWidth + space.sm;
   const address = addresses?.find((a) => a.isDefault) ?? addresses?.[0];
+
+  useEffect(() => {
+    let wordIndex = 0;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let intervalId: ReturnType<typeof setInterval> | undefined;
+
+    const typeNextWord = () => {
+      const prefix = "ابحث عن ";
+      const nextWord = SEARCH_WORDS[wordIndex % SEARCH_WORDS.length];
+      wordIndex += 1;
+      let charCount = 0;
+      setPlaceholder(prefix);
+      intervalId = setInterval(() => {
+        charCount += 1;
+        if (charCount <= nextWord.length) {
+          setPlaceholder(prefix + nextWord.slice(0, charCount));
+        } else {
+          if (intervalId) clearInterval(intervalId);
+          timeoutId = setTimeout(eraseCurrentWord, 1500);
+        }
+      }, 70);
+    };
+
+    const eraseCurrentWord = () => {
+      const prefix = "ابحث عن ";
+      const currentWord = SEARCH_WORDS[(wordIndex - 1 + SEARCH_WORDS.length) % SEARCH_WORDS.length];
+      let text = currentWord;
+      intervalId = setInterval(() => {
+        if (text.length === 0) {
+          if (intervalId) clearInterval(intervalId);
+          timeoutId = setTimeout(typeNextWord, 400);
+        } else {
+          text = text.slice(0, -1);
+          setPlaceholder(prefix + text);
+        }
+      }, 50);
+    };
+
+    timeoutId = setTimeout(eraseCurrentWord, 1500);
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, []);
 
   const openCategory = (key: string) => {
     // "طلبات مارت" has no category in the DB yet; fall back to the categories screen.
@@ -76,32 +124,35 @@ export default function Home() {
   };
 
   return (
-    <SafeAreaView style={styles.screen} edges={["top"]}>
+    <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
         {/* Full-bleed orange header with decorative shapes, search, and the wavy bottom edge */}
         <View style={styles.orangeHeader}>
-          {HEADER_SHAPES.map((s) => {
-            const position = {
-              position: "absolute" as const,
-              top: s.top,
-              transform: [{ rotate: `${s.rotate}deg` }],
-              ...(s.right != null ? { right: s.right } : { left: s.left }),
-            };
-            const Icon = s.family === "ion" ? Ionicons : MaterialCommunityIcons;
-            return <Icon key={s.icon} name={s.icon as any} size={s.size} color={DARK} style={position} />;
-          })}
+          {HEADER_SHAPES.map((s) => (
+            <Ionicons
+              key={s.icon}
+              name={s.icon}
+              size={s.size}
+              color={DARK}
+              style={{
+                position: "absolute",
+                top: s.top,
+                transform: [{ rotate: `${s.rotate}deg` }],
+                ...(s.right != null ? { right: s.right } : { left: s.left }),
+              }}
+            />
+          ))}
           <Pressable style={styles.locationRow} onPress={() => router.navigate("/profile")}>
+            <AppText style={styles.locationLabel}>التوصيل إلى </AppText>
+            <AppText style={styles.locationArea}>{address ? address.zoneName : "جمال عبد الناصر"}</AppText>
             <Ionicons name="chevron-down" size={16} color="#fff" />
-            <AppText style={styles.locationText} numberOfLines={1}>
-              التوصيل إلى {address ? address.label : "جمال عبد الناصر"}
-            </AppText>
           </Pressable>
           <View style={[styles.search, searchFocused && styles.searchFocused]}>
-            <Ionicons name="search" size={20} color="#999" />
+            <Ionicons name="search" size={20} color="#333" />
             <TextInput
               accessibilityLabel="ابحث عن الطعام"
-              placeholder="ابحث عن الطعام"
-              placeholderTextColor="#999"
+              placeholder={placeholder}
+              placeholderTextColor="#1a1a1a"
               returnKeyType="search"
               clearButtonMode="while-editing"
               value={search}
@@ -112,12 +163,21 @@ export default function Home() {
             />
           </View>
           <View style={styles.blackFriday}>
-            <AppText style={styles.blackFridayText}>بلاك فريداي</AppText>
+            <AppText style={styles.blackFridayText}>أوردراتنا</AppText>
           </View>
-          <View pointerEvents="none" style={styles.wave}>
-            {Array.from({ length: WAVE_COUNT }, (_, i) => (
-              <View key={i} style={styles.waveDot} />
-            ))}
+          <View pointerEvents="none" style={styles.svgWaveWrapper}>
+            <Svg
+              width="100%"
+              height="100%"
+              viewBox="0 0 375 44"
+              preserveAspectRatio="none"
+              style={styles.svgWave}
+            >
+              <Path
+                d="M 0 18 C 30 10, 55 28, 95 18 C 135 8, 155 30, 195 18 C 235 8, 255 30, 295 18 C 335 10, 355 28, 375 18 L 375 44 L 0 44 Z"
+                fill="#fff"
+              />
+            </Svg>
           </View>
         </View>
 
@@ -238,16 +298,18 @@ function fuzzySameName(label: string, name: string) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fff" },
-  list: { paddingBottom: 64 },
+  list: { paddingBottom: 94 },
   // Header
-  orangeHeader: {
+orangeHeader: {
     backgroundColor: ORANGE,
-    paddingBottom: 34,
+    paddingBottom: 20,
     gap: space.md,
     paddingHorizontal: space.lg,
+    overflow: "visible",
   },
-  locationRow: { flexDirection: "row", alignItems: "center", gap: space.xs, marginTop: 14, alignSelf: "center" },
-  locationText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+  locationRow: { flexDirection: "row", alignItems: "center", gap: space.xs, marginTop: 50, alignSelf: "flex-start" },
+  locationLabel: { color: "#fff", fontWeight: "400", fontSize: 22, textShadowColor: "rgba(0,0,0,0.6)", textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6 },
+  locationArea: { color: "#fff", fontWeight: "900", fontSize: 22, textShadowColor: "rgba(0,0,0,0.6)", textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6 },
   search: {
     minHeight: 50,
     flexDirection: "row",
@@ -261,29 +323,30 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, minHeight: 46, fontFamily: fonts.medium, fontSize: 15, color: "#000", textAlign: "right" },
   blackFriday: { alignItems: "center", paddingVertical: space.sm },
   blackFridayText: { color: LIME, fontWeight: "900", fontSize: 30, lineHeight: 44 },
-  wave: {
+  svgWaveWrapper: {
     position: "absolute",
-    bottom: -18,
-    left: -20,
-    right: -20,
-    height: 36,
-    flexDirection: "row",
-    justifyContent: "space-between",
+    bottom: -28,
+    left: 0,
+    right: 0,
+    height: 48,
   },
-  waveDot: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#fff" },
+  svgWave: {
+    width: "100%",
+    height: "100%",
+  },
   // Categories
-  catRow: { gap: space.md, paddingHorizontal: space.lg, paddingVertical: space.lg },
-  catItem: { width: 92, alignItems: "center" },
+  catRow: { gap: -6, paddingHorizontal: space.lg, paddingVertical: space.lg },
+  catItem: { width: 92, alignItems: "center", marginHorizontal: -2 },
   catTile: {
-    width: 84,
-    height: 72,
+    width: 72,
+    height: 62,
     borderRadius: radius.md,
     backgroundColor: TILE_BG,
     alignItems: "center",
     justifyContent: "center",
   },
-  catIcon: { width: 52, height: 52 },
-  catLabel: { fontSize: 12, fontWeight: "700", textAlign: "center", marginTop: 6 },
+  catIcon: { width: 44, height: 44 },
+  catLabel: { fontSize: 13, fontWeight: "700", textAlign: "center", marginTop: 8 },
   // Banner carousel
   bannerWrap: { marginTop: space.sm },
   bannerRow: { paddingHorizontal: space.lg, gap: space.sm },
@@ -363,8 +426,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: space.sm,
     backgroundColor: ORANGE,
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: space.md,
+    paddingBottom: Platform.OS === "ios" ? 16 : 12,
   },
   tickerChip: { backgroundColor: "#141414", borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 },
   tickerChipText: { color: "#fff", fontWeight: "800", fontSize: 14 },
