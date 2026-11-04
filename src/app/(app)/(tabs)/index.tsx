@@ -169,12 +169,12 @@ export default function Home() {
             <Svg
               width="100%"
               height="100%"
-              viewBox="0 0 375 44"
+              viewBox="0 0 375 48"
               preserveAspectRatio="none"
               style={styles.svgWave}
             >
               <Path
-                d="M 0 18 C 30 10, 55 28, 95 18 C 135 8, 155 30, 195 18 C 235 8, 255 30, 295 18 C 335 10, 355 28, 375 18 L 375 44 L 0 44 Z"
+                d="M 0 20 C 25 12, 45 34, 85 22 C 125 12, 145 36, 185 24 C 225 12, 245 36, 285 24 C 325 14, 345 32, 375 22 L 375 48 L 0 48 Z"
                 fill="#fff"
               />
             </Svg>
@@ -266,12 +266,13 @@ export default function Home() {
 
       {/* Pinned ticker glued above the tab bar footer */}
       <View style={styles.ticker}>
-        <View style={styles.tickerChip}>
-          <AppText style={styles.tickerChipText}>توصيل مجاني</AppText>
+        <View style={styles.tickerContent}>
+          <View style={styles.tickerChip}>
+            <AppText style={styles.tickerChipText}>توصيل مجاني</AppText>
+          </View>
+          <AppText style={styles.tickerText}>توصيل مجاني لأول طلب</AppText>
         </View>
-        <AppText style={styles.tickerText}>توصيل مجاني لأول طلب</AppText>
-        <View style={styles.tickerSpacer} />
-        <Ionicons name="chevron-up" size={18} color="#fff" />
+        <Ionicons name="chevron-up" size={18} color="#fff" style={{ marginRight: 8 }} />
       </View>
       <CartBar />
     </SafeAreaView>
@@ -325,10 +326,10 @@ orangeHeader: {
   blackFridayText: { color: LIME, fontWeight: "900", fontSize: 30, lineHeight: 44 },
   svgWaveWrapper: {
     position: "absolute",
-    bottom: -28,
+    bottom: -30,
     left: 0,
     right: 0,
-    height: 48,
+    height: 52,
   },
   svgWave: {
     width: "100%",
@@ -424,14 +425,21 @@ orangeHeader: {
     bottom: 0,
     flexDirection: "row",
     alignItems: "center",
-    gap: space.sm,
+    justifyContent: "center",
     backgroundColor: ORANGE,
     paddingVertical: 12,
     paddingHorizontal: space.md,
     paddingBottom: Platform.OS === "ios" ? 16 : 12,
   },
-  tickerChip: { backgroundColor: "#141414", borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 },
-  tickerChipText: { color: "#fff", fontWeight: "800", fontSize: 14 },
-  tickerText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+  tickerContent: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.sm,
+  },
+  tickerChip: { backgroundColor: "#311419", borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 },
+  tickerChipText: { color: "#ffff00", fontWeight: "800", fontSize: 16 },
+  tickerText: { color: "#fff", fontWeight: "700", fontSize: 17 },
   tickerSpacer: { flex: 1 },
 });
