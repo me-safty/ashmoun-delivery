@@ -1,10 +1,18 @@
+import { AppText } from "@/components/app-text";
+import { Button } from "@/components/button";
+import { CartBar } from "@/components/cart-bar";
+import { CategoryArt } from "@/components/category-art";
+import { api } from "@/convex/_generated/api";
+import { fonts, radius, space } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Image } from "expo-image";
 import { useQuery } from "convex/react";
 import { router } from "expo-router";
 import type { ComponentProps } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  Animated,
+  BackHandler,
+  Easing,
   Platform,
   Pressable,
   ScrollView,
@@ -13,25 +21,13 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import Svg, { Path } from "react-native-svg";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { api } from "@/convex/_generated/api";
-import { AppText } from "@/components/app-text";
-import { CartBar } from "@/components/cart-bar";
-import { fonts, radius, space } from "@/theme";
+import Svg, { Path } from "react-native-svg";
 
 const ORANGE = "#F26A1B";
 const DARK = "#48240C"; // decorative silhouettes on the header
 const LIME = "#E4F222";
-const TILE_BG = "#F7F2EA";
 
-
-const CATEGORIES: { key: string; label: string; icon: number }[] = [
-  { key: "restaurants", label: "المطاعم", icon: require("@/assets/images/icon-hamburger.png") },
-  { key: "groceries", label: "البقالة", icon: require("@/assets/images/icon-shopping-cart.png") },
-  { key: "pharmacy", label: "صيدليات", icon: require("@/assets/images/icon-pill.png") },
-  { key: "flowers", label: "زهور", icon: require("@/assets/images/icon-bouquet.png") },
-];
 
 type HeaderShape = {
   icon: ComponentProps<typeof Ionicons>["name"];
@@ -61,6 +57,8 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [bannerPage, setBannerPage] = useState(0);
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoProgress] = useState(() => new Animated.Value(0));
   const [placeholder, setPlaceholder] = useState(`ابحث عن ${SEARCH_WORDS[0]}`);
   const { width } = useWindowDimensions();
   const bannerWidth = Math.min(width, 480) - space.lg * 2 - 24;
@@ -72,8 +70,13 @@ export default function Home() {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     let intervalId: ReturnType<typeof setInterval> | undefined;
 
+    const prefix = "ابحث عن ";
+    const TYPING_MS = 55;
+    const ERASING_MS = 30;
+    // Hold the finished word long enough to read it.
+    const READ_PAUSE_MS = 1800;
+
     const typeNextWord = () => {
-      const prefix = "ابحث عن ";
       const nextWord = SEARCH_WORDS[wordIndex % SEARCH_WORDS.length];
       wordIndex += 1;
       let charCount = 0;
@@ -84,27 +87,27 @@ export default function Home() {
           setPlaceholder(prefix + nextWord.slice(0, charCount));
         } else {
           if (intervalId) clearInterval(intervalId);
-          timeoutId = setTimeout(eraseCurrentWord, 1500);
+          timeoutId = setTimeout(eraseCurrentWord, READ_PAUSE_MS);
         }
-      }, 70);
+      }, TYPING_MS);
     };
 
     const eraseCurrentWord = () => {
-      const prefix = "ابحث عن ";
       const currentWord = SEARCH_WORDS[(wordIndex - 1 + SEARCH_WORDS.length) % SEARCH_WORDS.length];
       let text = currentWord;
       intervalId = setInterval(() => {
         if (text.length === 0) {
           if (intervalId) clearInterval(intervalId);
-          timeoutId = setTimeout(typeNextWord, 400);
+          // Back-to-back: the next word starts typing the moment the old one is gone.
+          typeNextWord();
         } else {
           text = text.slice(0, -1);
           setPlaceholder(prefix + text);
         }
-      }, 50);
+      }, ERASING_MS);
     };
 
-    timeoutId = setTimeout(eraseCurrentWord, 1500);
+    timeoutId = setTimeout(typeNextWord, 1200);
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -112,16 +115,40 @@ export default function Home() {
     };
   }, []);
 
-  const openCategory = (key: string) => {
-    // "طلبات مارت" has no category in the DB yet; fall back to the categories screen.
-    const tile = CATEGORIES.find((c) => c.key === key);
-    const match = categories?.find((c) => tile && fuzzySameName(tile.label, c.name));
-    if (match) {
-      router.push({ pathname: "/category/[id]", params: { id: match._id } });
-    } else {
-      router.navigate("/categories");
-    }
-  };
+  // The free-delivery ticker opens a sheet that grows out of it, upwards.
+  const openPromo = useCallback(() => {
+    setPromoOpen(true);
+    Animated.timing(promoProgress, {
+      toValue: 1,
+      duration: 260,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [promoProgress]);
+
+  const closePromo = useCallback(() => {
+    Animated.timing(promoProgress, {
+      toValue: 0,
+      duration: 180,
+      easing: Easing.in(Easing.cubic),
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) setPromoOpen(false);
+    });
+  }, [promoProgress]);
+
+  // Android back closes the sheet instead of leaving the screen.
+  useEffect(() => {
+    if (!promoOpen) return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      closePromo();
+      return true;
+    });
+    return () => sub.remove();
+  }, [promoOpen, closePromo]);
+
+  // Categories come straight from the catalog, so the row always matches the DB (and its order).
+  const sections = categories ?? [];
 
   return (
     <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
@@ -163,42 +190,47 @@ export default function Home() {
             />
           </View>
           <View style={styles.blackFriday}>
-            <AppText style={styles.blackFridayText}>أوردراتنا</AppText>
+            <AppText style={styles.blackFridayText}>
+              <AppText style={styles.blackFridayWhite}>كل ما تريد</AppText> على التطبيق
+            </AppText>
           </View>
+          {/* Wave separator: the header ends in a smooth white wave that leads into the page. */}
           <View pointerEvents="none" style={styles.svgWaveWrapper}>
             <Svg
               width="100%"
               height="100%"
-              viewBox="0 0 375 48"
+              viewBox="0 0 375 40"
               preserveAspectRatio="none"
               style={styles.svgWave}
             >
               <Path
-                d="M 0 20 C 25 12, 45 34, 85 22 C 125 12, 145 36, 185 24 C 225 12, 245 36, 285 24 C 325 14, 345 32, 375 22 L 375 48 L 0 48 Z"
+                d="M 0 18 C 20.8 6, 41.7 6, 62.5 18 C 83.3 30, 104.2 30, 125 18 C 145.8 6, 166.7 6, 187.5 18 C 208.3 30, 229.2 30, 250 18 C 270.8 6, 291.7 6, 312.5 18 C 333.3 30, 354.2 30, 375 18 L 375 40 L 0 40 Z"
                 fill="#fff"
               />
             </Svg>
           </View>
         </View>
 
-        {/* 3D-style category tiles */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.catRow}>
-          {CATEGORIES.map((c) => (
-            <Pressable
-              key={c.key}
-              style={styles.catItem}
-              accessibilityRole="button"
-              onPress={() => openCategory(c.key)}>
-              <View style={styles.catTile}>
-                <Image source={c.icon} style={styles.catIcon} contentFit="contain" />
-              </View>
-              <AppText style={styles.catLabel}>{c.label}</AppText>
-            </Pressable>
-          ))}
-        </ScrollView>
+        {/* Order sections — every category in the DB, read right-to-left in its stored order. */}
+        {sections.length > 0 ? (
+          <View style={styles.quickLinks}>
+            {sections.map((c) => (
+              <Pressable
+                key={c._id}
+                accessibilityRole="button"
+                accessibilityLabel={c.name}
+                style={styles.quickLink}
+                onPress={() => router.push({ pathname: "/category/[id]", params: { id: c._id } })}>
+                <View style={styles.quickLinkCircle}>
+                  <CategoryArt emoji={c.emoji} size={60} />
+                </View>
+                <AppText style={styles.quickLinkLabel} numberOfLines={1}>
+                  {c.name}
+                </AppText>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
 
         {/* Promo banner carousel */}
         <View style={styles.bannerWrap}>
@@ -256,24 +288,82 @@ export default function Home() {
             ))}
           </View>
         </View>
-
-        <View style={styles.sectionHeader}>
-          <AppText variant="title" style={styles.useSaveTitle}>
-            استخدم ووفر
-          </AppText>
-        </View>
       </ScrollView>
 
-      {/* Pinned ticker glued above the tab bar footer */}
-      <View style={styles.ticker}>
+      {/* Pinned free-delivery ticker glued above the tab bar footer. Tapping it grows the promo sheet upwards. */}
+      <Pressable
+        style={styles.ticker}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: promoOpen }}
+        onPress={promoOpen ? closePromo : openPromo}>
         <View style={styles.tickerContent}>
           <View style={styles.tickerChip}>
             <AppText style={styles.tickerChipText}>توصيل مجاني</AppText>
           </View>
-          <AppText style={styles.tickerText}>توصيل مجاني لأول طلب</AppText>
+          <View style={styles.tickerMessage}>
+            <AppText style={styles.tickerText} numberOfLines={2}>
+              لأول طلب داخل مركز بركة السبع
+            </AppText>
+            <Ionicons
+              name={promoOpen ? "chevron-down" : "chevron-up"}
+              size={18}
+              color="#fff"
+            />
+          </View>
         </View>
-        <Ionicons name="chevron-up" size={18} color="#fff" style={{ marginRight: 8 }} />
-      </View>
+      </Pressable>
+
+      {promoOpen ? (
+        <View style={styles.promoLayer}>
+          <Animated.View
+            style={[
+              styles.promoScrim,
+              { opacity: promoProgress.interpolate({ inputRange: [0, 1], outputRange: [0, 0.45] }) },
+            ]}>
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              accessibilityLabel="إغلاق عرض التوصيل المجاني"
+              onPress={closePromo}
+            />
+          </Animated.View>
+
+          {/* Full-width sheet pinned to the bottom edge, covering the ticker underneath. */}
+          <Animated.View
+            style={[
+              styles.promoSheet,
+              {
+                opacity: promoProgress,
+                transform: [
+                  {
+                    translateY: promoProgress.interpolate({ inputRange: [0, 1], outputRange: [360, 0] }),
+                  },
+                ],
+              },
+            ]}>
+            {/* Decorative only: dragging or pressing the handle must not dismiss the sheet. */}
+            <View pointerEvents="none" style={styles.promoHandle} />
+            <Pressable
+              onPress={closePromo}
+              accessibilityRole="button"
+              accessibilityLabel="إغلاق"
+              hitSlop={10}
+              style={styles.promoClose}>
+              <Ionicons name="close" size={16} color="#48240C" />
+            </Pressable>
+            <View style={styles.promoTitleWrap}>
+              <AppText style={styles.promoTitle}>توصيل مجاني لأول طلب داخل مركز بركة السبع</AppText>
+            </View>
+            <Button
+              label="اطلب الآن"
+              onPress={() => {
+                closePromo();
+                router.navigate("/categories");
+              }}
+            />
+          </Animated.View>
+        </View>
+      ) : null}
+
       <CartBar />
     </SafeAreaView>
   );
@@ -281,29 +371,14 @@ export default function Home() {
 
 const webNoOutline: object = Platform.OS === "web" ? { outlineStyle: "none" } : {};
 
-// Match a home tile label to a DB category name, tolerating "ال" prefixes,
-// ة/ى spelling and one inserted/removed letter ("صيدليات" vs "صيديليات").
-function fuzzySameName(label: string, name: string) {
-  const base = (s: string) => s.replace(/^ال/, "").replace(/ة/g, "ه").replace(/ى/g, "ي");
-  const a = base(label);
-  const b = base(name);
-  if (a === b) return true;
-  if (Math.abs(a.length - b.length) !== 1) return false;
-  const [longer, shorter] = a.length > b.length ? [a, b] : [b, a];
-  let j = 0;
-  for (let i = 0; i < longer.length && j <= shorter.length; i++) {
-    if (longer[i] === shorter[j]) j++;
-  }
-  return j === shorter.length;
-}
-
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fff" },
   list: { paddingBottom: 94 },
   // Header
-orangeHeader: {
+  orangeHeader: {
     backgroundColor: ORANGE,
-    paddingBottom: 20,
+    // Room for the wave band so the content never sits inside it (kept tight on purpose).
+    paddingBottom: 18,
     gap: space.md,
     paddingHorizontal: space.lg,
     overflow: "visible",
@@ -324,30 +399,44 @@ orangeHeader: {
   searchInput: { flex: 1, minHeight: 46, fontFamily: fonts.medium, fontSize: 15, color: "#000", textAlign: "right" },
   blackFriday: { alignItems: "center", paddingVertical: space.sm },
   blackFridayText: { color: LIME, fontWeight: "900", fontSize: 30, lineHeight: 44 },
+  blackFridayWhite: { color: "#fff" },
   svgWaveWrapper: {
     position: "absolute",
-    bottom: -30,
+    bottom: -1,
     left: 0,
     right: 0,
-    height: 52,
+    height: 26,
   },
   svgWave: {
     width: "100%",
     height: "100%",
   },
-  // Categories
-  catRow: { gap: -6, paddingHorizontal: space.lg, paddingVertical: space.lg },
-  catItem: { width: 92, alignItems: "center", marginHorizontal: -2 },
-  catTile: {
-    width: 72,
-    height: 62,
-    borderRadius: radius.md,
-    backgroundColor: TILE_BG,
+  // Order sections — quick category shortcuts above the offers.
+  // The app is RTL (dir="rtl" / forcesRTL), so a plain "row" already starts at the right edge.
+  quickLinks: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+    rowGap: space.sm,
+    marginTop: space.lg,
+    marginBottom: space.xs,
+    paddingHorizontal: space.lg,
+  },
+  quickLink: { alignItems: "center", gap: 6, minWidth: 72 },
+  quickLinkCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 10,
+    backgroundColor: "#F7F2EA",
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
   },
-  catIcon: { width: 44, height: 44 },
-  catLabel: { fontSize: 13, fontWeight: "700", textAlign: "center", marginTop: 8 },
+  quickLinkLabel: { color: "#48240C", fontWeight: "800", fontSize: 13, textAlign: "center" },
   // Banner carousel
   bannerWrap: { marginTop: space.sm },
   bannerRow: { paddingHorizontal: space.lg, gap: space.sm },
@@ -438,8 +527,55 @@ orangeHeader: {
     justifyContent: "center",
     gap: space.sm,
   },
+  tickerMessage: { flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 1 },
   tickerChip: { backgroundColor: "#311419", borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 },
   tickerChipText: { color: "#ffff00", fontWeight: "800", fontSize: 16 },
-  tickerText: { color: "#fff", fontWeight: "700", fontSize: 17 },
+  tickerText: { color: "#fff", fontWeight: "700", fontSize: 15, lineHeight: 22, flexShrink: 1 },
   tickerSpacer: { flex: 1 },
+  // Free-delivery sheet that grows out of the ticker
+  promoLayer: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+  promoScrim: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "#141414" },
+  promoSheet: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    paddingHorizontal: space.lg,
+    paddingTop: 14,
+    paddingBottom: space.xl,
+    gap: space.sm,
+    shadowColor: "#141414",
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: -6 },
+    elevation: 10,
+  },
+  promoHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: "#E3DED8", alignSelf: "center" },
+  promoClose: {
+    position: "absolute",
+    top: 8,
+    right: 14,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#D9CFC3",
+    backgroundColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  promoTitleWrap: {
+    alignSelf: "flex-start",
+    marginTop: space.lg,
+    backgroundColor: "#311419",
+    borderRadius: 12,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+    marginBottom: space.xs,
+  },
+  promoTitle: { color: "#ffff00", fontWeight: "900", fontSize: 19, lineHeight: 28 },
+  promoBody: { color: "#5F564F", fontSize: 14, lineHeight: 22, marginBottom: space.xs },
 });

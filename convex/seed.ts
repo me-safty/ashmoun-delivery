@@ -27,6 +27,7 @@ const categories = [
   { key: "restaurants", name: "مطاعم", emoji: "🍔", tint: "#FDE7D9" },
   { key: "groceries", name: "بقالة", emoji: "🛍️", tint: "#E3EEFB" },
   { key: "pharmacy", name: "صيديليات", emoji: "💊", tint: "#E6F4F1" },
+  { key: "flowers", name: "زهور", emoji: "💐", tint: "#FCE7F1" },
 ] as const;
 
 type CategoryKey = (typeof categories)[number]["key"];
@@ -359,5 +360,24 @@ export const run = internalMutation({
       await ctx.db.insert("drivers", { ...driver, active: true });
     }
     return "seeded";
+  },
+});
+
+// Updates existing category emoji/tint/sortOrder to match the seed list (matched by name).
+export const syncCategories = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const existing = await ctx.db.query("categories").collect();
+    const updated: string[] = [];
+    for (const category of categories) {
+      const row = existing.find((c) => c.name === category.name);
+      if (!row) continue;
+      await ctx.db.patch(row._id, {
+        emoji: category.emoji,
+        tint: category.tint,
+      });
+      updated.push(category.name);
+    }
+    return updated;
   },
 });

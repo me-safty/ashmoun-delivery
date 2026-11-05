@@ -4,9 +4,15 @@ import type { ComponentProps } from "react";
 import { Platform } from "react-native";
 import { colors, fonts } from "@/theme";
 
-function icon(name: ComponentProps<typeof Ionicons>["name"]) {
+function icon(activeName: ComponentProps<typeof Ionicons>["name"], inactiveName: ComponentProps<typeof Ionicons>["name"]) {
   return function TabIcon({ focused, size }: { focused: boolean; size: number }) {
-    return <Ionicons name={name} color={focused ? colors.primary : colors.muted} size={size} />;
+    return (
+      <Ionicons
+        name={focused ? activeName : inactiveName}
+        color={focused ? colors.primary : colors.muted}
+        size={size - 2}
+      />
+    );
   };
 }
 
@@ -27,10 +33,10 @@ export default function TabsLayout() {
           Platform.OS === "web" && { height: 60, paddingBottom: 6 },
         ],
       }}>
-      <Tabs.Screen name="index" options={{ title: "الرئيسية", headerShown: false, tabBarIcon: icon("home") }} />
-      <Tabs.Screen name="categories" options={{ title: "الأقسام", tabBarIcon: icon("grid") }} />
-      <Tabs.Screen name="orders" options={{ title: "طلباتي", tabBarIcon: icon("receipt") }} />
-      <Tabs.Screen name="profile" options={{ title: "حسابي", tabBarIcon: icon("person") }} />
+      <Tabs.Screen name="index" options={{ title: "الرئيسية", headerShown: false, tabBarIcon: icon("home", "home-outline") }} />
+      <Tabs.Screen name="categories" options={{ title: "الأقسام", tabBarIcon: icon("grid", "grid-outline") }} />
+      <Tabs.Screen name="orders" options={{ title: "طلباتي", tabBarIcon: icon("receipt", "receipt-outline") }} />
+      <Tabs.Screen name="profile" options={{ title: "حسابي", tabBarIcon: icon("person", "person-outline") }} />
     </Tabs>
   );
 }
