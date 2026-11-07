@@ -16,7 +16,7 @@ export default function Zones() {
   if (zones === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
   return (
     <ScrollView contentContainerStyle={[styles.content, adminPage]}>
-      <AppText tone="muted">رسوم التوصيل بتتحسب على الطلبات الجديدة بس.</AppText>
+      <AppText tone="muted">تُحتسب رسوم التوصيل على الطلبات الجديدة فقط.</AppText>
       <AdminGrid>
         {zones.map((zone) => (
           <ZoneRow key={`${zone._id}-${zone.deliveryFee}`} zone={zone} />
@@ -53,7 +53,7 @@ function ZoneRow({ zone }: { zone: Doc<"zones"> }) {
           {zone.name}
         </AppText>
         <ToggleRow
-          label={zone.active ? "التوصيل شغال" : "متوقف"}
+          label={zone.active ? "التوصيل مفعّل" : "متوقف"}
           value={zone.active}
           onValueChange={(active) => void save({ active })}
         />

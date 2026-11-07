@@ -30,27 +30,27 @@ export default function ForgotPassword() {
 
   function requestCode() {
     const normalized = normalizePhone(phone);
-    if (!normalized) return setError("رقم الموبايل غير صحيح");
+    if (!normalized) return setError("رقم الجوال غير صحيح");
     void run(async () => {
       await signIn("password", { flow: "reset", phone: normalized });
       setSentTo(normalized);
-    }, "مفيش حساب بالرقم ده");
+    }, "لا يوجد حساب بهذا الرقم");
   }
 
   function resetPassword() {
     if (!sentTo) return;
     void run(
       () => signIn("password", { flow: "reset-verification", phone: sentTo, code, newPassword }),
-      "الكود غلط أو انتهى، اطلب كود جديد",
+      "الرمز غير صحيح أو منتهي الصلاحية، اطلب رمزًا جديدًا",
     );
   }
 
   if (sentTo === null) {
     return (
-      <FormScreen footer={<Button label="ابعت الكود" loading={submitting} onPress={requestCode} />}>
-        <AppText tone="muted">اكتب رقم موبايلك وهنبعتلك كود من 6 أرقام.</AppText>
+      <FormScreen footer={<Button label="إرسال الرمز" loading={submitting} onPress={requestCode} />}>
+        <AppText tone="muted">أدخل رقم جوالك وسنرسل لك رمزًا مكوّنًا من 6 أرقام.</AppText>
         <TextField
-          label="رقم الموبايل"
+          label="رقم الجوال"
           placeholder="01xxxxxxxxx"
           keyboardType="phone-pad"
           value={phone}
@@ -65,20 +65,20 @@ export default function ForgotPassword() {
     <FormScreen
       footer={
         <>
-          <Button label="غير كلمة المرور" loading={submitting} onPress={resetPassword} />
-          <Button kind="secondary" label="غير الرقم" onPress={() => setSentTo(null)} />
+          <Button label="تغيير كلمة المرور" loading={submitting} onPress={resetPassword} />
+          <Button kind="secondary" label="تغيير الرقم" onPress={() => setSentTo(null)} />
         </>
       }>
-      <AppText tone="muted">بعتنا كود على {sentTo}</AppText>
+      <AppText tone="muted">تم إرسال رمز إلى {sentTo}</AppText>
       <TextField
-        label="الكود"
+        label="الرمز"
         keyboardType="number-pad"
         autoComplete="one-time-code"
         value={code}
         onChangeText={(text) => setCode(toLatinDigits(text).replace(/\D/g, "").slice(0, 6))}
       />
       <TextField
-        label="كلمة المرور الجديدة (8 على الأقل)"
+        label="كلمة المرور الجديدة (8 أحرف على الأقل)"
         secureTextEntry
         autoComplete="new-password"
         value={newPassword}

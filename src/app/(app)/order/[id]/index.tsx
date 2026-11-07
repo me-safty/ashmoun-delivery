@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Linking, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Linking, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import { canCustomerCancel, type OrderStatus } from "@/convex/lib/orderStatus";
 import { AppText } from "@/components/app-text";
@@ -15,12 +15,12 @@ import { orderCode } from "@/lib/order-code";
 import { colors, formatPrice, radius, space } from "@/theme";
 
 const statusHints: Record<OrderStatus, { text: string; color: string }> = {
-  created: { text: "مستنيين المحل يأكد طلبك", color: colors.warningInk },
-  confirmed: { text: "المحل بيجهز طلبك", color: colors.primaryInk },
-  with_driver: { text: "المندوب في الطريق ليك", color: colors.primaryInk },
-  delivered: { text: "وصل، بالهنا والشفا", color: colors.successInk },
-  returned: { text: "الطلب رجع للمحل", color: colors.dangerInk },
-  cancelled: { text: "الطلب اتلغى", color: colors.mutedInk },
+  created: { text: "بانتظار تأكيد المحل لطلبك", color: colors.warningInk },
+  confirmed: { text: "يقوم المحل بتجهيز طلبك", color: colors.primaryInk },
+  with_driver: { text: "المندوب في الطريق إليك", color: colors.primaryInk },
+  delivered: { text: "تم التوصيل، بالهناء والشفاء", color: colors.successInk },
+  returned: { text: "تم إرجاع الطلب إلى المحل", color: colors.dangerInk },
+  cancelled: { text: "تم إلغاء الطلب", color: colors.mutedInk },
 };
 
 export default function OrderTracking() {
@@ -31,13 +31,13 @@ export default function OrderTracking() {
   const [cancelling, setCancelling] = useState(false);
 
   if (order === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
-  if (order === null) return <Unavailable message="الطلب ده مش موجود" />;
+  if (order === null) return <Unavailable message="هذا الطلب غير موجود" />;
 
   async function onCancel() {
     if (!order) return;
     const sure = await confirm({
-      title: "تلغي الطلب؟",
-      message: `هنلغي طلبك من ${order.shopName}.`,
+      title: "إلغاء الطلب؟",
+      message: `سيتم إلغاء طلبك من ${order.shopName}.`,
       confirmLabel: "إلغاء الطلب",
     });
     if (!sure) return;
@@ -53,7 +53,7 @@ export default function OrderTracking() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, Platform.OS === "web" && styles.contentWeb]}>
       <Stack.Screen options={{ title: `طلب ${orderCode(order._id)}` }} />
       <View style={styles.card}>
         <AppText variant="title">{order.shopName}</AppText>
@@ -70,15 +70,15 @@ export default function OrderTracking() {
           </AppText>
           <View style={styles.row}>
             <AppText variant="subtitle">🛵 {order.driver.name}</AppText>
-            <Button
-              kind="secondary"
-              label="اتصل"
-              onPress={() =>
-                void Linking.openURL(`tel:${order.driver?.phone}`).catch(() =>
-                  setError(`الجهاز ده مش بيدعم الاتصال، رقم المندوب ${order.driver?.phone}`),
-                )
-              }
-            />
+              <Button
+                kind="secondary"
+                label="اتصال"
+                onPress={() =>
+                  void Linking.openURL(`tel:${order.driver?.phone}`).catch(() =>
+                    setError(`لا يدعم هذا الجهاز الاتصال، رقم المندوب ${order.driver?.phone}`),
+                  )
+                }
+              />
           </View>
         </View>
       ) : null}
@@ -116,7 +116,7 @@ export default function OrderTracking() {
           {order.address.landmark ? ` · ${order.address.landmark}` : ""}
         </AppText>
         <AppText variant="caption" tone="muted">
-          💵 الدفع كاش عند الاستلام
+          💵 الدفع نقدًا عند الاستلام
         </AppText>
       </View>
 
@@ -133,6 +133,7 @@ export default function OrderTracking() {
 const styles = StyleSheet.create({
   loading: { marginTop: space.xxl },
   content: { padding: space.lg, gap: space.md, paddingBottom: space.xxl },
+  contentWeb: { paddingBottom: space.lg },
   card: {
     gap: space.sm,
     padding: space.lg,

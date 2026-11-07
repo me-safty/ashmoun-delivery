@@ -34,7 +34,7 @@ export default function AdminShops() {
               <View style={styles.body}>
                 <AppText variant="subtitle">{shop.name}</AppText>
                 <AppText variant="caption" tone="mutedInk">
-                  {todayHoursLabel(shop, now)} · تعديل المنيو
+                  {todayHoursLabel(shop, now)} · تعديل القائمة
                 </AppText>
               </View>
               <ShopStatusBadge state={shopState(shop, now)} />

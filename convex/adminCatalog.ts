@@ -15,7 +15,7 @@ export const updateZone = mutation({
   handler: async (ctx, { zoneId, deliveryFee, active }) => {
     await requireAdmin(ctx);
     if (deliveryFee !== undefined && (!Number.isFinite(deliveryFee) || deliveryFee < 0 || deliveryFee > 200)) {
-      throw new ConvexError("رسوم التوصيل لازم تكون بين 0 و 200 ج.م");
+      throw new ConvexError("يجب أن تكون رسوم التوصيل بين 0 و200 ج.م");
     }
     // In a Convex patch an undefined value deletes the field, so send only what changed.
     await ctx.db.patch(zoneId, {
@@ -50,7 +50,7 @@ export const updateProduct = mutation({
         return sum + discounts.reduce((a, b) => a + b, 0);
       }, 0);
       if (price + largestDiscount < 0) {
-        throw new ConvexError(`السعر لازم يكون ${-largestDiscount} ج.م على الأقل عشان اختيارات الخصم`);
+        throw new ConvexError(`يجب أن يكون السعر ${-largestDiscount} ج.م على الأقل بسبب خيارات الخصم`);
       }
     }
     await ctx.db.patch(productId, {

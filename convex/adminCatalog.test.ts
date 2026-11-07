@@ -41,7 +41,7 @@ test("rejects bad values and non-admins", async () => {
   const { asAdmin, asCustomer, zoneId, productId } = await setup();
   await expect(asAdmin.mutation(api.adminCatalog.updateZone, { zoneId, deliveryFee: -5 })).rejects.toThrow();
   await expect(asAdmin.mutation(api.adminCatalog.updateProduct, { productId, price: 0 })).rejects.toThrow();
-  await expect(asCustomer.mutation(api.adminCatalog.updateZone, { zoneId, deliveryFee: 10 })).rejects.toThrow("غير مسموح");
+  await expect(asCustomer.mutation(api.adminCatalog.updateZone, { zoneId, deliveryFee: 10 })).rejects.toThrow("غير مصرح");
 });
 
 test("a price can't drop below what discount options subtract", async () => {

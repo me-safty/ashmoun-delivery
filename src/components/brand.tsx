@@ -9,7 +9,7 @@ export function Brand() {
         <AppText style={styles.emoji}>🛵</AppText>
       </View>
       <AppText variant="display">توصيل أشمون</AppText>
-      <AppText tone="muted">أكلك وطلباتك من محلات أشمون والقرى لحد باب البيت، والدفع عند الاستلام.</AppText>
+      <AppText tone="muted">اطلب من محلات أشمون والقرى حتى باب منزلك، والدفع عند الاستلام.</AppText>
     </View>
   );
 }

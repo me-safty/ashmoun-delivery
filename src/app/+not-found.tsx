@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <>
       <Stack.Screen options={{ title: "" }} />
-      <Unavailable message="الصفحة دي مش موجودة" />
+      <Unavailable message="هذه الصفحة غير موجودة" />
     </>
   );
 }

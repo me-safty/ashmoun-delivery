@@ -1,6 +1,6 @@
 import { useQuery } from "convex/react";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
@@ -13,17 +13,17 @@ export default function OrderSuccess() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const order = useQuery(api.orders.get, { orderId: id });
 
-  if (order === null) return <Unavailable message="الطلب ده مش موجود" />;
+  if (order === null) return <Unavailable message="هذا الطلب غير موجود" />;
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={Platform.OS === "web" ? [] : undefined}>
       <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} />
       <View style={styles.badge}>
         <AppText style={styles.check}>✓</AppText>
       </View>
       <AppText variant="display">تم إرسال طلبك بنجاح</AppText>
       <AppText tone="muted" style={styles.center}>
-        {order ? `طلبك من ${order.shopName} وصل للمحل، وهيأكده في أقرب وقت.` : "..."}
+        {order ? `وصل طلبك من ${order.shopName} إلى المحل، وسيتم تأكيده في أقرب وقت.` : "..."}
       </AppText>
       {order ? (
         <View style={styles.card}>
@@ -34,7 +34,7 @@ export default function OrderSuccess() {
             {formatPrice(order.total)}
           </AppText>
           <AppText variant="caption" tone="muted">
-            هتدفع كاش عند الاستلام
+            ستدفع نقدًا عند الاستلام
           </AppText>
           <AppText variant="caption" tone="muted">
             التوصيل إلى {order.address.label} · {order.address.zoneName}
@@ -43,7 +43,7 @@ export default function OrderSuccess() {
       ) : null}
       <View style={styles.actions}>
         <Button
-          label="تتبع الطلب"
+          label="تتبّع الطلب"
           onPress={() => {
             router.dismissAll();
             router.navigate("/orders");
@@ -52,7 +52,7 @@ export default function OrderSuccess() {
         />
         <Button
           kind="secondary"
-          label="رجوع للرئيسية"
+          label="العودة للرئيسية"
           onPress={() => {
             router.dismissAll();
             router.navigate("/");

@@ -30,7 +30,7 @@ export default function Profile() {
   }
 
   async function onRemove(addressId: Id<"addresses">, label: string) {
-    const sure = await confirm({ title: "تمسح العنوان؟", message: `هنمسح عنوان "${label}".`, confirmLabel: "مسح" });
+    const sure = await confirm({ title: "حذف العنوان؟", message: `سيتم حذف عنوان "${label}".`, confirmLabel: "حذف" });
     if (sure) await run(() => remove({ addressId }));
   }
 
@@ -68,7 +68,7 @@ export default function Profile() {
             {address.landmark ? ` · ${address.landmark}` : ""}
           </AppText>
           <AppText variant="caption" tone={address.zoneActive ? "muted" : "danger"}>
-            {address.zoneActive ? `توصيل ${formatPrice(address.deliveryFee)}` : "التوصيل متوقف في المنطقة دي حالياً"}
+            {address.zoneActive ? `توصيل ${formatPrice(address.deliveryFee)}` : "التوصيل متوقف في هذه المنطقة حاليًا"}
           </AppText>
           <View style={styles.actions}>
             {address.isDefault ? null : (
@@ -78,7 +78,7 @@ export default function Profile() {
                 hitSlop={8}
                 style={styles.link}>
                 <AppText variant="caption" tone="primaryInk">
-                  خليه الأساسي
+                  تعيين كعنوان أساسي
                 </AppText>
               </Pressable>
             )}
@@ -89,7 +89,7 @@ export default function Profile() {
                 hitSlop={8}
                 style={[styles.link, styles.remove]}>
                 <AppText variant="caption" tone="danger">
-                  مسح
+                  حذف
                 </AppText>
               </Pressable>
             ) : null}

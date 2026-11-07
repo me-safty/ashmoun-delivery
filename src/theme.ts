@@ -24,11 +24,11 @@ export const colors = {
 } as const;
 
 export const fonts = {
-  regular: "Cairo_400Regular",
-  medium: "Cairo_500Medium",
-  semibold: "Cairo_600SemiBold",
-  bold: "Cairo_700Bold",
-  black: "Cairo_900Black",
+  regular: "BalooBhaijaan2_400Regular",
+  medium: "BalooBhaijaan2_500Medium",
+  semibold: "BalooBhaijaan2_600SemiBold",
+  bold: "BalooBhaijaan2_700Bold",
+  black: "BalooBhaijaan2_800ExtraBold",
 } as const;
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;

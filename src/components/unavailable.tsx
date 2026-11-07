@@ -9,7 +9,7 @@ export function Unavailable({ message }: { message: string }) {
     <View style={styles.screen}>
       <AppText style={styles.emoji}>🔍</AppText>
       <AppText variant="title">{message}</AppText>
-      <Button kind="secondary" label="رجوع" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} />
+      <Button kind="secondary" label="عودة" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} />
     </View>
   );
 }

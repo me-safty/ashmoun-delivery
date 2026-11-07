@@ -24,14 +24,10 @@ const zones = [
 ] as const;
 
 const categories = [
-  { key: "burger", name: "مطاعم وبرجر", emoji: "🍔", tint: "#FDE7D9" },
-  { key: "pizza", name: "بيتزا وفطير", emoji: "🍕", tint: "#FCE3E1" },
-  { key: "grill", name: "مشويات", emoji: "🍢", tint: "#F6E6D6" },
-  { key: "koshary", name: "كشري وفول", emoji: "🥙", tint: "#FFF1CC" },
-  { key: "sweets", name: "حلويات", emoji: "🍰", tint: "#FBE4EE" },
-  { key: "cafe", name: "عصائر وكافيه", emoji: "🥤", tint: "#DDF3EA" },
-  { key: "market", name: "سوبر ماركت", emoji: "🛒", tint: "#E3EEFB" },
-  { key: "pharmacy", name: "صيدليات", emoji: "💊", tint: "#E6F4F1" },
+  { key: "food", name: "الطعام", emoji: "🍔", tint: "#FDE7D9" },
+  { key: "pharmacies", name: "الصيدليات", emoji: "💊", tint: "#E6F4F1" },
+  { key: "groceries", name: "البقالة", emoji: "🛍️", tint: "#E3EEFB" },
+  { key: "flowers", name: "الورود", emoji: "💐", tint: "#FCE7F1" },
 ] as const;
 
 type CategoryKey = (typeof categories)[number]["key"];
@@ -79,7 +75,7 @@ const shops: {
   menu: { section: string; products: SeedProduct[] }[];
 }[] = [
   {
-    category: "burger",
+    category: "food",
     name: "برجر الميدان",
     description: "برجر لحم بلدي مشوي على الفحم",
     emoji: "🍔",
@@ -135,7 +131,7 @@ const shops: {
     ],
   },
   {
-    category: "pizza",
+    category: "food",
     name: "بيتزا وفطير السلطان",
     description: "بيتزا إيطالي وفطير مشلتت على الفرن البلدي",
     emoji: "🍕",
@@ -168,7 +164,7 @@ const shops: {
     ],
   },
   {
-    category: "grill",
+    category: "food",
     name: "مشويات أبو علي",
     description: "كفتة وطرب وفراخ مشوية",
     emoji: "🍢",
@@ -206,7 +202,7 @@ const shops: {
     ],
   },
   {
-    category: "koshary",
+    category: "food",
     name: "كشري التحرير أشمون",
     description: "كشري وطواجن ومكرونة",
     emoji: "🥙",
@@ -239,7 +235,7 @@ const shops: {
     ],
   },
   {
-    category: "sweets",
+    category: "food",
     name: "حلواني الشروق",
     description: "تورت وجاتوه وحلويات شرقي",
     emoji: "🍰",
@@ -260,7 +256,7 @@ const shops: {
     ],
   },
   {
-    category: "cafe",
+    category: "food",
     name: "عصير ركن الفاكهة",
     description: "عصائر فريش وسموزي",
     emoji: "🥤",
@@ -281,7 +277,7 @@ const shops: {
     ],
   },
   {
-    category: "market",
+    category: "groceries",
     name: "ماركت البركة",
     description: "بقالة وخضار ومنظفات",
     emoji: "🛒",
@@ -308,7 +304,7 @@ const shops: {
     ],
   },
   {
-    category: "pharmacy",
+    category: "pharmacies",
     name: "صيدلية الشفاء",
     description: "أدوية ومستلزمات طبية",
     emoji: "💊",
@@ -337,8 +333,11 @@ const drivers = [
 export const run = internalMutation({
   args: {},
   handler: async (ctx) => {
-    if ((await ctx.db.query("zones").first()) !== null) return "already seeded";
-
+    // Clear previously seeded data so re-running reflects updated seed
+    for (const table of ["products", "menuSections", "shops", "categories", "zones", "drivers"] as const) {
+      const rows = await ctx.db.query(table).collect();
+      for (const row of rows) await ctx.db.delete(row._id);
+    }
     for (const [sortOrder, zone] of zones.entries()) {
       await ctx.db.insert("zones", { ...zone, active: true, sortOrder });
     }
@@ -362,4 +361,43 @@ export const run = internalMutation({
     }
     return "seeded";
   },
+});
+
+const CATEGORY_ALIASES: Record<string, string[]> = {
+  الطعام: ["مطاعم"],
+  الصيدليات: ["صيدليات", "صيدلية"],
+  البقالة: ["بقالة"],
+  الورود: ["زهور"],
+};
+
+async function upsertSeedCategories(ctx: { db: any }) {
+  const existing = await ctx.db.query("categories").collect();
+  const results: { name: string; action: "inserted" | "updated" }[] = [];
+  for (const [sortOrder, { key: _key, ...category }] of categories.entries()) {
+    const aliases = CATEGORY_ALIASES[category.name] ?? [];
+    const row = existing.find(
+      (c: { name: string }) => c.name === category.name || aliases.includes(c.name),
+    );
+    if (row) {
+      await ctx.db.patch(row._id, { ...category, sortOrder });
+      results.push({ name: category.name, action: "updated" });
+    } else {
+      await ctx.db.insert("categories", { ...category, sortOrder });
+      results.push({ name: category.name, action: "inserted" });
+    }
+  }
+  return results;
+}
+
+// Ensures the seed categories exist (matched by name). Inserts missing sections and updates
+// emoji/tint/sortOrder for existing ones without deleting shops or other data.
+export const upsertCategories = internalMutation({
+  args: {},
+  handler: async (ctx) => upsertSeedCategories(ctx),
+});
+
+// Backward-compatible alias.
+export const syncCategories = internalMutation({
+  args: {},
+  handler: async (ctx) => upsertSeedCategories(ctx),
 });

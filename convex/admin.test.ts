@@ -37,7 +37,7 @@ describe("admin.setStatus", () => {
   test("moves an order through the flow and records each step", async () => {
     const { asAdmin, asCustomer, orderId, driverId } = await setup();
     await asAdmin.mutation(api.admin.setStatus, { orderId, status: "confirmed" });
-    await expect(asAdmin.mutation(api.admin.setStatus, { orderId, status: "with_driver" })).rejects.toThrow("اختار مندوب");
+    await expect(asAdmin.mutation(api.admin.setStatus, { orderId, status: "with_driver" })).rejects.toThrow("اختر مندوبًا");
     await asAdmin.mutation(api.admin.setStatus, { orderId, status: "with_driver", driverId });
     await asAdmin.mutation(api.admin.setStatus, { orderId, status: "delivered" });
     const order = await asCustomer.query(api.orders.get, { orderId });
@@ -48,18 +48,18 @@ describe("admin.setStatus", () => {
 
   test("rejects skipped steps and inactive drivers", async () => {
     const { t, asAdmin, orderId, driverId } = await setup();
-    await expect(asAdmin.mutation(api.admin.setStatus, { orderId, status: "delivered" })).rejects.toThrow("مينفعش");
+    await expect(asAdmin.mutation(api.admin.setStatus, { orderId, status: "delivered" })).rejects.toThrow("لا يمكن");
     await asAdmin.mutation(api.admin.setStatus, { orderId, status: "confirmed" });
     await t.run((ctx) => ctx.db.patch(driverId, { active: false }));
     await expect(
       asAdmin.mutation(api.admin.setStatus, { orderId, status: "with_driver", driverId }),
-    ).rejects.toThrow("اختار مندوب");
+    ).rejects.toThrow("اختر مندوبًا");
   });
 
   test("customers can't use admin functions", async () => {
     const { asCustomer, orderId } = await setup();
-    await expect(asCustomer.mutation(api.admin.setStatus, { orderId, status: "confirmed" })).rejects.toThrow("غير مسموح");
-    await expect(asCustomer.query(api.admin.orders, { view: "active" })).rejects.toThrow("غير مسموح");
+    await expect(asCustomer.mutation(api.admin.setStatus, { orderId, status: "confirmed" })).rejects.toThrow("غير مصرح");
+    await expect(asCustomer.query(api.admin.orders, { view: "active" })).rejects.toThrow("غير مصرح");
   });
 });
 
@@ -117,5 +117,5 @@ test("pushes announce the status that triggered them and forget unregistered dev
 test("a driver phone can only be added once", async () => {
   const { asAdmin } = await setup();
   await asAdmin.mutation(api.admin.addDriver, { name: "كريم", phone: "01234567890" });
-  await expect(asAdmin.mutation(api.admin.addDriver, { name: "كريم تاني", phone: "+20 123 456 7890" })).rejects.toThrow("قبل كده");
+  await expect(asAdmin.mutation(api.admin.addDriver, { name: "كريم تاني", phone: "+20 123 456 7890" })).rejects.toThrow("مسبقًا");
 });

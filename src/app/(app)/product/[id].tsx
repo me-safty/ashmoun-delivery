@@ -1,7 +1,7 @@
 import { useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
 import { isShopOpen } from "@/convex/lib/hours";
@@ -28,7 +28,7 @@ export default function Product() {
   const narrow = useWindowDimensions().width < 360;
 
   if (data === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
-  if (data === null || !data.product.available) return <Unavailable message="المنتج ده مش متاح دلوقتي" />;
+  if (data === null || !data.product.available) return <Unavailable message="هذا المنتج غير متاح حاليًا" />;
 
   const { product, shop } = data;
   // Keep only keys that still exist, so an option removed while the sheet is open can't block pricing.
@@ -57,9 +57,9 @@ export default function Product() {
     const cart = useCart.getState();
     if (cart.shop && cart.shop.id !== shop._id) {
       const replace = await confirm({
-        title: "تبدأ سلة جديدة؟",
-        message: `السلة فيها طلب من ${cart.shop.name}. الطلب الواحد بيكون من محل واحد، فلو كملت السلة هتتفضى.`,
-        confirmLabel: "ابدأ سلة جديدة",
+        title: "بدء سلة جديدة؟",
+        message: `تحتوي السلة على طلب من ${cart.shop.name}. لا يمكن الطلب من أكثر من محل في الطلب الواحد؛ المتابعة ستؤدي إلى إفراغ السلة.`,
+        confirmLabel: "بدء سلة جديدة",
       });
       if (!replace) return;
     }
@@ -79,8 +79,8 @@ export default function Product() {
   }
 
   return (
-    <SafeAreaView style={styles.screen} edges={["bottom"]}>
-      <ScrollView contentContainerStyle={styles.content}>
+    <SafeAreaView style={styles.screen} edges={Platform.OS === "web" ? [] : ["bottom"]}>
+      <ScrollView contentContainerStyle={[styles.content, Platform.OS === "web" && styles.contentWeb]}>
         <View style={styles.header}>
           <EmojiTile emoji={product.emoji} tint={shop.tint} size={96} />
           <AppText variant="display">{product.name}</AppText>
@@ -123,18 +123,18 @@ export default function Product() {
 
       </ScrollView>
       {shopOpen ? (
-        <View style={[styles.footer, narrow && styles.footerNarrow]}>
+        <View style={[styles.footer, Platform.OS === "web" && styles.footerWeb, narrow && styles.footerNarrow]}>
           <View style={[styles.stepper, narrow && styles.stepperNarrow]}>
             <StepButton
               icon="remove"
-              label="قلل الكمية"
+              label="تقليل الكمية"
               disabled={quantity <= 1}
               onPress={() => setQuantity((q) => Math.max(1, q - 1))}
             />
             <AppText variant="title">{quantity}</AppText>
             <StepButton
               icon="add"
-              label="زود الكمية"
+              label="زيادة الكمية"
               disabled={quantity >= MAX_QUANTITY}
               onPress={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))}
             />
@@ -144,19 +144,19 @@ export default function Product() {
             disabled={priced.kind !== "ok"}
             label={
               priced.kind === "ok"
-                ? `${narrow ? "أضف" : "أضف للسلة"} · ${formatPrice(priced.unitPrice * quantity)}`
-                : "اختار المطلوب"
+                ? `${narrow ? "أضف" : "أضف إلى السلة"} · ${formatPrice(priced.unitPrice * quantity)}`
+                : "اختر المطلوب"
             }
             onPress={addToCart}
           />
         </View>
       ) : (
-        <View style={styles.footer}>
+        <View style={[styles.footer, Platform.OS === "web" && styles.footerWeb]}>
           <View style={styles.closedNotice}>
             <AppText variant="subtitle" tone="warningInk">
               {shop.paused
-                ? "المحل واقف استقبال طلبات مؤقتاً"
-                : `المحل مقفول دلوقتي · مواعيد النهارده ${todayHoursLabel(shop, now)}`}
+                ? "المحل متوقف عن استقبال الطلبات مؤقتًا"
+                : `المحل مغلق حاليًا · مواعيد اليوم ${todayHoursLabel(shop, now)}`}
             </AppText>
           </View>
         </View>
@@ -166,9 +166,9 @@ export default function Product() {
 }
 
 function groupHint({ min, max }: { min: number; max: number }) {
-  if (min === 0) return `اختياري · لحد ${max}`;
-  if (min === max) return min === 1 ? "مطلوب" : `مطلوب · اختار ${min}`;
-  return `مطلوب · من ${min} لحد ${max}`;
+  if (min === 0) return `اختياري · حتى ${max}`;
+  if (min === max) return min === 1 ? "مطلوب" : `مطلوب · اختر ${min}`;
+  return `مطلوب · من ${min} إلى ${max}`;
 }
 
 const styles = StyleSheet.create({
@@ -184,6 +184,7 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     backgroundColor: colors.background,
   },
+  footerWeb: { paddingTop: space.sm, paddingBottom: space.sm },
   addButton: { flex: 1 },
   footerNarrow: { gap: space.sm, paddingHorizontal: space.lg },
   stepperNarrow: { gap: space.sm },
@@ -196,6 +197,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.warningSoft,
   },
   content: { padding: space.xl, gap: space.xl },
+  contentWeb: { paddingTop: space.lg, paddingBottom: space.lg, gap: space.lg },
   header: { gap: space.sm, alignItems: "flex-start" },
   group: { gap: space.sm },
   groupHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },

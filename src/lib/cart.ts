@@ -96,7 +96,7 @@ export function cartCount(lines: CartLine[]) {
 export function cartProblem(quote: ReturnType<typeof useCartQuote>, now: number) {
   if (quote === undefined) return null;
   if (quote.kind === "invalid") return quote.message;
-  if (quote.paused) return "المحل واقف استقبال طلبات مؤقتاً، جرب كمان شوية";
-  if (!isOpenAt(quote.hours, now)) return "المحل مقفول دلوقتي، تقدر تطلب لما يفتح";
+  if (quote.paused) return "المحل متوقف عن استقبال الطلبات مؤقتًا، يرجى المحاولة لاحقًا";
+  if (!isOpenAt(quote.hours, now)) return "المحل مغلق حاليًا، يمكنك الطلب عند فتحه";
   return null;
 }

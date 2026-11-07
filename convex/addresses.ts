@@ -69,7 +69,7 @@ export const remove = mutation({
         .withIndex("by_user", (q) => q.eq("userId", user._id))
         .collect()
     ).filter((a) => a._id !== address._id);
-    if (others.length === 0) throw new ConvexError("لازم يفضل عندك عنوان واحد على الأقل");
+    if (others.length === 0) throw new ConvexError("يجب الاحتفاظ بعنوان واحد على الأقل");
     await ctx.db.delete(address._id);
     if (address.isDefault) await ctx.db.patch(others[0]._id, { isDefault: true });
   },

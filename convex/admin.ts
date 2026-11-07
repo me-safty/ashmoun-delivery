@@ -54,12 +54,12 @@ export const setStatus = mutation({
     const admin = await requireAdmin(ctx);
     const order = await ctx.db.get(orderId);
     if (order === null) throw new ConvexError("الطلب غير موجود");
-    if (!canTransition(order.status, status)) throw new ConvexError("مينفعش تنقل الطلب للحالة دي");
+    if (!canTransition(order.status, status)) throw new ConvexError("لا يمكن نقل الطلب إلى هذه الحالة");
 
     let driver = order.driver;
     if (status === "with_driver") {
       const chosen = driverId === undefined ? null : await ctx.db.get(driverId);
-      if (chosen === null || !chosen.active) throw new ConvexError("اختار مندوب");
+      if (chosen === null || !chosen.active) throw new ConvexError("اختر مندوبًا");
       driver = { name: chosen.name, phone: chosen.phone };
     }
     await ctx.db.patch(order._id, {
@@ -86,9 +86,9 @@ export const addDriver = mutation({
     const name = args.name.trim();
     const phone = normalizePhone(args.phone);
     if (name.length < 2) throw new ConvexError("اكتب اسم المندوب");
-    if (!phone) throw new ConvexError("رقم الموبايل غير صحيح");
+    if (!phone) throw new ConvexError("رقم الجوال غير صحيح");
     const drivers = await ctx.db.query("drivers").collect();
-    if (drivers.some((d) => d.phone === phone)) throw new ConvexError("فيه مندوب بالرقم ده قبل كده");
+    if (drivers.some((d) => d.phone === phone)) throw new ConvexError("يوجد مندوب مسجّل بهذا الرقم مسبقًا");
     return await ctx.db.insert("drivers", { name, phone, active: true });
   },
 });
@@ -108,7 +108,7 @@ export const promote = internalMutation({
     const phone = normalizePhone(args.phone);
     const user =
       phone === null ? null : await ctx.db.query("users").withIndex("phone", (q) => q.eq("phone", phone)).unique();
-    if (user === null) throw new ConvexError("مفيش مستخدم بالرقم ده");
+    if (user === null) throw new ConvexError("لا يوجد مستخدم بهذا الرقم");
     await ctx.db.patch(user._id, { role: "admin" });
     return user._id;
   },
