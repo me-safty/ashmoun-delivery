@@ -11,8 +11,8 @@ export function shopState(shop: Pick<Doc<"shops">, "hours" | "paused">, now: num
 
 const badge = {
   open: { label: "مفتوح", ink: colors.successInk, background: colors.successSoft },
-  closed: { label: "مقفول", ink: colors.dangerInk, background: colors.dangerSoft },
-  paused: { label: "واقف مؤقتاً", ink: colors.warningInk, background: colors.warningSoft },
+  closed: { label: "مغلق", ink: colors.dangerInk, background: colors.dangerSoft },
+  paused: { label: "متوقف مؤقتًا", ink: colors.warningInk, background: colors.warningSoft },
 } as const;
 
 export function ShopStatusBadge({ state, onTint = false }: { state: ReturnType<typeof shopState>; onTint?: boolean }) {
@@ -28,7 +28,7 @@ export function ShopStatusBadge({ state, onTint = false }: { state: ReturnType<t
 
 export function todayHoursLabel(shop: Pick<Doc<"shops">, "hours">, now: number) {
   const ranges = todayRanges(shop.hours, now);
-  if (ranges.length === 0) return "إجازة النهارده";
+  if (ranges.length === 0) return "إجازة اليوم";
   if (ranges.some((r) => r.open === r.close)) return "مفتوح 24 ساعة";
   return ranges.map((r) => `${formatMinute(r.open)} - ${formatMinute(r.close)}`).join("، ");
 }

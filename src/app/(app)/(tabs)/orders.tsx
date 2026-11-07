@@ -30,8 +30,8 @@ export default function Orders() {
       ListEmptyComponent={
         <View style={styles.empty}>
           <AppText style={styles.emptyEmoji}>🧾</AppText>
-          <AppText tone="muted">لسه معملتش أي طلب</AppText>
-          <Button kind="secondary" label="اطلب دلوقتي" onPress={() => router.navigate("/")} />
+          <AppText tone="muted">لا توجد طلبات حتى الآن</AppText>
+          <Button kind="secondary" label="تصفّح واطلب" onPress={() => router.navigate("/")} />
         </View>
       }
       renderItem={({ item }) => {

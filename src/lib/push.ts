@@ -9,6 +9,18 @@ import { useCallback, useEffect } from "react";
 import { Platform } from "react-native";
 import { api } from "@/convex/_generated/api";
 
+if (Platform.OS !== "web") {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
+
 let deviceToken: string | null = null;
 
 // expo-notifications throws on web when reading the last response.

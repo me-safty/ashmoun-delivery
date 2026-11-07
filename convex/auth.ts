@@ -21,7 +21,7 @@ const ResetCode = Email({
     }
   },
   async sendVerificationRequest({ identifier, token }) {
-    await sendSms(identifier, `كود استعادة كلمة المرور: ${token}`);
+    await sendSms(identifier, `رمز استعادة كلمة المرور: ${token}`);
   },
 });
 
@@ -32,7 +32,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       reset: ResetCode,
       profile(params) {
         const phone = normalizePhone(String(params.phone ?? ""));
-        if (!phone) throw new ConvexError("رقم الموبايل غير صحيح");
+        if (!phone) throw new ConvexError("رقم الجوال غير صحيح");
         const name = String(params.name ?? "").trim();
         if (params.flow === "signUp" && name.length < 2) {
           throw new ConvexError("اكتب اسمك");
@@ -41,7 +41,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       },
       validatePasswordRequirements(password) {
         if (password.length < 8) {
-          throw new ConvexError("كلمة المرور لازم تكون 8 حروف أو أرقام على الأقل");
+          throw new ConvexError("يجب أن تتكوّن كلمة المرور من 8 أحرف أو أرقام على الأقل");
         }
       },
     }),

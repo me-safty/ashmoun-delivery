@@ -7,8 +7,8 @@ import { modules } from "./test.setup";
 test("catalog queries require sign-in", async () => {
   const t = convexTest(schema, modules);
   await t.mutation(internal.seed.run, {});
-  await expect(t.query(api.catalog.shops, {})).rejects.toThrow("سجل الدخول");
-  await expect(t.query(api.catalog.categories, {})).rejects.toThrow("سجل الدخول");
+  await expect(t.query(api.catalog.shops, {})).rejects.toThrow("يرجى تسجيل الدخول");
+  await expect(t.query(api.catalog.categories, {})).rejects.toThrow("يرجى تسجيل الدخول");
 });
 
 test("missing or malformed ids return null instead of throwing", async () => {

@@ -43,7 +43,7 @@ export function AddressForm({ onSaved, footerExtra }: { onSaved?: () => void; fo
   }
 
   async function save() {
-    if (!zoneId) return setError("اختار منطقتك");
+    if (!zoneId) return setError("اختر منطقتك");
     if (street.trim().length < 3) return setError("اكتب العنوان بالتفصيل");
     setError(null);
     setSaving(true);
@@ -75,7 +75,7 @@ export function AddressForm({ onSaved, footerExtra }: { onSaved?: () => void; fo
       {zones === undefined ? (
         <ActivityIndicator color={colors.primary} />
       ) : zones.length === 0 ? (
-        <AppText tone="danger">التوصيل متوقف حالياً في كل المناطق، جرب تاني بعدين.</AppText>
+        <AppText tone="danger">التوصيل متوقف حاليًا في جميع المناطق، يرجى المحاولة لاحقًا.</AppText>
       ) : (
         <View style={styles.zones}>
           {zones.map((zone) => {
@@ -112,19 +112,19 @@ export function AddressForm({ onSaved, footerExtra }: { onSaved?: () => void; fo
           </Pressable>
         ))}
       </View>
-      <TextField label="الشارع ورقم البيت والدور" value={street} onChangeText={setStreet} />
-      <TextField label="علامة مميزة (اختياري)" placeholder="جنب مسجد..." value={landmark} onChangeText={setLandmark} />
+      <TextField label="الشارع ورقم المنزل والدور" value={street} onChangeText={setStreet} />
+      <TextField label="علامة مميزة (اختياري)" placeholder="بجوار مسجد..." value={landmark} onChangeText={setLandmark} />
 
       <Pressable onPress={locate} style={styles.locate} disabled={location.kind === "locating"}>
         <AppText variant="subtitle" tone="primary">
-          📍 {location.kind === "set" ? "تم تحديد موقعك" : "حدد موقعي الحالي (اختياري)"}
+          📍 {location.kind === "set" ? "تم تحديد موقعك" : "تحديد موقعي الحالي (اختياري)"}
         </AppText>
         <AppText variant="caption" tone="muted">
           {location.kind === "locating"
-            ? "جاري تحديد الموقع..."
+            ? "جارٍ تحديد الموقع..."
             : location.kind === "denied"
-              ? "مقدرناش نوصل لموقعك، العنوان المكتوب كفاية"
-              : "بيساعد المندوب يوصلك أسرع"}
+              ? "تعذّر الوصول إلى موقعك، يكفي العنوان المكتوب"
+              : "يساعد المندوب على الوصول إليك بشكل أسرع"}
         </AppText>
       </Pressable>
 

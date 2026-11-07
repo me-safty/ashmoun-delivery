@@ -46,7 +46,7 @@ export default function Drivers() {
               </AppText>
             </View>
             <ToggleRow
-              label={driver.active ? "متاح" : "مش متاح"}
+              label={driver.active ? "متاح" : "غير متاح"}
               value={driver.active}
               onValueChange={(active) =>
                 void setActive({ driverId: driver._id, active }).catch((e) => setError(errorMessage(e)))
@@ -58,7 +58,7 @@ export default function Drivers() {
       <View style={styles.form}>
         <AppText variant="subtitle">مندوب جديد</AppText>
         <TextField label="الاسم" value={name} onChangeText={setName} />
-        <TextField label="رقم الموبايل" placeholder="01xxxxxxxxx" keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
+        <TextField label="رقم الجوال" placeholder="01xxxxxxxxx" keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
         {error ? <AppText tone="danger">{error}</AppText> : null}
         <Button
           label="إضافة مندوب"

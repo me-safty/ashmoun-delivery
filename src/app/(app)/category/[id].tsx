@@ -31,7 +31,7 @@ export default function CategoryShops() {
     });
   }, [shops, search]);
 
-  if (category === null) return <Unavailable message="القسم ده مش موجود" />;
+  if (category === null) return <Unavailable message="هذا القسم غير موجود" />;
 
   return (
     <>
@@ -39,7 +39,7 @@ export default function CategoryShops() {
         options={{
           headerShown: true,
           title: category ? `${category.emoji} ${category.name}` : "",
-          headerBackTitle: "رجوع",
+          headerBackTitle: "عودة",
           headerBackButtonDisplayMode: "minimal",
         }}
       />
@@ -71,7 +71,7 @@ export default function CategoryShops() {
               <ActivityIndicator color={colors.primary} />
             ) : (
               <AppText tone="muted" style={styles.emptyText}>
-                {search.trim() ? "مفيش محلات مطابقة للبحث" : "مفيش محلات في القسم ده لسه"}
+                {search.trim() ? "لا توجد محلات مطابقة للبحث" : "لا توجد محلات في هذا القسم بعد"}
               </AppText>
             )
           }

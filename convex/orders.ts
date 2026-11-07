@@ -21,19 +21,19 @@ const cartItems = v.array(
 
 // The one place cart lines are priced, shared by the live quote and by place().
 async function priceCart(ctx: QueryCtx, shop: Doc<"shops">, lines: Infer<typeof cartItems>) {
-  if (lines.length === 0) throw new ConvexError("السلة فاضية");
-  if (lines.length > MAX_LINES) throw new ConvexError("الطلب كبير، قسمه على أكتر من طلب");
+  if (lines.length === 0) throw new ConvexError("السلة فارغة");
+  if (lines.length > MAX_LINES) throw new ConvexError("الطلب كبير، يرجى تقسيمه إلى أكثر من طلب");
   const items = [];
   for (const line of lines) {
     if (!Number.isInteger(line.quantity) || line.quantity < 1 || line.quantity > MAX_QUANTITY) {
       throw new ConvexError("كمية غير صحيحة");
     }
     const product = await ctx.db.get(line.productId);
-    if (product === null) throw new ConvexError("فيه منتج في السلة اتشال من المنيو، شيله وكمل");
-    if (product.shopId !== shop._id) throw new ConvexError("كل الطلب لازم يكون من محل واحد");
-    if (!product.available) throw new ConvexError(`${product.name} مش متاح دلوقتي`);
+    if (product === null) throw new ConvexError("يوجد منتج في السلة أُزيل من القائمة، يرجى إزالته والمتابعة");
+    if (product.shopId !== shop._id) throw new ConvexError("يجب أن يكون الطلب من محل واحد فقط");
+    if (!product.available) throw new ConvexError(`${product.name} غير متاح حاليًا`);
     const priced = priceLine(product, line.selections);
-    if (priced.kind === "invalid") throw new ConvexError(`اختيارات ${product.name} اتغيرت، شيله وضيفه تاني`);
+    if (priced.kind === "invalid") throw new ConvexError(`تغيّرت اختيارات ${product.name}، يرجى إزالته وإضافته مرة أخرى`);
     items.push({
       productId: product._id,
       name: product.name,
@@ -51,7 +51,7 @@ export const quote = query({
   handler: async (ctx, args) => {
     await requireUser(ctx);
     const shop = await ctx.db.get(args.shopId);
-    if (shop === null) return { kind: "invalid" as const, message: "المحل ده مش متاح دلوقتي" };
+    if (shop === null) return { kind: "invalid" as const, message: "هذا المحل غير متاح حاليًا" };
     try {
       const { items, subtotal } = await priceCart(ctx, shop, args.items);
       return {
@@ -84,19 +84,19 @@ export const place = mutation({
     const address = await ctx.db.get(args.addressId);
     if (address === null || address.userId !== user._id) throw new ConvexError("العنوان غير موجود");
     const zone = await ctx.db.get(address.zoneId);
-    if (zone === null || !zone.active) throw new ConvexError("التوصيل متوقف في المنطقة دي حالياً");
+    if (zone === null || !zone.active) throw new ConvexError("التوصيل متوقف في هذه المنطقة حاليًا");
 
     const shop = await ctx.db.get(args.shopId);
     if (shop === null) throw new ConvexError("المحل غير موجود");
     const now = Date.now();
-    if (shop.paused) throw new ConvexError("المحل واقف استقبال طلبات مؤقتاً");
-    if (!isShopOpen(shop, now)) throw new ConvexError("المحل مقفول دلوقتي");
+    if (shop.paused) throw new ConvexError("المحل متوقف عن استقبال الطلبات مؤقتًا");
+    if (!isShopOpen(shop, now)) throw new ConvexError("المحل مغلق حاليًا");
 
     const note = args.note.trim();
-    if (note.length > MAX_NOTE) throw new ConvexError(`الملاحظات لازم تكون أقل من ${MAX_NOTE} حرف`);
+    if (note.length > MAX_NOTE) throw new ConvexError(`يجب أن تكون الملاحظات أقل من ${MAX_NOTE} حرفًا`);
 
     const { items, subtotal } = await priceCart(ctx, shop, args.items);
-    if (subtotal < shop.minOrder) throw new ConvexError(`أقل طلب من ${shop.name} هو ${shop.minOrder} ج.م`);
+    if (subtotal < shop.minOrder) throw new ConvexError(`الحد الأدنى للطلب من ${shop.name} هو ${shop.minOrder} ج.م`);
 
     return await ctx.db.insert("orders", {
       userId: user._id,
@@ -153,9 +153,9 @@ export const cancel = mutation({
     const user = await requireUser(ctx);
     const order = await ctx.db.get(orderId);
     if (order === null || order.userId !== user._id) throw new ConvexError("الطلب غير موجود");
-    if (order.status === "cancelled") throw new ConvexError("الطلب ده اتلغى قبل كده");
+    if (order.status === "cancelled") throw new ConvexError("تم إلغاء هذا الطلب مسبقًا");
     if (!canCustomerCancel(order.status)) {
-      throw new ConvexError("مينفعش تلغي الطلب بعد ما المحل أكده، كلم خدمة العملاء");
+      throw new ConvexError("لا يمكن إلغاء الطلب بعد تأكيد المحل، يرجى التواصل مع خدمة العملاء");
     }
     await ctx.db.patch(order._id, {
       status: "cancelled",

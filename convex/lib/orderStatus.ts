@@ -33,6 +33,6 @@ export const statusLabels: Record<OrderStatus, string> = {
   confirmed: "مؤكد",
   with_driver: "مع المندوب",
   delivered: "تم التسليم",
-  returned: "مرتجع",
+  returned: "مُرتجَع",
   cancelled: "ملغي",
 };

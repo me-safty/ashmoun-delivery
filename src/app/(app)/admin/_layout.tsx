@@ -13,7 +13,7 @@ export default function AdminLayout() {
           headerLeft: () => (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="رجوع للتطبيق"
+              accessibilityLabel="العودة للتطبيق"
               onPress={() => (router.canGoBack() ? router.back() : router.replace("/profile"))}
               hitSlop={12}
               style={styles.back}>

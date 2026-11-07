@@ -17,7 +17,7 @@ export default function AdminShopMenu() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const data = useQuery(api.catalog.shop, { shopId: id });
   if (data === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
-  if (data === null) return <Unavailable message="المحل ده مش موجود" />;
+  if (data === null) return <Unavailable message="هذا المحل غير موجود" />;
 
   return (
     <ScrollView contentContainerStyle={[styles.content, adminPage]}>

@@ -1,4 +1,6 @@
-import { ConvexAuthProvider, useAuthActions } from "@convex-dev/auth/react";
+import "react-native-gesture-handler";
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import {
   BalooBhaijaan2_400Regular,
   BalooBhaijaan2_500Medium,
@@ -7,16 +9,13 @@ import {
   BalooBhaijaan2_800ExtraBold,
   useFonts,
 } from "@expo-google-fonts/baloo-bhaijaan-2";
-import { ConvexReactClient, useConvexAuth, useQuery } from "convex/react";
+import { ConvexReactClient } from "convex/react";
 import { LocaleProvider, Stack, useSegments } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, type PropsWithChildren } from "react";
-import { ActivityIndicator, Platform, StyleSheet, useWindowDimensions, View } from "react-native";
-import { api } from "@/convex/_generated/api";
-import { useCart } from "@/lib/cart";
-import { usePushNotifications } from "@/lib/push";
+import { Platform, StyleSheet, useWindowDimensions, View } from "react-native";
 import { colors, stackScreenOptions } from "@/theme";
 
 export { ErrorBoundary } from "expo-router";
@@ -45,6 +44,7 @@ export default function RootLayout() {
     BalooBhaijaan2_600SemiBold,
     BalooBhaijaan2_700Bold,
     BalooBhaijaan2_800ExtraBold,
+    ...Ionicons.font,
   });
 
   const fontsReady = fontsLoaded || fontError !== null;
@@ -79,40 +79,10 @@ function WebFrame({ children }: PropsWithChildren) {
 }
 
 function RootStack() {
-  const { isLoading, isAuthenticated } = useConvexAuth();
-  const me = useQuery(api.users.me, isAuthenticated ? {} : "skip");
-  const { signOut } = useAuthActions();
-  const loading = isLoading || (isAuthenticated && me === undefined);
-  const staleSession = isAuthenticated && me === null;
-
-  useEffect(() => {
-    if (staleSession) void signOut();
-  }, [staleSession, signOut]);
-
-  // The cart is stored per device, so it must not carry over to the next account.
-  useEffect(() => {
-    if (!loading && !isAuthenticated) useCart.getState().clear();
-  }, [loading, isAuthenticated]);
-
-  const signedIn = isAuthenticated && me != null;
-  usePushNotifications(signedIn);
-
-  if (loading) return <ActivityIndicator style={styles.root} color={colors.primary} />;
-
-  const hasAddress = me?.hasAddress ?? false;
-
   return (
     <LocaleProvider direction="rtl">
       <Stack screenOptions={stackScreenOptions}>
-        <Stack.Protected guard={!signedIn}>
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        </Stack.Protected>
-        <Stack.Protected guard={signedIn && !hasAddress}>
-          <Stack.Screen name="welcome-address" options={{ title: "عنوان التوصيل" }} />
-        </Stack.Protected>
-        <Stack.Protected guard={signedIn && hasAddress}>
-          <Stack.Screen name="(app)" options={{ headerShown: false }} />
-        </Stack.Protected>
+        <Stack.Screen name="(app)" options={{ headerShown: false }} />
       </Stack>
     </LocaleProvider>
   );

@@ -82,7 +82,7 @@ describe("orders.place", () => {
     const { asUser, sweets, addressId, basbousa } = await setup();
     await expect(
       asUser.mutation(api.orders.place, { shopId: sweets, addressId, note: "", items: [line(basbousa)] }),
-    ).rejects.toThrow("واقف");
+    ).rejects.toThrow("متوقف");
   });
 
   test("rejects a shop outside its hours", async () => {
@@ -90,14 +90,14 @@ describe("orders.place", () => {
     await t.run((ctx) => ctx.db.patch(market, { hours: [] }));
     await expect(
       asUser.mutation(api.orders.place, { shopId: market, addressId, note: "", items: [line(milk)] }),
-    ).rejects.toThrow("مقفول");
+    ).rejects.toThrow("مغلق");
   });
 
   test("rejects a subtotal under the shop's minimum order", async () => {
     const { asUser, market, addressId, bread } = await setup();
     await expect(
       asUser.mutation(api.orders.place, { shopId: market, addressId, note: "", items: [line(bread)] }),
-    ).rejects.toThrow("أقل طلب");
+    ).rejects.toThrow("الحد الأدنى");
   });
 
   test("rejects someone else's address and bad quantities", async () => {
@@ -124,11 +124,11 @@ describe("orders.cancel", () => {
     const first = await asUser.mutation(api.orders.place, { shopId: market, addressId, note: "", items: [line(milk)] });
     await asUser.mutation(api.orders.cancel, { orderId: first });
     expect((await asUser.query(api.orders.get, { orderId: first }))?.status).toBe("cancelled");
-    await expect(asUser.mutation(api.orders.cancel, { orderId: first })).rejects.toThrow("اتلغى قبل كده");
+    await expect(asUser.mutation(api.orders.cancel, { orderId: first })).rejects.toThrow("مسبقًا");
 
     const second = await asUser.mutation(api.orders.place, { shopId: market, addressId, note: "", items: [line(milk)] });
     await t.run((ctx) => ctx.db.patch(second, { status: "confirmed" }));
-    await expect(asUser.mutation(api.orders.cancel, { orderId: second })).rejects.toThrow("مينفعش");
+    await expect(asUser.mutation(api.orders.cancel, { orderId: second })).rejects.toThrow("لا يمكن");
   });
 
   test("other users can't cancel someone's order", async () => {

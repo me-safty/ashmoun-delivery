@@ -6,7 +6,7 @@ export default function WelcomeAddress() {
   const signOut = useSignOut();
   return (
     <AddressForm
-      footerExtra={<Button kind="secondary" label="مش حسابك؟ تسجيل الخروج" onPress={() => void signOut()} />}
+      footerExtra={<Button kind="secondary" label="ليس حسابك؟ تسجيل الخروج" onPress={() => void signOut()} />}
     />
   );
 }

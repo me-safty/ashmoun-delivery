@@ -16,7 +16,7 @@ export default function Shop() {
   const data = useQuery(api.catalog.shop, { shopId: id });
 
   if (data === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
-  if (data === null) return <Unavailable message="المحل ده مش متاح دلوقتي" />;
+  if (data === null) return <Unavailable message="هذا المحل غير متاح حاليًا" />;
 
   const { shop, sections } = data;
   const state = shopState(shop, now);
@@ -42,11 +42,11 @@ export default function Shop() {
             </View>
             {state === "closed" ? (
               <AppText variant="caption" tone="danger">
-                المحل مقفول دلوقتي، تقدر تتفرج على المنيو وتطلب لما يفتح.
+                المحل مغلق حاليًا، يمكنك تصفّح القائمة والطلب عند فتحه.
               </AppText>
             ) : state === "paused" ? (
               <AppText variant="caption" tone="warningInk">
-                المحل واقف استقبال طلبات شوية، جرب كمان شوية.
+                المحل متوقف عن استقبال الطلبات مؤقتًا، يرجى المحاولة لاحقًا.
               </AppText>
             ) : null}
           </View>

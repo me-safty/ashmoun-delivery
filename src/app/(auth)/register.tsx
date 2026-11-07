@@ -17,23 +17,23 @@ export default function Register() {
 
   async function submit() {
     const normalized = normalizePhone(phone);
-    if (!normalized) return setError("رقم الموبايل غير صحيح");
+    if (!normalized) return setError("رقم الجوال غير صحيح");
     setError(null);
     setSubmitting(true);
     try {
       await signIn("password", { flow: "signUp", name: name.trim(), phone: normalized, password });
     } catch (e) {
-      setError(errorMessage(e, "الرقم ده مسجل قبل كده، جرب تسجيل الدخول"));
+      setError(errorMessage(e, "هذا الرقم مسجّل مسبقًا، جرّب تسجيل الدخول"));
       setSubmitting(false);
     }
   }
 
   return (
     <FormScreen footer={<Button label="إنشاء الحساب" loading={submitting} onPress={submit} />}>
-      <AppText tone="muted">سجل برقم موبايلك عشان المندوب يقدر يكلمك.</AppText>
+      <AppText tone="muted">سجّل برقم جوالك ليتمكن المندوب من التواصل معك.</AppText>
       <TextField label="الاسم" autoComplete="name" value={name} onChangeText={setName} />
       <TextField
-        label="رقم الموبايل"
+        label="رقم الجوال"
         placeholder="01xxxxxxxxx"
         keyboardType="phone-pad"
         autoComplete="tel"
@@ -41,7 +41,7 @@ export default function Register() {
         onChangeText={setPhone}
       />
       <TextField
-        label="كلمة المرور (8 على الأقل)"
+        label="كلمة المرور (8 أحرف على الأقل)"
         secureTextEntry
         autoComplete="new-password"
         value={password}

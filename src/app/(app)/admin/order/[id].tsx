@@ -37,7 +37,7 @@ export default function AdminOrder() {
   const wide = useWindowDimensions().width >= 900;
 
   if (order === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
-  if (order === null) return <Unavailable message="الطلب ده مش موجود" />;
+  if (order === null) return <Unavailable message="هذا الطلب غير موجود" />;
 
   const next = nextStatuses[order.status];
   const activeDrivers = drivers?.filter((d) => d.active) ?? [];
@@ -72,8 +72,8 @@ export default function AdminOrder() {
 
   const driverPicker = next.includes("with_driver") ? (
     <View style={styles.card}>
-      <AppText variant="subtitle">اختار المندوب</AppText>
-      {activeDrivers.length === 0 ? <AppText tone="muted">مفيش مندوبين متاحين</AppText> : null}
+      <AppText variant="subtitle">اختر المندوب</AppText>
+      {activeDrivers.length === 0 ? <AppText tone="muted">لا يوجد مندوبون متاحون</AppText> : null}
       {activeDrivers.map((driver) => {
         const selected = driver._id === selectedDriverId;
         return (
@@ -116,9 +116,9 @@ export default function AdminOrder() {
                 </AppText>
                 <Button
                   kind="secondary"
-                  label="اتصل"
+                  label="اتصال"
                   onPress={() =>
-                    void openUrl(`tel:${order.customerPhone}`, `الجهاز ده مش بيدعم الاتصال، رقم العميل ${order.customerPhone}`)
+                    void openUrl(`tel:${order.customerPhone}`, `لا يدعم هذا الجهاز الاتصال، رقم العميل ${order.customerPhone}`)
                   }
                 />
               </View>
@@ -130,11 +130,11 @@ export default function AdminOrder() {
               {order.address.location ? (
                 <Button
                   kind="secondary"
-                  label="📍 افتح الموقع على الخريطة"
+                  label="📍 فتح الموقع على الخريطة"
                   onPress={() =>
                     void openUrl(
                       `https://maps.google.com/?q=${order.address.location?.lat},${order.address.location?.lng}`,
-                      "مقدرناش نفتح الخريطة",
+                      "تعذّر فتح الخريطة",
                     )
                   }
                 />
@@ -205,7 +205,7 @@ export default function AdminOrder() {
             {error ? <AppText tone="danger">{error}</AppText> : null}
             {forward.includes("with_driver") && selectedDriverId === null ? (
               <AppText variant="caption" tone="mutedInk" style={wide ? styles.footerHint : undefined}>
-                اختار مندوب الأول
+                اختر مندوبًا أولًا
               </AppText>
             ) : null}
             {forward.map((status) => (

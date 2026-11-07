@@ -25,8 +25,8 @@ export default function AdminOrders() {
     <ScrollView contentContainerStyle={[styles.list, adminPage]}>
       <View style={styles.header}>
         <View style={styles.segments}>
-          <Segment label="طلبات شغالة" selected={view === "active"} onPress={() => setView("active")} />
-          <Segment label="خلصت" selected={view === "done"} onPress={() => setView("done")} />
+          <Segment label="طلبات نشطة" selected={view === "active"} onPress={() => setView("active")} />
+          <Segment label="مكتملة" selected={view === "done"} onPress={() => setView("done")} />
         </View>
         <View style={styles.links}>
           <AdminLink label="🛵 المندوبين" onPress={() => router.push("/admin/drivers")} />
@@ -37,7 +37,7 @@ export default function AdminOrders() {
       {orders === undefined ? (
         <ActivityIndicator color={colors.primary} />
       ) : orders.length === 0 ? (
-        <AppText tone="muted">مفيش طلبات هنا</AppText>
+        <AppText tone="muted">لا توجد طلبات هنا</AppText>
       ) : (
         <AdminGrid>
           {orders.map((order) => (

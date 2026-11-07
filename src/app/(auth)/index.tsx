@@ -21,13 +21,13 @@ export default function Login() {
   async function submit() {
     if (submitting) return;
     const normalized = normalizePhone(phone);
-    if (!normalized) return setError("رقم الموبايل غير صحيح");
+    if (!normalized) return setError("رقم الجوال غير صحيح");
     setError(null);
     setSubmitting(true);
     try {
       await signIn("password", { flow: "signIn", phone: normalized, password });
     } catch (e) {
-      setError(errorMessage(e, "رقم الموبايل أو كلمة المرور غلط"));
+      setError(errorMessage(e, "رقم الجوال أو كلمة المرور غير صحيحة"));
       setSubmitting(false);
     }
   }
@@ -45,7 +45,7 @@ export default function Login() {
             </Link>
             <Link href="/register" style={styles.link}>
               <AppText variant="caption" tone="primaryInk">
-                معندكش حساب؟ سجل دلوقتي
+                ليس لديك حساب؟ سجّل الآن
               </AppText>
             </Link>
           </View>
@@ -53,9 +53,9 @@ export default function Login() {
       }>
       <Brand />
       <View style={styles.form}>
-        <AppText variant="title">أهلاً بيك تاني</AppText>
+        <AppText variant="title">مرحبًا بعودتك</AppText>
         <TextField
-          label="رقم الموبايل"
+          label="رقم الجوال"
           placeholder="01xxxxxxxxx"
           keyboardType="phone-pad"
           autoComplete="tel"

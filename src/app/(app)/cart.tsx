@@ -27,9 +27,9 @@ export default function Cart() {
       <View style={styles.empty}>
         <Stack.Screen options={{ title: "السلة" }} />
         <AppText style={styles.emptyEmoji}>🛒</AppText>
-        <AppText variant="title">السلة فاضية</AppText>
-        <AppText tone="muted">اختار محل وضيف اللي نفسك فيه.</AppText>
-        <Button kind="secondary" label="تصفح المحلات" onPress={() => router.dismissTo("/")} />
+        <AppText variant="title">السلة فارغة</AppText>
+        <AppText tone="muted">اختر محلًا وأضف ما ترغب به.</AppText>
+        <Button kind="secondary" label="تصفّح المحلات" onPress={() => router.dismissTo("/")} />
       </View>
     );
   }
@@ -55,13 +55,13 @@ export default function Cart() {
             <View style={styles.stepper}>
               <StepButton
                 icon={line.quantity === 1 ? "trash-outline" : "remove"}
-                label={line.quantity === 1 ? "شيل من السلة" : "قلل الكمية"}
+                label={line.quantity === 1 ? "إزالة من السلة" : "تقليل الكمية"}
                 onPress={() => setQuantity(line.key, line.quantity - 1)}
               />
               <AppText variant="subtitle">{line.quantity}</AppText>
               <StepButton
                 icon="add"
-                label="زود الكمية"
+                label="زيادة الكمية"
                 disabled={line.quantity >= MAX_QUANTITY}
                 onPress={() => setQuantity(line.key, line.quantity + 1)}
               />
@@ -80,11 +80,11 @@ export default function Cart() {
         {priced && belowMinimum ? (
           <View style={styles.minimum}>
             <AppText variant="caption" tone="warningInk" style={styles.minimumText}>
-              ضيف {formatPrice(priced.minOrder - priced.subtotal)} كمان عشان توصل لأقل طلب ({formatPrice(priced.minOrder)})
+              أضف {formatPrice(priced.minOrder - priced.subtotal)} أخرى للوصول إلى الحد الأدنى للطلب ({formatPrice(priced.minOrder)})
             </AppText>
             <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={8} style={styles.addMore}>
               <AppText variant="caption" tone="primaryInk">
-                ضيف حاجات
+                إضافة المزيد
               </AppText>
             </Pressable>
           </View>

@@ -28,7 +28,7 @@ export default function Product() {
   const narrow = useWindowDimensions().width < 360;
 
   if (data === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
-  if (data === null || !data.product.available) return <Unavailable message="المنتج ده مش متاح دلوقتي" />;
+  if (data === null || !data.product.available) return <Unavailable message="هذا المنتج غير متاح حاليًا" />;
 
   const { product, shop } = data;
   // Keep only keys that still exist, so an option removed while the sheet is open can't block pricing.
@@ -57,9 +57,9 @@ export default function Product() {
     const cart = useCart.getState();
     if (cart.shop && cart.shop.id !== shop._id) {
       const replace = await confirm({
-        title: "تبدأ سلة جديدة؟",
-        message: `السلة فيها طلب من ${cart.shop.name}. الطلب الواحد بيكون من محل واحد، فلو كملت السلة هتتفضى.`,
-        confirmLabel: "ابدأ سلة جديدة",
+        title: "بدء سلة جديدة؟",
+        message: `تحتوي السلة على طلب من ${cart.shop.name}. لا يمكن الطلب من أكثر من محل في الطلب الواحد؛ المتابعة ستؤدي إلى إفراغ السلة.`,
+        confirmLabel: "بدء سلة جديدة",
       });
       if (!replace) return;
     }
@@ -127,14 +127,14 @@ export default function Product() {
           <View style={[styles.stepper, narrow && styles.stepperNarrow]}>
             <StepButton
               icon="remove"
-              label="قلل الكمية"
+              label="تقليل الكمية"
               disabled={quantity <= 1}
               onPress={() => setQuantity((q) => Math.max(1, q - 1))}
             />
             <AppText variant="title">{quantity}</AppText>
             <StepButton
               icon="add"
-              label="زود الكمية"
+              label="زيادة الكمية"
               disabled={quantity >= MAX_QUANTITY}
               onPress={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))}
             />
@@ -144,8 +144,8 @@ export default function Product() {
             disabled={priced.kind !== "ok"}
             label={
               priced.kind === "ok"
-                ? `${narrow ? "أضف" : "أضف للسلة"} · ${formatPrice(priced.unitPrice * quantity)}`
-                : "اختار المطلوب"
+                ? `${narrow ? "أضف" : "أضف إلى السلة"} · ${formatPrice(priced.unitPrice * quantity)}`
+                : "اختر المطلوب"
             }
             onPress={addToCart}
           />
@@ -155,8 +155,8 @@ export default function Product() {
           <View style={styles.closedNotice}>
             <AppText variant="subtitle" tone="warningInk">
               {shop.paused
-                ? "المحل واقف استقبال طلبات مؤقتاً"
-                : `المحل مقفول دلوقتي · مواعيد النهارده ${todayHoursLabel(shop, now)}`}
+                ? "المحل متوقف عن استقبال الطلبات مؤقتًا"
+                : `المحل مغلق حاليًا · مواعيد اليوم ${todayHoursLabel(shop, now)}`}
             </AppText>
           </View>
         </View>
@@ -166,9 +166,9 @@ export default function Product() {
 }
 
 function groupHint({ min, max }: { min: number; max: number }) {
-  if (min === 0) return `اختياري · لحد ${max}`;
-  if (min === max) return min === 1 ? "مطلوب" : `مطلوب · اختار ${min}`;
-  return `مطلوب · من ${min} لحد ${max}`;
+  if (min === 0) return `اختياري · حتى ${max}`;
+  if (min === max) return min === 1 ? "مطلوب" : `مطلوب · اختر ${min}`;
+  return `مطلوب · من ${min} إلى ${max}`;
 }
 
 const styles = StyleSheet.create({

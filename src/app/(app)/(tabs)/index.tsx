@@ -21,7 +21,6 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 
 const ORANGE = "#F26A1B";
@@ -49,7 +48,7 @@ const HEADER_SHAPES: HeaderShape[] = [
 // Wave circles that bite into the bottom edge of the orange header.
 // const WAVE_COUNT = 9;
 
-const SEARCH_WORDS = ["طعام", "البقالة", "وجبات خفيفة", "المزيد"];
+const SEARCH_WORDS = ["طعام", "بقالة", "وجبات خفيفة", "المزيد"];
 
 export default function Home() {
   const addresses = useQuery(api.addresses.mine);
@@ -151,7 +150,7 @@ export default function Home() {
   const sections = categories ?? [];
 
   return (
-    <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
+    <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
         {/* Full-bleed orange header with decorative shapes, search, and the wavy bottom edge */}
         <View style={styles.orangeHeader}>
@@ -170,8 +169,8 @@ export default function Home() {
             />
           ))}
           <Pressable style={styles.locationRow} onPress={() => router.navigate("/profile")}>
-            <AppText style={styles.locationLabel}>التوصيل إلى </AppText>
-            <AppText style={styles.locationArea}>{address ? address.zoneName : "جمال عبد الناصر"}</AppText>
+              <AppText style={styles.locationLabel}>التوصيل إلى </AppText>
+              <AppText style={styles.locationArea}>{address ? address.zoneName : "اختر المنطقة"}</AppText>
             <Ionicons name="chevron-down" size={16} color="#fff" />
           </Pressable>
           <View style={[styles.search, searchFocused && styles.searchFocused]}>
@@ -259,8 +258,8 @@ export default function Home() {
                 <View style={styles.flashChip}>
                   <AppText style={styles.flashChipText}>خصم</AppText>
                 </View>
-                <AppText style={styles.flashText}>لحد 50%</AppText>
-                <AppText style={styles.flashNote}>* تطبق الشروط والأحكام</AppText>
+                  <AppText style={styles.flashText}>حتى 50%</AppText>
+                  <AppText style={styles.flashNote}>* تُطبَّق الشروط والأحكام</AppText>
               </View>
             </View>
             <View style={[styles.banner, styles.bannerBlack, { width: bannerWidth }]}>
@@ -276,8 +275,8 @@ export default function Home() {
               <View style={styles.welcomeBody}>
                 <AppText style={styles.welcomeEmoji}>🛵</AppText>
                 <View style={styles.welcomeTextBlock}>
-                  <AppText style={styles.welcomeTitle}>أهلاً فيك في أشمن</AppText>
-                  <AppText style={styles.welcomeText}>توصيل مجاني لأول طلب ليك</AppText>
+                    <AppText style={styles.welcomeTitle}>مرحبًا بك في أشمون</AppText>
+                    <AppText style={styles.welcomeText}>توصيل مجاني لطلبك الأول</AppText>
                 </View>
               </View>
             </View>
@@ -365,7 +364,7 @@ export default function Home() {
       ) : null}
 
       <CartBar />
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -18,6 +18,7 @@ export const createBootstrapAdmin = internalMutation({
     if (existing) throw new Error("user already exists");
 
     // Create the auth account (password hashed via the password provider's Scrypt)
+// @ts-expect-error createAccount expects action ctx in types; valid in internalMutation for auth provider ops
     const { user } = await createAccount(ctx, {
       provider: "password",
       account: { id: normalized, secret: password },

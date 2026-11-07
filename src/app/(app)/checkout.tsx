@@ -97,20 +97,20 @@ export default function Checkout() {
       })}
 
       {addresses !== undefined && deliverable.length === 0 ? (
-        <Button kind="secondary" label="التوصيل متوقف في عناوينك، أضف عنوان تاني" onPress={() => router.push("/address-new")} />
+        <Button kind="secondary" label="التوصيل متوقف في عناوينك، أضف عنوانًا آخر" onPress={() => router.push("/address-new")} />
       ) : null}
 
       <AppText variant="subtitle">طريقة الدفع</AppText>
       <View style={styles.option}>
-        <AppText variant="subtitle">💵 كاش عند الاستلام</AppText>
+        <AppText variant="subtitle">💵 نقدًا عند الاستلام</AppText>
         <AppText variant="caption" tone="muted">
-          ادفع للمندوب لما الطلب يوصلك.
+          ادفع للمندوب عند وصول الطلب.
         </AppText>
       </View>
 
       <TextField
         label="ملاحظات للمحل أو المندوب (اختياري)"
-        placeholder="مثلاً: من غير بصل"
+        placeholder="مثال: بدون بصل"
         value={note}
         onChangeText={setNote}
         maxLength={300}
