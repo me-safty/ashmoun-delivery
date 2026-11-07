@@ -1,6 +1,6 @@
 import { useQuery } from "convex/react";
 import { router, Stack } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
@@ -35,9 +35,9 @@ export default function Cart() {
   }
 
   return (
-    <SafeAreaView style={styles.screen} edges={["bottom"]}>
+    <SafeAreaView style={styles.screen} edges={Platform.OS === "web" ? [] : ["bottom"]}>
       <Stack.Screen options={{ title: `السلة · ${shop.name}` }} />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, Platform.OS === "web" && styles.contentWeb]}>
         {lines.map((line, index) => (
           <View key={line.key} style={styles.line}>
             <EmojiTile emoji={line.emoji} tint={colors.primarySoft} size={52} />
@@ -75,7 +75,7 @@ export default function Cart() {
         ) : null}
         <PriceSummary subtotal={priced?.subtotal} deliveryFee={address?.deliveryFee} />
       </ScrollView>
-      <View style={styles.footer}>
+      <View style={[styles.footer, Platform.OS === "web" && styles.footerWeb]}>
         {problem ? <AppText tone="danger">{problem}</AppText> : null}
         {priced && belowMinimum ? (
           <View style={styles.minimum}>
@@ -102,6 +102,7 @@ export default function Cart() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: space.lg, gap: space.md },
+  contentWeb: { paddingTop: space.md, paddingBottom: space.md },
   empty: { flex: 1, alignItems: "center", justifyContent: "center", gap: space.sm, padding: space.xl },
   emptyEmoji: { fontSize: 56, lineHeight: 72 },
   line: {
@@ -117,6 +118,7 @@ const styles = StyleSheet.create({
   lineBody: { flex: 1, gap: 2 },
   stepper: { flexDirection: "row", alignItems: "center", gap: space.sm },
   footer: { padding: space.lg, gap: space.sm, borderTopWidth: 1, borderTopColor: colors.border },
+  footerWeb: { paddingBottom: space.md },
   minimum: {
     flexDirection: "row",
     alignItems: "center",

@@ -30,7 +30,7 @@ export default function TabsLayout() {
         // Cairo's tall line box overflows the default web tab bar; native bars size with the safe area.
         tabBarStyle: [
           { backgroundColor: colors.surface, borderTopColor: colors.border },
-          Platform.OS === "web" && { height: 60, paddingBottom: 6 },
+          Platform.OS === "web" && { height: 56, paddingBottom: 2, paddingTop: 2 },
         ],
       }}>
       <Tabs.Screen name="index" options={{ title: "الرئيسية", headerShown: false, tabBarIcon: icon("home", "home-outline") }} />

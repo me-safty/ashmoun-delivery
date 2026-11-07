@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Linking, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Linking, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import { canCustomerCancel, type OrderStatus } from "@/convex/lib/orderStatus";
 import { AppText } from "@/components/app-text";
@@ -53,7 +53,7 @@ export default function OrderTracking() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, Platform.OS === "web" && styles.contentWeb]}>
       <Stack.Screen options={{ title: `طلب ${orderCode(order._id)}` }} />
       <View style={styles.card}>
         <AppText variant="title">{order.shopName}</AppText>
@@ -133,6 +133,7 @@ export default function OrderTracking() {
 const styles = StyleSheet.create({
   loading: { marginTop: space.xxl },
   content: { padding: space.lg, gap: space.md, paddingBottom: space.xxl },
+  contentWeb: { paddingBottom: space.lg },
   card: {
     gap: space.sm,
     padding: space.lg,

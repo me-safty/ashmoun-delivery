@@ -1,7 +1,7 @@
 import { useQuery } from "convex/react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
 import { isShopOpen } from "@/convex/lib/hours";
@@ -79,8 +79,8 @@ export default function Product() {
   }
 
   return (
-    <SafeAreaView style={styles.screen} edges={["bottom"]}>
-      <ScrollView contentContainerStyle={styles.content}>
+    <SafeAreaView style={styles.screen} edges={Platform.OS === "web" ? [] : ["bottom"]}>
+      <ScrollView contentContainerStyle={[styles.content, Platform.OS === "web" && styles.contentWeb]}>
         <View style={styles.header}>
           <EmojiTile emoji={product.emoji} tint={shop.tint} size={96} />
           <AppText variant="display">{product.name}</AppText>
@@ -123,7 +123,7 @@ export default function Product() {
 
       </ScrollView>
       {shopOpen ? (
-        <View style={[styles.footer, narrow && styles.footerNarrow]}>
+        <View style={[styles.footer, Platform.OS === "web" && styles.footerWeb, narrow && styles.footerNarrow]}>
           <View style={[styles.stepper, narrow && styles.stepperNarrow]}>
             <StepButton
               icon="remove"
@@ -151,7 +151,7 @@ export default function Product() {
           />
         </View>
       ) : (
-        <View style={styles.footer}>
+        <View style={[styles.footer, Platform.OS === "web" && styles.footerWeb]}>
           <View style={styles.closedNotice}>
             <AppText variant="subtitle" tone="warningInk">
               {shop.paused
@@ -184,6 +184,7 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     backgroundColor: colors.background,
   },
+  footerWeb: { paddingTop: space.sm, paddingBottom: space.sm },
   addButton: { flex: 1 },
   footerNarrow: { gap: space.sm, paddingHorizontal: space.lg },
   stepperNarrow: { gap: space.sm },
@@ -196,6 +197,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.warningSoft,
   },
   content: { padding: space.xl, gap: space.xl },
+  contentWeb: { paddingTop: space.lg, paddingBottom: space.lg, gap: space.lg },
   header: { gap: space.sm, alignItems: "flex-start" },
   group: { gap: space.sm },
   groupHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },

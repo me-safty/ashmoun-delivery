@@ -65,7 +65,9 @@ export default function RootLayout() {
   );
 }
 
-const PHONE_WIDTH = 480;
+import { PHONE_MAX } from "@/lib/responsive";
+
+const PHONE_WIDTH = PHONE_MAX;
 
 function WebFrame({ children }: PropsWithChildren) {
   const segments: readonly string[] = useSegments();

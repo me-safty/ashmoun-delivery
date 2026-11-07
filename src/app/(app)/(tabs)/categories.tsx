@@ -24,7 +24,7 @@ export default function Categories() {
           accessibilityRole="link"
           onPress={() => router.push({ pathname: "/category/[id]", params: { id: item._id } })}
           style={[styles.tile, { backgroundColor: item.tint }]}>
-          <CategoryArt emoji={item.emoji} />
+          <CategoryArt name={item.name} emoji={item.emoji} />
           <AppText variant="subtitle" style={styles.name}>
             {item.name}
           </AppText>

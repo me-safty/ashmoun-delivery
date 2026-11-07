@@ -24,10 +24,10 @@ const zones = [
 ] as const;
 
 const categories = [
-  { key: "restaurants", name: "مطاعم", emoji: "🍔", tint: "#FDE7D9" },
-  { key: "groceries", name: "بقالة", emoji: "🛍️", tint: "#E3EEFB" },
-  { key: "pharmacy", name: "صيديليات", emoji: "💊", tint: "#E6F4F1" },
-  { key: "flowers", name: "زهور", emoji: "💐", tint: "#FCE7F1" },
+  { key: "food", name: "الطعام", emoji: "🍔", tint: "#FDE7D9" },
+  { key: "pharmacies", name: "الصيدليات", emoji: "💊", tint: "#E6F4F1" },
+  { key: "groceries", name: "البقالة", emoji: "🛍️", tint: "#E3EEFB" },
+  { key: "flowers", name: "الورود", emoji: "💐", tint: "#FCE7F1" },
 ] as const;
 
 type CategoryKey = (typeof categories)[number]["key"];
@@ -75,7 +75,7 @@ const shops: {
   menu: { section: string; products: SeedProduct[] }[];
 }[] = [
   {
-    category: "restaurants",
+    category: "food",
     name: "برجر الميدان",
     description: "برجر لحم بلدي مشوي على الفحم",
     emoji: "🍔",
@@ -131,7 +131,7 @@ const shops: {
     ],
   },
   {
-    category: "restaurants",
+    category: "food",
     name: "بيتزا وفطير السلطان",
     description: "بيتزا إيطالي وفطير مشلتت على الفرن البلدي",
     emoji: "🍕",
@@ -164,7 +164,7 @@ const shops: {
     ],
   },
   {
-    category: "restaurants",
+    category: "food",
     name: "مشويات أبو علي",
     description: "كفتة وطرب وفراخ مشوية",
     emoji: "🍢",
@@ -202,7 +202,7 @@ const shops: {
     ],
   },
   {
-    category: "restaurants",
+    category: "food",
     name: "كشري التحرير أشمون",
     description: "كشري وطواجن ومكرونة",
     emoji: "🥙",
@@ -235,7 +235,7 @@ const shops: {
     ],
   },
   {
-    category: "restaurants",
+    category: "food",
     name: "حلواني الشروق",
     description: "تورت وجاتوه وحلويات شرقي",
     emoji: "🍰",
@@ -256,7 +256,7 @@ const shops: {
     ],
   },
   {
-    category: "restaurants",
+    category: "food",
     name: "عصير ركن الفاكهة",
     description: "عصائر فريش وسموزي",
     emoji: "🥤",
@@ -304,7 +304,7 @@ const shops: {
     ],
   },
   {
-    category: "pharmacy",
+    category: "pharmacies",
     name: "صيدلية الشفاء",
     description: "أدوية ومستلزمات طبية",
     emoji: "💊",
@@ -363,21 +363,41 @@ export const run = internalMutation({
   },
 });
 
-// Updates existing category emoji/tint/sortOrder to match the seed list (matched by name).
+const CATEGORY_ALIASES: Record<string, string[]> = {
+  الطعام: ["مطاعم"],
+  الصيدليات: ["صيدليات", "صيدلية"],
+  البقالة: ["بقالة"],
+  الورود: ["زهور"],
+};
+
+async function upsertSeedCategories(ctx: { db: any }) {
+  const existing = await ctx.db.query("categories").collect();
+  const results: { name: string; action: "inserted" | "updated" }[] = [];
+  for (const [sortOrder, { key: _key, ...category }] of categories.entries()) {
+    const aliases = CATEGORY_ALIASES[category.name] ?? [];
+    const row = existing.find(
+      (c: { name: string }) => c.name === category.name || aliases.includes(c.name),
+    );
+    if (row) {
+      await ctx.db.patch(row._id, { ...category, sortOrder });
+      results.push({ name: category.name, action: "updated" });
+    } else {
+      await ctx.db.insert("categories", { ...category, sortOrder });
+      results.push({ name: category.name, action: "inserted" });
+    }
+  }
+  return results;
+}
+
+// Ensures the seed categories exist (matched by name). Inserts missing sections and updates
+// emoji/tint/sortOrder for existing ones without deleting shops or other data.
+export const upsertCategories = internalMutation({
+  args: {},
+  handler: async (ctx) => upsertSeedCategories(ctx),
+});
+
+// Backward-compatible alias.
 export const syncCategories = internalMutation({
   args: {},
-  handler: async (ctx) => {
-    const existing = await ctx.db.query("categories").collect();
-    const updated: string[] = [];
-    for (const category of categories) {
-      const row = existing.find((c) => c.name === category.name);
-      if (!row) continue;
-      await ctx.db.patch(row._id, {
-        emoji: category.emoji,
-        tint: category.tint,
-      });
-      updated.push(category.name);
-    }
-    return updated;
-  },
+  handler: async (ctx) => upsertSeedCategories(ctx),
 });

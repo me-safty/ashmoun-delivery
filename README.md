@@ -16,6 +16,7 @@ Expo SDK 58 (Expo Router, TypeScript), Convex (database, functions, auth), and E
 pnpm install
 pnpm exec convex dev        # first run: creates .env.local with EXPO_PUBLIC_CONVEX_URL
 pnpm exec convex run seed:run   # dummy zones, categories, shops, menus, drivers (idempotent)
+pnpm exec convex run seed:upsertCategories   # add/update the 4 sections without deleting shops/data
 pnpm start                  # press w for web, or open a dev build
 ```
 

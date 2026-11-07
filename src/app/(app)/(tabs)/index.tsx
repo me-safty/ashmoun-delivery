@@ -4,6 +4,7 @@ import { CartBar } from "@/components/cart-bar";
 import { CategoryArt } from "@/components/category-art";
 import { api } from "@/convex/_generated/api";
 import { fonts, radius, space } from "@/theme";
+import { useResponsive } from "@/lib/responsive";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery } from "convex/react";
 import { router } from "expo-router";
@@ -19,7 +20,6 @@ import {
   StyleSheet,
   TextInput,
   View,
-  useWindowDimensions,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
@@ -59,7 +59,7 @@ export default function Home() {
   const [promoOpen, setPromoOpen] = useState(false);
   const [promoProgress] = useState(() => new Animated.Value(0));
   const [placeholder, setPlaceholder] = useState(`ابحث عن ${SEARCH_WORDS[0]}`);
-  const { width } = useWindowDimensions();
+  const { width, isWebPhone } = useResponsive();
   const bannerWidth = Math.min(width, 480) - space.lg * 2 - 24;
   const bannerStep = bannerWidth + space.sm;
   const address = addresses?.find((a) => a.isDefault) ?? addresses?.[0];
@@ -151,7 +151,7 @@ export default function Home() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.list, Platform.OS === "web" && styles.listWeb]} showsVerticalScrollIndicator={false}>
         {/* Full-bleed orange header with decorative shapes, search, and the wavy bottom edge */}
         <View style={styles.orangeHeader}>
           {HEADER_SHAPES.map((s) => (
@@ -168,7 +168,9 @@ export default function Home() {
               }}
             />
           ))}
-          <Pressable style={styles.locationRow} onPress={() => router.navigate("/profile")}>
+          <Pressable
+            style={[styles.locationRow, isWebPhone && styles.locationRowWebPhone]}
+            onPress={() => router.navigate("/profile")}>
               <AppText style={styles.locationLabel}>التوصيل إلى </AppText>
               <AppText style={styles.locationArea}>{address ? address.zoneName : "اختر المنطقة"}</AppText>
             <Ionicons name="chevron-down" size={16} color="#fff" />
@@ -221,7 +223,7 @@ export default function Home() {
                 style={styles.quickLink}
                 onPress={() => router.push({ pathname: "/category/[id]", params: { id: c._id } })}>
                 <View style={styles.quickLinkCircle}>
-                  <CategoryArt emoji={c.emoji} size={60} />
+                  <CategoryArt name={c.name} emoji={c.emoji} size={60} />
                 </View>
                 <AppText style={styles.quickLinkLabel} numberOfLines={1}>
                   {c.name}
@@ -373,6 +375,7 @@ const webNoOutline: object = Platform.OS === "web" ? { outlineStyle: "none" } : 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fff" },
   list: { paddingBottom: 94 },
+  listWeb: { paddingBottom: 78 },
   // Header
   orangeHeader: {
     backgroundColor: ORANGE,
@@ -383,6 +386,7 @@ const styles = StyleSheet.create({
     overflow: "visible",
   },
   locationRow: { flexDirection: "row", alignItems: "center", gap: space.xs, marginTop: 50, alignSelf: "flex-start" },
+  locationRowWebPhone: { marginTop: 20 },
   locationLabel: { color: "#fff", fontWeight: "400", fontSize: 22, textShadowColor: "rgba(0,0,0,0.6)", textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6 },
   locationArea: { color: "#fff", fontWeight: "900", fontSize: 22, textShadowColor: "rgba(0,0,0,0.6)", textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6 },
   search: {
@@ -398,7 +402,7 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, minHeight: 46, fontFamily: fonts.medium, fontSize: 15, color: "#000", textAlign: "right" },
   blackFriday: { alignItems: "center", paddingVertical: space.sm },
   blackFridayText: { color: LIME, fontWeight: "900", fontSize: 30, lineHeight: 44 },
-  blackFridayWhite: { color: "#fff" },
+  blackFridayWhite: { color: "#fff", fontWeight: "900", fontSize: 30, lineHeight: 44 },
   svgWaveWrapper: {
     position: "absolute",
     bottom: -1,
@@ -517,7 +521,7 @@ const styles = StyleSheet.create({
     backgroundColor: ORANGE,
     paddingVertical: 12,
     paddingHorizontal: space.md,
-    paddingBottom: Platform.OS === "ios" ? 16 : 12,
+    paddingBottom: Platform.OS === "ios" ? 16 : Platform.OS === "web" ? 8 : 12,
   },
   tickerContent: {
     flex: 1,

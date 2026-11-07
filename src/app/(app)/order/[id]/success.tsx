@@ -1,6 +1,6 @@
 import { useQuery } from "convex/react";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
@@ -16,7 +16,7 @@ export default function OrderSuccess() {
   if (order === null) return <Unavailable message="هذا الطلب غير موجود" />;
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={Platform.OS === "web" ? [] : undefined}>
       <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} />
       <View style={styles.badge}>
         <AppText style={styles.check}>✓</AppText>
