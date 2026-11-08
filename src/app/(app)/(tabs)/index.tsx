@@ -3,6 +3,7 @@ import { Button } from "@/components/button";
 import { CartBar } from "@/components/cart-bar";
 import { CategoryArt } from "@/components/category-art";
 import { FlashOfferCard } from "@/components/flash-offer-card";
+import { OfferBanner } from "@/components/offer-banner";
 import { PromoCarousel } from "@/components/promo-carousel";
 import { api } from "@/convex/_generated/api";
 import { fonts, radius, space } from "@/theme";
@@ -42,8 +43,8 @@ type HeaderShape = {
 // Decorative dark shapes scattered across the orange header — one per service line:
 // a sandwich with a drink, a grocery cart, and a flower.
 const HEADER_SHAPES: HeaderShape[] = [
-  { icon: "fast-food-outline", size: 90, top: -12, right: 132, rotate: 12 },
-  { icon: "cart-outline", size: 90, top: -6, right: 24, rotate: -10 },
+  { icon: "fast-food-outline", size: 90, top: -12, right: 24, rotate: 12 },
+  { icon: "cart-outline", size: 90, top: -6, right: 132, rotate: -10 },
   { icon: "flower-outline", size: 90, top: -10, left: 44, rotate: -14 },
 ];
 
@@ -159,10 +160,11 @@ export default function Home() {
               key={s.icon}
               name={s.icon}
               size={s.size}
-              color={DARK}
-              style={{
-                position: "absolute",
-                top: s.top,
+color={DARK}
+               style={{
+                 position: "absolute",
+                 top: s.top,
+                 opacity: 0.5,
                 transform: [{ rotate: `${s.rotate}deg` }],
                 ...(s.right != null ? { right: s.right } : { left: s.left }),
               }}
@@ -170,7 +172,7 @@ export default function Home() {
           ))}
           <Pressable
             style={[styles.locationRow, isWebPhone && styles.locationRowWebPhone]}
-            onPress={() => router.navigate("/profile")}>
+            onPress={() => router.navigate("/select-location")}>
               <AppText style={styles.locationLabel}>التوصيل إلى </AppText>
               <AppText style={styles.locationArea}>{address ? address.zoneName : "اختر المنطقة"}</AppText>
             <Ionicons name="chevron-down" size={16} color="#fff" />
@@ -223,7 +225,7 @@ export default function Home() {
                 style={styles.quickLink}
                 onPress={() => router.push({ pathname: "/category/[id]", params: { id: c._id } })}>
                 <View style={styles.quickLinkCircle}>
-                  <CategoryArt name={c.name} emoji={c.emoji} size={60} />
+                  <CategoryArt name={c.name} emoji={c.emoji} size={44} />
                 </View>
                 <AppText style={styles.quickLinkLabel} numberOfLines={1}>
                   {c.name}
@@ -237,6 +239,33 @@ export default function Home() {
         <View style={styles.bannerWrap}>
           <PromoCarousel width={bannerWidth}>
             <FlashOfferCard width={bannerWidth} />
+            <OfferBanner
+              width={bannerWidth}
+              background="#1B7F4B"
+              artBackground="#E8F5EC"
+              emoji="🛒"
+              kicker="سوق البقالة"
+              headline="خصم 20%"
+              note="على أول طلب بقالة"
+            />
+            <OfferBanner
+              width={bannerWidth}
+              background="#0F5E9C"
+              artBackground="#E6F2FA"
+              emoji="💊"
+              kicker="الصيدلية"
+              headline="توصيل 30 دقيقة"
+              note="أدوية ومستلزمات طبية"
+            />
+            <OfferBanner
+              width={bannerWidth}
+              background="#C2185B"
+              artBackground="#FCE8F1"
+              emoji="💐"
+              kicker="الورود"
+              headline="خصم 25%"
+              note="على كل بوكيهات الورد"
+            />
             <View style={[styles.banner, styles.bannerBlack, { width: bannerWidth }]}>
               <View style={styles.bfBody}>
                 <AppText style={styles.bfGifts}>🎁 🛍️</AppText>

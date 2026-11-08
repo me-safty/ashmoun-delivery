@@ -63,6 +63,7 @@ export default function CategoryShops() {
         </View>
         <FlatList
           data={filteredShops ?? []}
+          numColumns={2}
           keyExtractor={(s) => s._id}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => <ShopCard shop={item} now={now} />}

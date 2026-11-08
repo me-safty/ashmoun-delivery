@@ -33,17 +33,17 @@ export function FlashOfferCard({ width }: { width: number }) {
       Animated.sequence([
         Animated.timing(pulse, {
           toValue: 1,
-          duration: 620,
+          duration: 420,
           easing: Easing.inOut(Easing.quad),
           useNativeDriver: USE_NATIVE_DRIVER,
         }),
         Animated.timing(pulse, {
           toValue: 0,
-          duration: 620,
+          duration: 420,
           easing: Easing.inOut(Easing.quad),
           useNativeDriver: USE_NATIVE_DRIVER,
         }),
-        Animated.delay(520),
+        Animated.delay(320),
       ]),
     );
 
@@ -51,13 +51,13 @@ export function FlashOfferCard({ width }: { width: number }) {
       Animated.sequence([
         Animated.timing(bob, {
           toValue: 1,
-          duration: 1150,
+          duration: 700,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: USE_NATIVE_DRIVER,
         }),
         Animated.timing(bob, {
           toValue: 0,
-          duration: 1150,
+          duration: 700,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: USE_NATIVE_DRIVER,
         }),
@@ -67,10 +67,10 @@ export function FlashOfferCard({ width }: { width: number }) {
     // One slow pass of light, then a pause long enough to feel like a highlight rather than a strobe.
     const shineLoop = Animated.loop(
       Animated.sequence([
-        Animated.delay(1100),
+        Animated.delay(500),
         Animated.timing(shine, {
           toValue: 1,
-          duration: 950,
+          duration: 600,
           easing: Easing.inOut(Easing.quad),
           useNativeDriver: USE_NATIVE_DRIVER,
         }),
@@ -79,7 +79,7 @@ export function FlashOfferCard({ width }: { width: number }) {
           duration: 0,
           useNativeDriver: USE_NATIVE_DRIVER,
         }),
-        Animated.delay(2100),
+        Animated.delay(900),
       ]),
     );
 

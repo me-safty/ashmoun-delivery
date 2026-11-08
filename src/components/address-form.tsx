@@ -1,59 +1,66 @@
-import { useMutation, useQuery } from "convex/react";
-import * as Location from "expo-location";
-import { useState, type ReactNode } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
 import { errorMessage } from "@/lib/errors";
-import { colors, formatPrice, radius, space } from "@/theme";
+import { useLocationPicker } from "@/lib/location-picker";
+import { colors, space } from "@/theme";
+import { useMutation, useQuery } from "convex/react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { AppText } from "./app-text";
 import { Button } from "./button";
 import { FormScreen } from "./form-screen";
 import { TextField } from "./text-field";
 
-const labels = ["البيت", "الشغل", "أخرى"];
+function Step({ n, title }: { n: number; title: string }) {
+  return (
+    <View style={styles.step}>
+      <View style={styles.stepBadge}>
+        <AppText variant="caption" tone="onPrimary">
+          {n}
+        </AppText>
+      </View>
+      <AppText variant="subtitle">{title}</AppText>
+    </View>
+  );
+}
 
-type LocationState =
-  | { kind: "none" }
-  | { kind: "locating" }
-  | { kind: "set"; lat: number; lng: number }
-  | { kind: "denied" };
-
-export function AddressForm({ onSaved, footerExtra }: { onSaved?: () => void; footerExtra?: ReactNode }) {
+export function AddressForm({ onSaved }: { onSaved?: () => void }) {
   const zones = useQuery(api.zones.list);
   const create = useMutation(api.addresses.create);
-  const [zoneId, setZoneId] = useState<Id<"zones"> | null>(null);
-  const [label, setLabel] = useState(labels[0]);
   const [street, setStreet] = useState("");
-  const [landmark, setLandmark] = useState("");
-  const [location, setLocation] = useState<LocationState>({ kind: "none" });
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const consume = useLocationPicker((s) => s.consume);
+  const zoneId = zones?.[0]?._id ?? null;
 
-  async function locate() {
-    setLocation({ kind: "locating" });
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") return setLocation({ kind: "denied" });
-      const { coords } = await Location.getCurrentPositionAsync({});
-      setLocation({ kind: "set", lat: coords.latitude, lng: coords.longitude });
-    } catch {
-      setLocation({ kind: "denied" });
-    }
+  useFocusEffect(
+    useCallback(() => {
+      const picked = consume();
+      if (picked) setLocation({ lat: picked.lat, lng: picked.lng });
+    }, [consume]),
+  );
+
+  function openMapPicker() {
+    router.push(
+      location
+        ? { pathname: "/select-location", params: { lat: String(location.lat), lng: String(location.lng) } }
+        : "/select-location",
+    );
   }
 
   async function save() {
-    if (!zoneId) return setError("اختر منطقتك");
-    if (street.trim().length < 3) return setError("اكتب العنوان بالتفصيل");
+    if (!zoneId) return setError("التوصيل متوقف حاليًا، يرجى المحاولة لاحقًا");
+    if (street.trim().length < 1) return setError("اكتب العنوان");
     setError(null);
     setSaving(true);
     try {
       await create({
         zoneId,
-        label,
+        label: "البيت",
         street,
-        landmark,
-        location: location.kind === "set" ? { lat: location.lat, lng: location.lng } : undefined,
+        landmark: "",
+        location: location ?? undefined,
       });
       onSaved?.();
     } catch (e) {
@@ -62,105 +69,38 @@ export function AddressForm({ onSaved, footerExtra }: { onSaved?: () => void; fo
     }
   }
 
+  const canSave = street.trim().length >= 1;
+
   return (
-    <FormScreen
-      footer={
-        <>
-          {error ? <AppText tone="danger">{error}</AppText> : null}
-          <Button label="حفظ العنوان" loading={saving} onPress={save} />
-          {footerExtra}
-        </>
-      }>
-      <AppText variant="subtitle">المنطقة</AppText>
-      {zones === undefined ? (
-        <ActivityIndicator color={colors.primary} />
-      ) : zones.length === 0 ? (
-        <AppText tone="danger">التوصيل متوقف حاليًا في جميع المناطق، يرجى المحاولة لاحقًا.</AppText>
-      ) : (
-        <View style={styles.zones}>
-          {zones.map((zone) => {
-            const selected = zone._id === zoneId;
-            return (
-              <Pressable
-                key={zone._id}
-                accessibilityRole="radio"
-                accessibilityState={{ selected }}
-                onPress={() => setZoneId(zone._id)}
-                style={[styles.zone, selected && styles.zoneSelected]}>
-                <AppText variant="subtitle">{zone.name}</AppText>
-                <AppText variant="caption" tone={selected ? "primary" : "muted"}>
-                  توصيل {formatPrice(zone.deliveryFee)}
-                </AppText>
-              </Pressable>
-            );
-          })}
-        </View>
-      )}
+    <FormScreen>
+      <Step n={1} title="حدد موقعك على الخريطة" />
+      <Button
+        kind={location ? "primary" : "secondary"}
+        label={location ? "تم تحديد موقعك على الخريطة ✓ (تعديل)" : "تحديد الموقع عبر الخريطة"}
+        onPress={openMapPicker}
+      />
 
-      <AppText variant="subtitle">تفاصيل العنوان</AppText>
-      <View style={styles.chips}>
-        {labels.map((option) => (
-          <Pressable
-            key={option}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: option === label }}
-            onPress={() => setLabel(option)}
-            style={[styles.chip, option === label && styles.chipSelected]}>
-            <AppText variant="caption" tone={option === label ? "onPrimary" : "ink"}>
-              {option}
-            </AppText>
-          </Pressable>
-        ))}
+      <Step n={2} title="اكتب العنوان بالتفصيل" />
+
+      <View style={styles.saveWrap}>
+        {error ? <AppText tone="danger">{error}</AppText> : null}
+        {zones === undefined ? <ActivityIndicator color={colors.primary} /> : null}
+        <Button label="حفظ العنوان" loading={saving} disabled={!canSave} onPress={save} />
       </View>
-      <TextField label="الشارع ورقم المنزل والدور" value={street} onChangeText={setStreet} />
-      <TextField label="علامة مميزة (اختياري)" placeholder="بجوار مسجد..." value={landmark} onChangeText={setLandmark} />
-
-      <Pressable onPress={locate} style={styles.locate} disabled={location.kind === "locating"}>
-        <AppText variant="subtitle" tone="primary">
-          📍 {location.kind === "set" ? "تم تحديد موقعك" : "تحديد موقعي الحالي (اختياري)"}
-        </AppText>
-        <AppText variant="caption" tone="muted">
-          {location.kind === "locating"
-            ? "جارٍ تحديد الموقع..."
-            : location.kind === "denied"
-              ? "تعذّر الوصول إلى موقعك، يكفي العنوان المكتوب"
-              : "يساعد المندوب على الوصول إليك بشكل أسرع"}
-        </AppText>
-      </Pressable>
-
     </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  zones: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
-  zone: {
-    flexBasis: "47%",
-    flexGrow: 1,
-    padding: space.md,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  zoneSelected: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
-  chips: { flexDirection: "row", gap: space.sm },
-  chip: {
-    minHeight: 44,
+  step: { flexDirection: "row", alignItems: "center", gap: space.sm },
+  stepBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: space.lg,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
   },
-  chipSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
-  locate: {
-    padding: space.lg,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: colors.primary,
-    gap: space.xs,
-  },
+  saveWrap: { marginTop: space.lg, gap: space.sm },
 });
+

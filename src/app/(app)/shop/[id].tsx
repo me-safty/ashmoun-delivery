@@ -36,9 +36,9 @@ export default function Shop() {
             <AppText tone="muted">{shop.description}</AppText>
             <View style={styles.metaRow}>
               <ShopStatusBadge state={state} onTint />
-              <AppText variant="caption" tone="muted">
-                ⭐ {shop.rating.toFixed(1)} · {shop.prepMinutes} دقيقة · {todayHoursLabel(shop, now)}
-              </AppText>
+<AppText variant="caption" tone="muted">
+                 {shop.rating ? '⭐ ' + shop.rating.toFixed(1) : ''} · {shop.prepMinutes}دقيقة · {todayHoursLabel(shop, now)}
+               </AppText>
             </View>
             {state === "closed" ? (
               <AppText variant="caption" tone="danger">

@@ -19,7 +19,6 @@ export default function Cart() {
   const quote = useCartQuote();
   const address = addresses?.find((a) => a.isDefault && a.zoneActive) ?? addresses?.find((a) => a.zoneActive);
   const priced = quote?.kind === "ok" ? quote : undefined;
-  const belowMinimum = priced !== undefined && priced.subtotal < priced.minOrder;
   const problem = cartProblem(quote, useNow());
 
   if (!shop || lines.length === 0) {
@@ -77,21 +76,9 @@ export default function Cart() {
       </ScrollView>
       <View style={[styles.footer, Platform.OS === "web" && styles.footerWeb]}>
         {problem ? <AppText tone="danger">{problem}</AppText> : null}
-        {priced && belowMinimum ? (
-          <View style={styles.minimum}>
-            <AppText variant="caption" tone="warningInk" style={styles.minimumText}>
-              أضف {formatPrice(priced.minOrder - priced.subtotal)} أخرى للوصول إلى الحد الأدنى للطلب ({formatPrice(priced.minOrder)})
-            </AppText>
-            <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={8} style={styles.addMore}>
-              <AppText variant="caption" tone="primaryInk">
-                إضافة المزيد
-              </AppText>
-            </Pressable>
-          </View>
-        ) : null}
         <Button
           label={priced && address ? `إتمام الطلب · ${formatPrice(priced.subtotal + address.deliveryFee)}` : "إتمام الطلب"}
-          disabled={!priced || belowMinimum || problem !== null}
+          disabled={!priced || problem !== null}
           onPress={() => router.push("/checkout")}
         />
       </View>

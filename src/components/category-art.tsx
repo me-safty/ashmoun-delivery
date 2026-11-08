@@ -2,10 +2,10 @@ import { Image } from "expo-image";
 import { StyleSheet, View } from "react-native";
 
 const IMAGES: Record<string, number> = {
-  "الطعام": require("../../assets/images/icon-sandwich.png"),
-  مطاعم: require("../../assets/images/icon-sandwich.png"),
-  "🍔": require("../../assets/images/icon-sandwich.png"),
-  "🥪": require("../../assets/images/icon-sandwich.png"),
+  "الطعام": require("../../assets/images/icon-hamburger.png"),
+  مطاعم: require("../../assets/images/icon-hamburger.png"),
+  "🍔": require("../../assets/images/icon-hamburger.png"),
+  "🥪": require("../../assets/images/icon-hamburger.png"),
   البقالة: require("../../assets/images/icon-shopping-cart.png"),
   بقالة: require("../../assets/images/icon-shopping-cart.png"),
   "🛍️": require("../../assets/images/icon-shopping-cart.png"),

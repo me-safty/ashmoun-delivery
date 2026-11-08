@@ -40,7 +40,7 @@ export const create = mutation({
     const zone = await ctx.db.get(args.zoneId);
     if (zone === null || !zone.active) throw new ConvexError("المنطقة غير متاحة");
     const street = args.street.trim();
-    if (street.length < 3) throw new ConvexError("اكتب العنوان بالتفصيل");
+    if (street.length < 1) throw new ConvexError("اكتب العنوان");
     const existing = await ctx.db
       .query("addresses")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
