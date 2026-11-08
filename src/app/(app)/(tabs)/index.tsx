@@ -2,6 +2,8 @@ import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { CartBar } from "@/components/cart-bar";
 import { CategoryArt } from "@/components/category-art";
+import { FlashOfferCard } from "@/components/flash-offer-card";
+import { PromoCarousel } from "@/components/promo-carousel";
 import { api } from "@/convex/_generated/api";
 import { fonts, radius, space } from "@/theme";
 import { useResponsive } from "@/lib/responsive";
@@ -55,13 +57,11 @@ export default function Home() {
   const categories = useQuery(api.catalog.categories);
   const [search, setSearch] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
-  const [bannerPage, setBannerPage] = useState(0);
   const [promoOpen, setPromoOpen] = useState(false);
   const [promoProgress] = useState(() => new Animated.Value(0));
   const [placeholder, setPlaceholder] = useState(`ابحث عن ${SEARCH_WORDS[0]}`);
   const { width, isWebPhone } = useResponsive();
   const bannerWidth = Math.min(width, 480) - space.lg * 2 - 24;
-  const bannerStep = bannerWidth + space.sm;
   const address = addresses?.find((a) => a.isDefault) ?? addresses?.[0];
 
   useEffect(() => {
@@ -233,37 +233,10 @@ export default function Home() {
           </View>
         ) : null}
 
-        {/* Promo banner carousel */}
+        {/* Promo banners: one card at a time, each sliding off to the right as the next arrives. */}
         <View style={styles.bannerWrap}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            pagingEnabled
-            snapToInterval={bannerStep}
-            decelerationRate="fast"
-            contentContainerStyle={styles.bannerRow}
-            onScroll={(e) =>
-              setBannerPage(Math.round(Math.abs(e.nativeEvent.contentOffset.x) / bannerStep))
-            }
-            scrollEventThrottle={100}>
-            <View style={[styles.banner, styles.bannerFlash, { width: bannerWidth }]}>
-              <View style={styles.flashFood}>
-                <AppText style={styles.flashEmojiTop}>🍕 🍔</AppText>
-                <AppText style={styles.flashEmojiBottom}>🍟 🥤</AppText>
-                <View style={styles.flashBadge}>
-                  <AppText style={styles.flashBadgeText}>🕒 FLASH SALE</AppText>
-                </View>
-              </View>
-              <View style={styles.flashTextBlock}>
-                <AppText style={styles.flashText}>عروض</AppText>
-                <AppText style={styles.flashText}>يوم الاثنين</AppText>
-                <View style={styles.flashChip}>
-                  <AppText style={styles.flashChipText}>خصم</AppText>
-                </View>
-                  <AppText style={styles.flashText}>حتى 50%</AppText>
-                  <AppText style={styles.flashNote}>* تُطبَّق الشروط والأحكام</AppText>
-              </View>
-            </View>
+          <PromoCarousel width={bannerWidth}>
+            <FlashOfferCard width={bannerWidth} />
             <View style={[styles.banner, styles.bannerBlack, { width: bannerWidth }]}>
               <View style={styles.bfBody}>
                 <AppText style={styles.bfGifts}>🎁 🛍️</AppText>
@@ -277,17 +250,12 @@ export default function Home() {
               <View style={styles.welcomeBody}>
                 <AppText style={styles.welcomeEmoji}>🛵</AppText>
                 <View style={styles.welcomeTextBlock}>
-                    <AppText style={styles.welcomeTitle}>مرحبًا بك في أشمون</AppText>
-                    <AppText style={styles.welcomeText}>توصيل مجاني لطلبك الأول</AppText>
+                  <AppText style={styles.welcomeTitle}>مرحبًا بك في أشمون</AppText>
+                  <AppText style={styles.welcomeText}>توصيل مجاني لطلبك الأول</AppText>
                 </View>
               </View>
             </View>
-          </ScrollView>
-          <View style={styles.dots}>
-            {[0, 1, 2].map((i) => (
-              <View key={i} style={[styles.dot, bannerPage % 3 === i && styles.dotActive]} />
-            ))}
-          </View>
+          </PromoCarousel>
         </View>
       </ScrollView>
 
@@ -440,9 +408,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   quickLinkLabel: { color: "#48240C", fontWeight: "800", fontSize: 13, textAlign: "center" },
-  // Banner carousel
-  bannerWrap: { marginTop: space.sm },
-  bannerRow: { paddingHorizontal: space.lg, gap: space.sm },
+  // Banner carousel: the cards are clipped by the carousel track, so it centres them itself.
+  bannerWrap: { marginTop: space.sm, alignItems: "center" },
   banner: {
     borderRadius: radius.lg,
     overflow: "hidden",
@@ -450,37 +417,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: space.md,
   },
-  bannerFlash: { backgroundColor: ORANGE },
   bannerBlack: { backgroundColor: "#141414" },
   bannerWelcome: { backgroundColor: "#FFF3E0" },
-  // Flash banner
-  flashFood: {
-    flex: 1,
-    backgroundColor: "#F3EDE3",
-    borderRadius: radius.md,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  flashEmojiTop: { fontSize: 34, lineHeight: 46, transform: [{ rotate: "-6deg" }] },
-  flashEmojiBottom: { fontSize: 30, lineHeight: 42, transform: [{ rotate: "5deg" }], marginTop: -4 },
-  flashBadge: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    backgroundColor: "#FF7A1F",
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    transform: [{ rotate: "-10deg" }],
-    borderWidth: 2,
-    borderColor: "#fff",
-  },
-  flashBadgeText: { color: "#fff", fontSize: 10, fontWeight: "900", letterSpacing: 0.5 },
-  flashTextBlock: { width: 132, alignItems: "center", gap: 2, justifyContent: "center" },
-  flashText: { color: "#fff", fontWeight: "900", fontSize: 20, lineHeight: 30, textAlign: "center" },
-  flashChip: { backgroundColor: "#141414", borderRadius: 10, paddingHorizontal: 10, paddingVertical: 2 },
-  flashChipText: { color: LIME, fontWeight: "900", fontSize: 18 },
-  flashNote: { color: "rgba(255,255,255,0.85)", fontSize: 9, marginTop: 4 },
   // Black Friday banner
   bfBody: { flex: 1, alignItems: "center", justifyContent: "center", gap: space.sm },
   bfGifts: { fontSize: 30, lineHeight: 42, transform: [{ rotate: "-8deg" }] },
@@ -502,10 +440,6 @@ const styles = StyleSheet.create({
   welcomeTextBlock: { gap: 2, alignItems: "flex-start" },
   welcomeTitle: { fontWeight: "800", fontSize: 18 },
   welcomeText: { color: "#5F564F", fontSize: 13 },
-  // Dots
-  dots: { flexDirection: "row", gap: 6, justifyContent: "center", marginTop: space.md },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#D9D9D9" },
-  dotActive: { backgroundColor: "#141414" },
   // Sections
   sectionHeader: { paddingHorizontal: space.lg, marginTop: space.md, marginBottom: space.lg },
   useSaveTitle: { fontWeight: "900" },
