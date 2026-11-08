@@ -28,32 +28,48 @@ const SLIDE_MS = 520;
 const SWIPE_PAUSE_MS = 6000;
 // Fraction of the card the finger has to travel before a drag counts as a swipe.
 const SWIPE_RATIO = 0.22;
+// The sliver of the previous and next card that stays visible past each edge, and the gap
+// the cards keep between them once parked side by side.
+const PEEK = 16;
+const GAP = space.sm;
 
 type SlideOptions = {
   animate?: boolean;
-  // Set when the drag already placed the incoming card under the finger.
-  keepIncoming?: boolean;
 };
 
 /**
- * Promo carousel that shows one card at a time. Cards always travel to the right: the card on
- * screen leaves through the right edge and the next one arrives from the left, so the promo
- * block keeps moving without the user having to touch it.
+ * Promo carousel that shows one card at a time with a sliver of the previous and next cards
+ * peeking in from both edges. Cards always travel to the right: the card on screen leaves
+ * through the right edge and the next one arrives from the left, so the promo block keeps
+ * moving without the user having to touch it.
  *
  * Autoplay stops when the system asks for reduced motion; swiping and the dots still work.
  */
 export function PromoCarousel({ width, children }: { width: number; children: ReactNode }) {
   const cards = useMemo(() => Children.toArray(children), [children]);
   const count = cards.length;
-  // A card waits one gap away, so the one leaving and the one arriving never overlap.
-  const travel = width + space.sm;
+  // Cards travel one full card plus the gap, and the track is wider than a card so the
+  // neighbours can rest in the gutters with just their edge showing.
+  const travel = width + GAP;
+  const pad = count > 1 ? PEEK + GAP : 0;
+  const trackWidth = width + pad * 2;
   const reducedMotion = useReducedMotion();
 
   const [active, setActive] = useState(0);
 
-  // One translateX per card: the visible card sits at 0, the rest are parked off-screen.
+  // Signed loop distance from the active card: 0 is on screen, +1 is the card peeking on the
+  // right (the previous one), -1 the one peeking on the left (the next one).
+  const distanceFor = useCallback(
+    (index: number, from: number) => {
+      const forward = (index - from + count) % count;
+      return forward <= count / 2 ? -forward : count - forward;
+    },
+    [count],
+  );
+
+  // One translateX per card: the visible card sits at 0, the rest in their peek/off-screen slots.
   const [positions] = useState(() =>
-    cards.map((_, index) => new Animated.Value(index === 0 ? 0 : -travel)),
+    cards.map((_, index) => new Animated.Value(distanceFor(index, 0) * travel)),
   );
 
   const activeRef = useRef(0);
@@ -64,13 +80,13 @@ export function PromoCarousel({ width, children }: { width: number; children: Re
   useEffect(() => {
     positions.forEach((position, index) => {
       position.stopAnimation();
-      position.setValue(index === activeRef.current ? 0 : -travel);
+      position.setValue(distanceFor(index, activeRef.current) * travel);
     });
     busyRef.current = false;
-  }, [positions, travel]);
+  }, [distanceFor, positions, travel]);
 
   const slideTo = useCallback(
-    (next: number, { animate = true, keepIncoming = false }: SlideOptions = {}) => {
+    (next: number, { animate = true }: SlideOptions = {}) => {
       if (count < 2) return;
       const from = activeRef.current;
       const target = ((next % count) + count) % count;
@@ -80,42 +96,42 @@ export function PromoCarousel({ width, children }: { width: number; children: Re
       activeRef.current = target;
       setActive(target);
 
-      // Forwards is the normal move (0 → 1 → 2 → 0); backwards mirrors it.
-      const forward = target === (from + 1) % count;
-      const outgoing = positions[from];
-      const incoming = positions[target];
+      const moves: Animated.CompositeAnimation[] = [];
 
-      // The incoming card always has to start on the side it enters from.
-      if (!keepIncoming) incoming.setValue(forward ? -travel : travel);
+      positions.forEach((position, index) => {
+        const before = distanceFor(index, from);
+        const after = distanceFor(index, target);
+        const to = after * travel;
 
-      const parkOutgoing = () => {
-        outgoing.setValue(-travel);
+        // A card that is neither the active one nor one of its neighbours sits off screen,
+        // so wrapping it straight to the other side of the loop is invisible.
+        if (!animate || Math.abs(after - before) > 1) {
+          position.setValue(to);
+          return;
+        }
+
+        if (after === before) return;
+
+        moves.push(
+          Animated.timing(position, {
+            toValue: to,
+            duration: SLIDE_MS,
+            easing: Easing.inOut(Easing.cubic),
+            useNativeDriver: USE_NATIVE_DRIVER,
+          }),
+        );
+      });
+
+      if (moves.length === 0) {
         busyRef.current = false;
-      };
-
-      if (!animate) {
-        outgoing.setValue(forward ? travel : -travel);
-        incoming.setValue(0);
-        parkOutgoing();
         return;
       }
 
-      Animated.parallel([
-        Animated.timing(outgoing, {
-          toValue: forward ? travel : -travel,
-          duration: SLIDE_MS,
-          easing: Easing.inOut(Easing.cubic),
-          useNativeDriver: USE_NATIVE_DRIVER,
-        }),
-        Animated.timing(incoming, {
-          toValue: 0,
-          duration: SLIDE_MS,
-          easing: Easing.inOut(Easing.cubic),
-          useNativeDriver: USE_NATIVE_DRIVER,
-        }),
-      ]).start(parkOutgoing);
+      Animated.parallel(moves).start(() => {
+        busyRef.current = false;
+      });
     },
-    [count, positions, travel],
+    [count, distanceFor, positions, travel],
   );
 
   useEffect(() => {
@@ -139,31 +155,25 @@ export function PromoCarousel({ width, children }: { width: number; children: Re
     const endDrag = (dx: number, vx: number) => {
       const from = activeRef.current;
       const direction = dx >= 0 ? 1 : -1;
-      const neighbour = (from + direction + count) % count;
       const committed = Math.abs(dx) > travel * SWIPE_RATIO || Math.abs(vx) > 0.35;
 
-      if (committed) {
-        slideTo(from + direction, { keepIncoming: true });
+      if (committed && count > 1) {
+        slideTo(from + direction);
         return;
       }
 
-      if (neighbour === from) return;
-      Animated.parallel([
-        Animated.spring(positions[from], {
-          toValue: 0,
-          damping: 18,
-          stiffness: 180,
-          mass: 0.7,
-          useNativeDriver: USE_NATIVE_DRIVER,
-        }),
-        Animated.spring(positions[neighbour], {
-          toValue: -direction * travel,
-          damping: 18,
-          stiffness: 180,
-          mass: 0.7,
-          useNativeDriver: USE_NATIVE_DRIVER,
-        }),
-      ]).start();
+      // Not far enough: every card springs back to its own slot.
+      Animated.parallel(
+        positions.map((position, index) =>
+          Animated.spring(position, {
+            toValue: distanceFor(index, from) * travel,
+            damping: 18,
+            stiffness: 180,
+            mass: 0.7,
+            useNativeDriver: USE_NATIVE_DRIVER,
+          }),
+        ),
+      ).start();
     };
 
     const responder = PanResponder.create({
@@ -177,19 +187,19 @@ export function PromoCarousel({ width, children }: { width: number; children: Re
       },
       onPanResponderMove: (_, gesture) => {
         const from = activeRef.current;
-        const direction = gesture.dx >= 0 ? 1 : -1;
-        const neighbour = (from + direction + count) % count;
-        if (neighbour === from) return;
+        if (count < 2) return;
 
-        positions[from].setValue(gesture.dx);
-        positions[neighbour].setValue(gesture.dx - direction * travel);
+        // The whole row follows the finger, so both peeks stay glued to their cards.
+        positions.forEach((position, index) => {
+          position.setValue(distanceFor(index, from) * travel + gesture.dx);
+        });
       },
       onPanResponderRelease: (_, gesture) => endDrag(gesture.dx, gesture.vx),
       onPanResponderTerminate: (_, gesture) => endDrag(gesture.dx, gesture.vx),
     });
 
     setPanHandlers(responder.panHandlers);
-  }, [count, positions, slideTo, travel]);
+  }, [count, distanceFor, positions, slideTo, travel]);
 
   const selectPage = useCallback(
     (index: number) => {
@@ -200,13 +210,17 @@ export function PromoCarousel({ width, children }: { width: number; children: Re
   );
 
   return (
-    <View style={{ width }}>
-      <View style={[styles.track, { width }]} {...panHandlers}>
+    <View style={{ width: trackWidth }}>
+      <View style={[styles.track, { width: trackWidth }]} {...panHandlers}>
         {cards.map((card, index) => (
           <Animated.View
             key={index}
             style={[
-              index === 0 ? null : styles.stacked,
+              // The first card stays in flow so the track takes its height; the rest are
+              // stacked at the same spot and moved purely with translateX.
+              index === 0
+                ? { marginHorizontal: pad }
+                : [styles.stacked, { left: pad }],
               { width, transform: [{ translateX: positions[index] }] },
             ]}>
             {card}
@@ -232,9 +246,10 @@ export function PromoCarousel({ width, children }: { width: number; children: Re
 }
 
 const styles = StyleSheet.create({
-  // Clipping the track is what lets a card leave the screen instead of sliding over the page.
+  // Clipping the track is what lets a card leave the screen instead of sliding over the page,
+  // and what trims the neighbours down to the peeking sliver.
   track: { overflow: "hidden" },
-  stacked: { position: "absolute", top: 0, left: 0 },
+  stacked: { position: "absolute", top: 0 },
   dots: { flexDirection: "row", gap: 6, justifyContent: "center", marginTop: space.md },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#D9D9D9" },
   dotActive: { backgroundColor: "#141414" },

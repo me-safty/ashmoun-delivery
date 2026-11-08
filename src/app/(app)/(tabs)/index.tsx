@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   quickLinkLabel: { color: "#48240C", fontWeight: "800", fontSize: 13, textAlign: "center" },
-  // Banner carousel: the cards are clipped by the carousel track, so it centres them itself.
+  // Banner carousel: the track is wider than a card so the neighbouring offers peek in at the edges.
   bannerWrap: { marginTop: space.sm, alignItems: "center" },
   banner: {
     borderRadius: radius.lg,
