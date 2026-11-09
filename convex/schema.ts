@@ -79,6 +79,7 @@ export default defineSchema({
   shops: defineTable({
     name: v.string(),
     categoryId: v.id("categories"),
+    kind: v.optional(v.string()),
     description: v.string(),
     emoji: v.string(),
     tint: v.string(),

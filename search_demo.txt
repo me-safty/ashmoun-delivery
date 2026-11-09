@@ -1,0 +1,39 @@
+Restaurant Search Demo - شاورما Cham
+
+The restaurant "شاورما Cham" has been added to your Convex database.
+
+Restaurant Details:
+- Name: شاورما Cham
+- Category: food (Mطاعم)
+- Description: شاورما Cham - شاورما وفلافل
+- Products:
+  - شاورما دجاج (35)
+  - فلافل (15)
+- Hours: 9:00 - 15:00 daily
+- Min order: 30
+- Prep minutes: 15
+- Rating: 4.8
+- Tint: #FCE3E1
+- Kind: شاورما
+
+How to find it in the app:
+
+1. Open the app and navigate to the Food/Mطاعم category
+   - Or press the quick link card for Food categories
+
+2. Tap the search field at the top of the screen
+   - Placeholder says "ابحث عن محلات" (Search for shops)
+
+3. Type the search query:
+   - Type "شاورما" - this will match because:
+     * shop name "شاورما Cham" includes "شاورما"
+     * shop description "شاورما Cham - شاورما وفلافل" includes "شاورما"
+   - Or type "Cham" - this will also match the name
+
+4. The filtered results will show "شاورما Cham" restaurant
+
+Search Implementation (from source code):
+- In src/app/(app)/category/[id].tsx, lines 23-35
+- The query checks: name.includes(q) || desc.includes(q)
+- Both name and description are converted to lowercase before comparison
+- The search is case-insensitive and works with Arabic text

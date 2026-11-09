@@ -20,20 +20,10 @@ export const shops = query({
           .collect()
       : await ctx.db.query("shops").order("asc").collect();
 
-    const categoryIds = new Set(shops.map((s) => s.categoryId));
-    const categoryMap = new Map<string, { name: string }>();
-    for (const id of categoryIds) {
-      const c = await ctx.db.get(id);
-      if (c) categoryMap.set(id.toString(), c);
-    }
-
-    return shops.map((shop) => {
-      const category = categoryMap.get(shop.categoryId.toString());
-      return {
-        ...shop,
-        categoryName: category ? category.name : "",
-      };
-    });
+    return shops.map((shop) => ({
+      ...shop,
+      categoryName: "",
+    }));
   },
 });
 

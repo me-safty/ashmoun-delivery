@@ -67,6 +67,8 @@ const shops: {
   description: string;
   emoji: string;
   tint: string;
+  kind?: string;
+  imageUrl?: string;
   hours: WeeklyHours;
   paused?: boolean;
   minOrder: number;
@@ -81,6 +83,8 @@ const shops: {
     description: "مطعم جوهر المميز",
     emoji: "🍔",
     tint: "#FDE7D9",
+    kind: "وجبات سريعة",
+    imageUrl: "https://res.cloudinary.com/dofy7vd1y/image/upload/v1774471754/WhatsApp_Image_2026-03-16_at_11.51.55_vvlr31.jpg",
     hours: everyDay(h(12), h(2)),
     minOrder: 50,
     prepMinutes: 25,
@@ -123,6 +127,8 @@ const shops: {
     description: "فولكانو - برجر حار ومميز",
     emoji: "🌋",
     tint: "#FCE3E1",
+    kind: "برجر",
+    imageUrl: "https://res.cloudinary.com/dofy7vd1y/image/upload/v1774471271/download_1_zh5neh.jpg",
     hours: everyDay(h(10), h(24)),
     minOrder: 60,
     prepMinutes: 30,
@@ -143,6 +149,8 @@ const shops: {
     description: "كاتشب - وجبات سريعة ولذيذة",
     emoji: "🍟",
     tint: "#FFF1CC",
+    kind: "وجبات سريعة",
+    imageUrl: "https://res.cloudinary.com/dofy7vd1y/image/upload/v1774471622/download_2_nhxjwq.jpg",
     hours: everyDay(h(9), h(1)),
     minOrder: 30,
     prepMinutes: 15,
@@ -163,6 +171,8 @@ const shops: {
     description: "مكسيكانو - نكهات مكسيكية",
     emoji: "🌮",
     tint: "#F6E6D6",
+    kind: "مكسيكي",
+    imageUrl: "https://scontent.faly1-2.fna.fbcdn.net/v/t39.30808-6/657856989_1342281547921183_8981128263191348942_n.jpg?stp=dst-jpg_tt6&cstp=mx960x960&ctp=s960x960&_nc_cat=110&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFG-v9VRNLi1uV7G5bJOLNcgddT9LSd4MGB11P0tJ3gwa4YksMhijCKPSNICgZeoOkR_w0SqgfaN_d3qgybYSvh&_nc_ohc=8YQxiKbGvqAQ7kNvwHniIBH&_nc_oc=AdpXPbPH4MDo34mzAzaSTihhyYtjoDhQokJy-kXJ52swvmjv-cMir4QftHNGcQR-OC0&_nc_zt=23&_nc_ht=scontent.faly1-2.fna&_nc_gid=AhmuxkEcuUNALkOlbxe2yg&_nc_ss=7b2a8&oh=00_AQRboprTe_fshP-ydOP8vHFuP8hW24uIonDXnKWXP1o51Q&oe=6AF7B970",
     hours: everyDay(h(13), h(23), [FRIDAY]),
     minOrder: 100,
     prepMinutes: 40,
@@ -183,6 +193,8 @@ const shops: {
     description: "الأصلى - أكل بيتي أصيل",
     emoji: "🍲",
     tint: "#E3EEFB",
+    kind: "أكل بيتي",
+    imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdolUeSraRvA_n5Bn3XdfSun6c4D7nNu6ePE4Hj4ud2g&s=10",
     hours: everyDay(h(10), h(23)),
     paused: true,
     minOrder: 50,
@@ -204,6 +216,8 @@ const shops: {
     description: "ابو يارا - مشويات ومشروبات",
     emoji: "🍢",
     tint: "#DDF3EA",
+    kind: "مشويات",
+    imageUrl: "https://api.mat3am.net/assets/2021/12/19/png/ac7ed4db-91cb-4f4a-af8d-1c3037507e72.png",
     hours: everyDay(h(8), h(2)),
     minOrder: 25,
     prepMinutes: 10,
@@ -222,8 +236,9 @@ const shops: {
     category: "food",
     name: "البرنس",
     description: "البرنس - بيتزا وفطائر",
-    emoji: "🍕",
+    emoji: "🐟",
     tint: "#FBE4EE",
+    kind: "أسماك",
     hours: everyDay(h(10), h(23)),
     minOrder: 50,
     prepMinutes: 25,
@@ -244,6 +259,8 @@ const shops: {
     description: "قرمشة - وجبات مقرمشة",
     emoji: "🥪",
     tint: "#FDE7D9",
+    kind: "سندوتشات",
+    imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMw8ZNLOh10ITTWdXf7Q5byJ14KAxmLj1Xtob8pDckpg&s=10",
     hours: everyDay(h(12), h(2)),
     minOrder: 50,
     prepMinutes: 25,
@@ -264,6 +281,7 @@ const shops: {
     description: "سعيد السورى - شاورما ومشاوي",
     emoji: "🥙",
     tint: "#E6F4F1",
+    kind: "شاورما",
     hours: everyDay(h(9), h(3)),
     minOrder: 0,
     prepMinutes: 15,
@@ -284,6 +302,7 @@ const shops: {
     description: "برجر لحم بلدي مشوي على الفحم",
     emoji: "🍔",
     tint: "#FDE7D9",
+    kind: "برجر",
     hours: everyDay(h(12), h(2)),
     minOrder: 50,
     prepMinutes: 25,
@@ -326,6 +345,7 @@ const shops: {
     description: "بيتزا إيطالي وفطير مشلتت على الفرن البلدي",
     emoji: "🍕",
     tint: "#FCE3E1",
+    kind: "بيتزا",
     hours: everyDay(h(10), h(24)),
     minOrder: 60,
     prepMinutes: 30,
@@ -353,6 +373,7 @@ const shops: {
     description: "كفتة وطرب وفراخ مشوية",
     emoji: "🍢",
     tint: "#F6E6D6",
+    kind: "مشويات",
     hours: everyDay(h(13), h(23), [FRIDAY]),
     minOrder: 100,
     prepMinutes: 40,
@@ -392,6 +413,7 @@ const shops: {
     description: "كشري وطواجن ومكرونة",
     emoji: "🥙",
     tint: "#FFF1CC",
+    kind: "كشري",
     hours: everyDay(h(9), h(1)),
     minOrder: 30,
     prepMinutes: 15,
@@ -419,6 +441,7 @@ const shops: {
     description: "تورت وجاتوه وحلويات شرقي",
     emoji: "🍰",
     tint: "#FBE4EE",
+    kind: "حلويات",
     hours: everyDay(h(10), h(23)),
     paused: true,
     minOrder: 50,
@@ -441,6 +464,7 @@ const shops: {
     description: "عصائر فريش وسموزي",
     emoji: "🥤",
     tint: "#DDF3EA",
+    kind: "عصائر",
     hours: everyDay(h(8), h(2)),
     minOrder: 25,
     prepMinutes: 10,
@@ -463,6 +487,7 @@ const shops: {
     description: "بقالة وخضار ومنظفات",
     emoji: "🛒",
     tint: "#E3EEFB",
+    kind: "بقالة",
     hours: everyDay(0, 0),
     minOrder: 40,
     prepMinutes: 20,
@@ -491,6 +516,7 @@ const shops: {
     description: "أدوية ومستلزمات طبية",
     emoji: "💊",
     tint: "#E6F4F1",
+    kind: "صيدلية",
     hours: everyDay(h(9), h(3)),
     minOrder: 0,
     prepMinutes: 15,
@@ -506,6 +532,29 @@ const shops: {
       },
     ],
   },
+  {
+    category: "food",
+    name: "شاورما الشام",
+    description: "شاورما الشام - شاورما وفلافل",
+    emoji: "🥙",
+    tint: "#FCE3E1",
+    kind: "شاورما",
+    imageUrl: "https://scontent.faly1-2.fna.fbcdn.net/v/t39.30808-1/742381621_984814701235422_5385788468906646427_n.jpg?stp=dst-jpg_tt6&cstp=mx1080x1073&ctp=s200x200&_nc_cat=107&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=2d3e12&_nc_eui2=AeEEeRxAt9veLsjoJI7KQ0-0px8Ep0CjJaOnHwSnQKMlo6pXiHO4w7ZumRrYxNqVRdxVmiX8GHBj1zHIb_dyfK5h&_nc_ohc=aGxVr87WUEQQ7kNvwFStTVN&_nc_oc=Ado-W8MePHWHWGCKOGbr36P21kPXhgjjI0Vk8QRyoxF27H-Ow4PtIkTGVHePFMj39zQ&_nc_zt=24&_nc_ht=scontent.faly1-2.fna&_nc_gid=g7k9GPXUWBiE7eNBdlT-jw&_nc_ss=7b2a8&oh=00_AQSU6c15kSUVOu2zs-h7K9pGCEcxJ689rDnfDZDGkf6hGw&oe=6AF7CBE8",
+    hours: everyDay(h(9), h(3)),
+    minOrder: 30,
+    prepMinutes: 15,
+    rating: 4.8,
+    sortOrder: 18,
+    menu: [
+      {
+        section: "شاورما",
+        products: [
+          { name: "شاورما دجاج", description: "مع ثومية ومخلل", price: 35, emoji: "🥙" },
+          { name: "فلافل", description: "فلافل طازج", price: 15, emoji: "🧆" },
+        ],
+      },
+    ],
+  },
 ];
 
 const drivers = [
@@ -516,31 +565,74 @@ const drivers = [
 export const run = internalMutation({
   args: {},
   handler: async (ctx) => {
-    // Clear previously seeded data so re-running reflects updated seed
-    for (const table of ["products", "menuSections", "shops", "categories", "zones", "drivers"] as const) {
-      const rows = await ctx.db.query(table).collect();
-      for (const row of rows) await ctx.db.delete(row._id);
-    }
+    // Upsert zones without clearing existing data
     for (const [sortOrder, zone] of zones.entries()) {
-      await ctx.db.insert("zones", { ...zone, active: true, sortOrder });
+      const existing = await ctx.db.query("zones").filter((q) => q.eq("name", zone.name)).collect();
+      if (existing.length > 0) {
+        await ctx.db.patch(existing[0]._id, { ...zone, active: true, sortOrder });
+      } else {
+        await ctx.db.insert("zones", { ...zone, active: true, sortOrder });
+      }
     }
     const categoryIds = new Map<CategoryKey, Id<"categories">>();
     for (const [sortOrder, { key, ...category }] of categories.entries()) {
-      categoryIds.set(key, await ctx.db.insert("categories", { ...category, sortOrder }));
+      const existing = await ctx.db.query("categories").filter((q) => q.eq("name", category.name)).collect();
+      let categoryId: Id<"categories">;
+      if (existing.length > 0) {
+        categoryId = existing[0]._id;
+        await ctx.db.patch(categoryId, { ...category, sortOrder });
+      } else {
+        categoryId = await ctx.db.insert("categories", { ...category, sortOrder });
+      }
+      categoryIds.set(key, categoryId);
     }
     for (const { category, menu, paused = false, ...shop } of shops) {
       const categoryId = categoryIds.get(category);
       if (!categoryId) throw new Error(`unknown category ${category}`);
-      const shopId = await ctx.db.insert("shops", { ...shop, categoryId, paused, sortOrder: shop.sortOrder });
+      const existingShop = await ctx.db.query("shops").filter((q) => q.eq("name", shop.name)).collect();
+      let shopId: Id<"shops">;
+      if (existingShop.length > 0) {
+        shopId = existingShop[0]._id;
+        await ctx.db.patch(shopId, { ...shop, categoryId, paused, sortOrder: shop.sortOrder });
+      } else {
+        shopId = await ctx.db.insert("shops", { ...shop, categoryId, paused, sortOrder: shop.sortOrder });
+      }
       for (const [sortOrder, { section, products }] of menu.entries()) {
-        const sectionId = await ctx.db.insert("menuSections", { shopId, name: section, sortOrder });
+        const existingSection = await ctx.db.query("menuSections")
+          .withIndex("by_shop", (q) => q.eq("shopId", shopId)).filter((q) => q.eq("name", section))
+          .collect();
+        let sectionId: Id<"menuSections">;
+        if (existingSection.length > 0) {
+          sectionId = existingSection[0]._id;
+          await ctx.db.patch(sectionId, { name: section, sortOrder });
+        } else {
+          sectionId = await ctx.db.insert("menuSections", { shopId, name: section, sortOrder });
+        }
         for (const { available = true, optionGroups = [], ...product } of products) {
-          await ctx.db.insert("products", { ...product, shopId, sectionId, available, optionGroups });
+          const existingProduct = await ctx.db.query("products")
+          .withIndex("by_shop", (q) => q.eq("shopId", shopId)).filter((q) => q.eq("name", product.name))
+          .collect();
+          if (existingProduct.length > 0) {
+            await ctx.db.patch(existingProduct[0]._id, {
+              ...product,
+              shopId,
+              sectionId,
+              available,
+              optionGroups,
+            });
+          } else {
+            await ctx.db.insert("products", { ...product, shopId, sectionId, available, optionGroups });
+          }
         }
       }
     }
     for (const driver of drivers) {
-      await ctx.db.insert("drivers", { ...driver, active: true });
+      const existingDriver = await ctx.db.query("drivers").filter((q) => q.eq("name", driver.name)).collect();
+      if (existingDriver.length > 0) {
+        await ctx.db.patch(existingDriver[0]._id, { ...driver, active: true });
+      } else {
+        await ctx.db.insert("drivers", { ...driver, active: true });
+      }
     }
     return "seeded";
   },

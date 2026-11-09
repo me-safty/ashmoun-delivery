@@ -5,7 +5,7 @@ import { colors, formatPrice, radius, space } from "@/theme";
 import { AppText } from "./app-text";
 import { EmojiTile } from "./emoji-tile";
 
-export function ShopCard({ shop, now }: { shop: Doc<"shops"> & { categoryName?: string }; now: number }) {
+export function ShopCard({ shop, now }: { shop: Doc<"shops"> & { kind?: string }; now: number }) {
   return (
     <Pressable
       accessibilityRole="link"
@@ -28,7 +28,7 @@ export function ShopCard({ shop, now }: { shop: Doc<"shops"> & { categoryName?: 
         </AppText>
 
         <AppText variant="caption" tone="muted">
-          {shop.categoryName}
+          {shop.kind}
         </AppText>
       </View>
     </Pressable>

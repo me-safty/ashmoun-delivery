@@ -1,14 +1,14 @@
+import { AppText } from "@/components/app-text";
+import { ShopCard } from "@/components/shop-card";
+import { Unavailable } from "@/components/unavailable";
+import { api } from "@/convex/_generated/api";
+import { useNow } from "@/lib/use-now";
+import { colors, fonts, radius, space } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery } from "convex/react";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Platform, StyleSheet, TextInput, View } from "react-native";
-import { api } from "@/convex/_generated/api";
-import { AppText } from "@/components/app-text";
-import { ShopCard } from "@/components/shop-card";
-import { Unavailable } from "@/components/unavailable";
-import { useNow } from "@/lib/use-now";
-import { colors, fonts, radius, space } from "@/theme";
 
 const webNoOutline: object = Platform.OS === "web" ? { outlineStyle: "none" } : {};
 
@@ -42,7 +42,6 @@ export default function CategoryShops() {
         options={{
           headerShown: true,
           title: category ? `${category.emoji} ${category.name}` : "",
-          headerBackTitle: "عودة",
           headerBackButtonDisplayMode: "minimal",
           headerStyle: { backgroundColor: "#FFFFFF" },
         }}
