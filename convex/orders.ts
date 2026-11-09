@@ -5,8 +5,7 @@ import { mutation, query, type QueryCtx } from "./_generated/server";
 import { isShopOpen } from "./lib/hours";
 import { canCustomerCancel } from "./lib/orderStatus";
 import { MAX_QUANTITY, priceLine } from "./lib/pricing";
-import { requireUser } from "./lib/session";
-import { cartSelection } from "./schema";
+import { requireUser } from "./lib/session";import { cartSelection } from "./schema";
 
 const MAX_LINES = 30;
 const MAX_NOTE = 300;
@@ -49,7 +48,11 @@ async function priceCart(ctx: QueryCtx, shop: Doc<"shops">, lines: Infer<typeof 
 export const quote = query({
   args: { shopId: v.id("shops"), items: cartItems },
   handler: async (ctx, args) => {
-    await requireUser(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      // Guests browse freely; the cart just can't be checked out before signing in.
+      return { kind: "invalid" as const, message: "سجّل الدخول أولًا لإتمام الطلب" };
+    }
     const shop = await ctx.db.get(args.shopId);
     if (shop === null) return { kind: "invalid" as const, message: "هذا المحل غير متاح حاليًا" };
     try {

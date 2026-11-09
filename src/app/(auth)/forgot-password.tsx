@@ -1,4 +1,5 @@
 import { useAuthActions } from "@convex-dev/auth/react";
+import { router } from "expo-router";
 import { useState } from "react";
 import { normalizePhone, toLatinDigits } from "@/convex/lib/phone";
 import { AppText } from "@/components/app-text";
@@ -39,10 +40,11 @@ export default function ForgotPassword() {
 
   function resetPassword() {
     if (!sentTo) return;
-    void run(
-      () => signIn("password", { flow: "reset-verification", phone: sentTo, code, newPassword }),
-      "الرمز غير صحيح أو منتهي الصلاحية، اطلب رمزًا جديدًا",
-    );
+    void run(async () => {
+      await signIn("password", { flow: "reset-verification", phone: sentTo, code, newPassword });
+      // The reset flow signs the user in; land on the home tabs.
+      router.replace("/");
+    }, "الرمز غير صحيح أو منتهي الصلاحية، اطلب رمزًا جديدًا");
   }
 
   if (sentTo === null) {

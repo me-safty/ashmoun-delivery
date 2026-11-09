@@ -16,6 +16,7 @@ import { colors, formatPrice, radius, space } from "@/theme";
 
 export default function Checkout() {
   const { shop, lines, clear } = useCart();
+  const me = useQuery(api.users.me);
   const addresses = useQuery(api.addresses.mine);
   const place = useMutation(api.orders.place);
   const quote = useCartQuote();
@@ -53,6 +54,9 @@ export default function Checkout() {
 
   // After a successful order the cart empties on the way to the success screen.
   if (!placed && (!shop || lines.length === 0)) return <Redirect href="/cart" />;
+
+  // Guests can browse and fill the cart, but ordering requires an account.
+  if (me === null) return <Redirect href="/sign-in" />;
 
   return (
     <FormScreen

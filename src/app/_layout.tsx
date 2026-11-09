@@ -85,6 +85,7 @@ function RootStack() {
     <LocaleProvider direction="rtl">
       <Stack screenOptions={stackScreenOptions}>
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       </Stack>
     </LocaleProvider>
   );

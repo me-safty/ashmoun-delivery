@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "convex/react";
-import { router } from "expo-router";
+import { Link, router } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
@@ -36,10 +36,25 @@ export default function Profile() {
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
-      <View style={styles.card}>
-        <AppText variant="title">{me?.name}</AppText>
-        <AppText tone="muted">{me?.phone}</AppText>
-      </View>
+      {me === null ? (
+        <View style={styles.card}>
+          <AppText variant="title">مرحبًا بك 👋</AppText>
+          <AppText tone="muted">يمكنك تصفح المحلات والقوائم، وسجّل الدخول للطلب.</AppText>
+          <View style={styles.actions}>
+            <Link href="/sign-in" asChild>
+              <Button kind="primary" label="تسجيل الدخول" style={styles.grow} />
+            </Link>
+            <Link href="/register" asChild>
+              <Button kind="secondary" label="حساب جديد" style={styles.grow} />
+            </Link>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.card}>
+          <AppText variant="title">{me?.name}</AppText>
+          <AppText tone="muted">{me?.phone}</AppText>
+        </View>
+      )}
 
       <View style={styles.sectionRow}>
         <AppText variant="subtitle">عناويني</AppText>
@@ -116,6 +131,7 @@ const styles = StyleSheet.create({
   defaultCard: { borderColor: colors.primary },
   sectionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: space.sm },
   actions: { flexDirection: "row", gap: space.sm },
+  grow: { flex: 1 },
   link: { minHeight: 44, justifyContent: "center", paddingHorizontal: space.sm },
   remove: { marginStart: "auto" },
   defaultPill: { paddingHorizontal: space.sm, borderRadius: radius.pill, backgroundColor: colors.primarySoft },

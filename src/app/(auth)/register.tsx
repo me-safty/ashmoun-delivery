@@ -1,4 +1,5 @@
 import { useAuthActions } from "@convex-dev/auth/react";
+import { router } from "expo-router";
 import { useState } from "react";
 import { normalizePhone } from "@/convex/lib/phone";
 import { AppText } from "@/components/app-text";
@@ -22,6 +23,8 @@ export default function Register() {
     setSubmitting(true);
     try {
       await signIn("password", { flow: "signUp", name: name.trim(), phone: normalized, password });
+      // Registered (and signed in): land on the home tabs.
+      router.replace("/");
     } catch (e) {
       setError(errorMessage(e, "هذا الرقم مسجّل مسبقًا، جرّب تسجيل الدخول"));
       setSubmitting(false);

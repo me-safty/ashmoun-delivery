@@ -1,6 +1,15 @@
 import { useQuery } from "convex/react";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Image, Pressable, SectionList, StyleSheet, View } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useRef } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  SectionList,
+  StyleSheet,
+  View,
+} from "react-native";
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
 import { CART_BAR_SPACE, CartBar } from "@/components/cart-bar";
@@ -8,12 +17,33 @@ import { EmojiTile } from "@/components/emoji-tile";
 import { Unavailable } from "@/components/unavailable";
 import { ShopStatusBadge, shopState, todayHoursLabel } from "@/components/shop-status";
 import { useNow } from "@/lib/use-now";
-import { colors, formatPrice, radius, space } from "@/theme";
+import { colors, fonts, formatPrice, radius, space } from "@/theme";
+
+const STAR = "#F5B301";
+// Placeholder until reviews are tracked in the backend; render only alongside a rating.
+const REVIEWS_COUNT = 4540;
+
+function Stars({ rating }: { rating?: number }) {
+  const value = rating ?? 0;
+  return (
+    <View style={styles.stars}>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <Ionicons
+          key={i}
+          name={i < Math.round(value) ? "star" : "star-outline"}
+          size={14}
+          color={STAR}
+        />
+      ))}
+    </View>
+  );
+}
 
 export default function Shop() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const now = useNow();
   const data = useQuery(api.catalog.shop, { shopId: id });
+  const listRef = useRef<SectionList>(null);
 
   if (data === undefined) return <ActivityIndicator style={styles.loading} color={colors.primary} />;
   if (data === null) return <Unavailable message="هذا المحل غير متاح حاليًا" />;
@@ -21,57 +51,159 @@ export default function Shop() {
   const { shop, sections } = data;
   const state = shopState(shop, now);
 
+  const scrollToMenu = () =>
+    listRef.current?.scrollToLocation({ sectionIndex: 0, itemIndex: 0, viewPosition: 0 });
+
   return (
     <>
-      <Stack.Screen options={{ headerStyle: { backgroundColor: shop.tint } }} />
+      <Stack.Screen
+        options={{
+          title: shop.name,
+          headerStyle: { backgroundColor: colors.ink },
+          headerTintColor: colors.onPrimary,
+          headerTitleStyle: { fontFamily: fonts.bold, color: colors.onPrimary },
+        }}
+      />
       <SectionList
+        ref={listRef}
         sections={sections.map((s) => ({ key: s._id, title: s.name, data: s.products }))}
         keyExtractor={(p) => p._id}
         contentContainerStyle={styles.list}
         stickySectionHeadersEnabled={false}
-ListHeaderComponent={
-          <View style={styles.card}>
-            {shop.imageUrl ? (
-              <Image
-                source={{ uri: shop.imageUrl }}
-                style={styles.cardImage}
-                resizeMode="cover"
-              />
-            ) : (
-              <View style={[styles.cardImage, { backgroundColor: shop.tint }]}>
-                <EmojiTile emoji={shop.emoji} tint={colors.surface} size={80} />
+        ListHeaderComponent={
+          <>
+            {/* 1) Hero: dark backdrop with logo card, title, specialties and guidance */}
+            <View style={styles.hero}>
+              {shop.imageUrl ? (
+                <Image
+                  source={{ uri: shop.imageUrl }}
+                  style={styles.heroImage}
+                  resizeMode="cover"
+                />
+              ) : null}
+              <View style={styles.heroOverlay} />
+              <View style={styles.heroContent}>
+                <View style={styles.logoCard}>
+                  {shop.imageUrl ? (
+                    <Image
+                      source={{ uri: shop.imageUrl }}
+                      style={styles.logoImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <EmojiTile emoji={shop.emoji} tint={colors.surface} size={84} />
+                  )}
+                </View>
+                <AppText variant="display" tone="onPrimary" style={styles.heroTitle}>
+                  {shop.name}
+                </AppText>
+                <AppText variant="body" style={styles.heroSubtitle} numberOfLines={2}>
+                  {shop.description}
+                </AppText>
+                <View style={styles.heroMeta}>
+                  <ShopStatusBadge state={state} />
+                  <AppText variant="caption" style={styles.heroMetaText}>
+                    {shop.prepMinutes ? `${shop.prepMinutes} دقيقة · ` : ""}
+                    {todayHoursLabel(shop, now)}
+                  </AppText>
+                </View>
+                <AppText variant="caption" style={styles.heroHint}>
+                  اختر منطقتك لعرض قائمة طعام المطعم
+                </AppText>
+
+                {/* 2) Location search bar (pill, pin on the right, GPS on the left) */}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="ابحث عن منطقتك"
+                  onPress={() => router.push("/select-location")}
+                  style={styles.searchBar}>
+                  <Ionicons name="location" size={20} color={colors.ink} />
+                  <AppText variant="body" style={styles.searchPlaceholder}>
+                    ابحث عن منطقة، شارع، معلم معروف...
+                  </AppText>
+                  <Ionicons name="locate" size={20} color={colors.primary} />
+                </Pressable>
+
+                {/* 3) CTA: jump to the menu */}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="عرض قائمة الطعام"
+                  onPress={scrollToMenu}
+                  style={styles.cta}>
+                  <AppText variant="subtitle" tone="onPrimary">
+                    قائمة الطعام
+                  </AppText>
+                  <Ionicons name="arrow-back" size={18} color={colors.onPrimary} />
+                </Pressable>
+
+                {/* 4) Trust bar: payments + rating + review link */}
+                <View style={styles.trustRow}>
+                  <View style={styles.chip}>
+                    <Ionicons name="cash-outline" size={16} color={colors.ink} />
+                  </View>
+                  <View style={styles.chip}>
+                    <View style={styles.mcRow}>
+                      <View style={[styles.mcCircle, { backgroundColor: "#EB001B" }]} />
+                      <View style={[styles.mcCircle, styles.mcOverlap, { backgroundColor: "#F79E1B" }]} />
+                    </View>
+                  </View>
+                  <View style={styles.chip}>
+                    <AppText style={styles.visaText}>VISA</AppText>
+                  </View>
+                  {shop.rating != null && (
+                    <View style={styles.ratingRow}>
+                      <View style={styles.ratingBadge}>
+                        <AppText variant="caption" tone="onPrimary">
+                          {shop.rating.toFixed(1)}
+                        </AppText>
+                      </View>
+                      <Stars rating={shop.rating} />
+                      <AppText variant="caption" style={styles.ratingCount}>
+                        ( {REVIEWS_COUNT} التقييم )
+                      </AppText>
+                    </View>
+                  )}
+                </View>
+                <Pressable accessibilityRole="link" style={styles.reviewLink}>
+                  <Ionicons name="chatbubble-ellipses-outline" size={16} color={colors.onPrimary} />
+                  <AppText variant="caption" tone="onPrimary" style={styles.reviewLinkText}>
+                    تقييم المطعم
+                  </AppText>
+                </Pressable>
+
+                {state === "closed" && (
+                  <View style={[styles.notice, { backgroundColor: colors.dangerSoft }]}>
+                    <AppText variant="caption" tone="dangerInk" style={styles.noticeText}>
+                      المحل مغلق حاليًا، يمكنك تصفّح القائمة والطلب عند فتحه.
+                    </AppText>
+                  </View>
+                )}
+                {state === "paused" && (
+                  <View style={[styles.notice, { backgroundColor: colors.warningSoft }]}>
+                    <AppText variant="caption" tone="warningInk" style={styles.noticeText}>
+                      المحل متوقف عن استقبال الطلبات مؤقتًا، يرجى المحاولة لاحقًا.
+                    </AppText>
+                  </View>
+                )}
               </View>
-            )}
-            <View style={styles.cardContent}>
-              <AppText variant="display" style={styles.cardTitle}>
-                {shop.name}
-              </AppText>
-              <AppText tone="muted" style={styles.cardDescription} numberOfLines={3}>
-                {shop.description}
-              </AppText>
-              <View style={styles.cardMeta}>
-                <ShopStatusBadge state={state} />
-                <AppText variant="caption" tone="muted">
-                  {shop.rating ? '⭐ ' + shop.rating.toFixed(1) : ''}{' '}
-                  {shop.rating && '· '}{shop.prepMinutes} دقيقة{' '}
-                  {todayHoursLabel(shop, now)}
-                </AppText>
-              </View>
-              {state === "closed" && (
-                <AppText variant="caption" tone="danger" style={styles.statusText}>
-                  المحل مغلق حاليًا، يمكنك تصفّح القائمة والطلب عند فتحه.
-                </AppText>
-              )}
-              {state === "paused" && (
-                <AppText variant="caption" tone="warningInk" style={styles.statusText}>
-                  المحل متوقف عن استقبال الطلبات مؤقتًا، يرجى المحاولة لاحقًا.
-                </AppText>
-              )}
             </View>
-          </View>
+
+            {/* 5) Lower body: delivery heading + social icons */}
+            <View style={styles.lower}>
+              <AppText variant="title">{shop.name} يوصل إليك</AppText>
+              <View style={styles.socialRow}>
+                <Pressable accessibilityLabel="تويتر" hitSlop={8} style={styles.socialBtn}>
+                  <Ionicons name="logo-twitter" size={18} color="#1DA1F2" />
+                </Pressable>
+                <Pressable accessibilityLabel="فيسبوك" hitSlop={8} style={styles.socialBtn}>
+                  <Ionicons name="logo-facebook" size={18} color="#1877F2" />
+                </Pressable>
+              </View>
+            </View>
+          </>
         }
         renderSectionHeader={({ section }) => (
-          <AppText variant="subtitle" style={styles.sectionTitle}>
+          <AppText variant="title" style={styles.sectionTitle}>
             {section.title}
           </AppText>
         )}
@@ -115,47 +247,136 @@ ListHeaderComponent={
 const styles = StyleSheet.create({
   loading: { marginTop: space.xxl },
   list: { paddingBottom: CART_BAR_SPACE },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginHorizontal: space.lg,
-    marginTop: space.lg,
-    marginBottom: space.md,
+  // Hero
+  hero: {
+    backgroundColor: colors.ink,
+    borderBottomLeftRadius: radius.lg,
+    borderBottomRightRadius: radius.lg,
     overflow: "hidden",
   },
-  cardImage: {
-    width: "100%",
-    height: 200,
+  heroImage: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+  heroOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(23, 17, 12, 0.82)",
+  },
+  heroContent: {
+    alignItems: "center",
+    gap: space.sm,
+    paddingHorizontal: space.lg,
+    paddingTop: space.xl,
+    paddingBottom: space.xl,
+  },
+  logoCard: {
+    width: 84,
+    height: 84,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+    borderWidth: 3,
+    borderColor: "rgba(255,255,255,0.25)",
   },
-  cardContent: {
-    padding: space.lg,
-    gap: space.md,
-  },
-  cardTitle: {
-    fontWeight: "700",
-  },
-  cardDescription: {
-    lineHeight: 22,
-  },
-  cardMeta: {
+  logoImage: { width: "100%", height: "100%" },
+  heroTitle: { textAlign: "center" },
+  heroSubtitle: { color: "rgba(255,255,255,0.85)", textAlign: "center" },
+  heroMeta: {
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
+    justifyContent: "center",
     gap: space.sm,
-    marginTop: space.sm,
-    paddingTop: space.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
-  statusText: {
-    marginTop: space.sm,
-    paddingTop: space.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+  heroMetaText: { color: "rgba(255,255,255,0.75)" },
+  heroHint: { color: "rgba(255,255,255,0.7)" },
+  // Location search bar
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+    alignSelf: "stretch",
+    minHeight: 50,
+    backgroundColor: colors.surface,
+    borderRadius: radius.pill,
+    paddingHorizontal: space.lg,
+    marginTop: space.xs,
+  },
+  searchPlaceholder: { flex: 1, color: colors.muted, textAlign: "right" },
+  // CTA
+  cta: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.sm,
+    alignSelf: "stretch",
+    minHeight: 52,
+    backgroundColor: colors.primary,
+    borderRadius: radius.pill,
+    marginTop: space.xs,
+  },
+  // Trust bar
+  trustRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.md,
+    marginTop: space.xs,
+  },
+  chip: {
+    width: 44,
+    height: 28,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mcRow: { flexDirection: "row" },
+  mcCircle: { width: 14, height: 14, borderRadius: 7 },
+  mcOverlap: { marginStart: -5, opacity: 0.9 },
+  visaText: { fontFamily: fonts.bold, fontSize: 11, color: "#1A1F71", letterSpacing: 1 },
+  ratingRow: { flexDirection: "row", alignItems: "center", gap: space.xs },
+  ratingBadge: {
+    backgroundColor: "rgba(0,0,0,0.55)",
+    borderRadius: radius.sm,
+    paddingHorizontal: space.sm,
+    paddingVertical: 2,
+  },
+  stars: { flexDirection: "row", gap: 1 },
+  ratingCount: { color: "rgba(255,255,255,0.8)" },
+  reviewLink: { flexDirection: "row", alignItems: "center", gap: space.xs },
+  reviewLinkText: { textDecorationLine: "underline" },
+  // Closed / paused notices
+  notice: {
+    alignSelf: "stretch",
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+  },
+  noticeText: { textAlign: "center" },
+  // Lower body
+  lower: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: space.lg,
+    paddingTop: space.lg,
+    paddingBottom: space.xs,
+  },
+  socialRow: { flexDirection: "row", gap: space.sm },
+  socialBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
   },
   sectionTitle: { paddingHorizontal: space.lg, paddingTop: space.lg, paddingBottom: space.sm },
   product: {

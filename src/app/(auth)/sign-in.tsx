@@ -1,5 +1,5 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { normalizePhone } from "@/convex/lib/phone";
@@ -26,6 +26,8 @@ export default function Login() {
     setSubmitting(true);
     try {
       await signIn("password", { flow: "signIn", phone: normalized, password });
+      // Signed in: land on the home tabs (checkout keeps its own gate).
+      router.replace("/");
     } catch (e) {
       setError(errorMessage(e, "رقم الجوال أو كلمة المرور غير صحيحة"));
       setSubmitting(false);

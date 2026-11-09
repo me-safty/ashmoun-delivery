@@ -71,6 +71,8 @@ export default defineSchema({
 
   categories: defineTable({
     name: v.string(),
+    // Legacy field kept for existing rows; see the note on the shops table.
+    slug: v.optional(v.string()),
     emoji: v.string(),
     tint: v.string(),
     sortOrder: v.number(),
@@ -79,6 +81,9 @@ export default defineSchema({
   shops: defineTable({
     name: v.string(),
     categoryId: v.id("categories"),
+    // Legacy slugs remain on existing rows (from the slug-based migration); the id-based
+    // storefront doesn't rely on them, so they stay optional and unused.
+    slug: v.optional(v.string()),
     kind: v.optional(v.string()),
     description: v.string(),
     emoji: v.string(),
