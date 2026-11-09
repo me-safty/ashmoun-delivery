@@ -1,5 +1,3 @@
-import { fetch } from "node:fetch";
-
 const ADMIN_KEY =
   "anonymous-ashmoun-delivery|016e839318382cce68017d8e936663433e1c21d45eaebab0103df77e88f56650db34e0bd38";
 

@@ -22,17 +22,21 @@ async function setup() {
     const shops = await ctx.db.query("shops").collect();
     const products = await ctx.db.query("products").collect();
     const shop = (name: string) => shops.find((s) => s.name === name)!;
-    const product = (name: string) => products.find((p) => p.name === name)!._id;
+    const product = (name: string) => products.find((p) => p.name === name)!;
     return {
       userId, addressId, otherAddressId,
-      market: shop("ماركت البركة")._id,
-      sweets: shop("حلواني الشروق")._id,
-      milk: product("لبن كامل الدسم 1 لتر"),
-      bread: product("عيش بلدي (5 أرغفة)"),
-      basbousa: product("بسبوسة بالقشطة"),
-      fries: product("بطاطس"),
+      // كاتشب stands in for the pruned 24/7 market: tests must not depend on the wall clock.
+      market: shop("كاتشب")._id,
+      sweets: shop("الأصلى")._id,
+      milk: product("ميل كاتشب")._id,
+      bread: product("بطاطس")._id,
+      basbousa: product("مقلوبة")._id,
+      fries: product("باراسيتامول 500 مجم")._id,
     };
   });
+  // Open around the clock so placing orders never hits the closing-hours rule.
+  const allDayHours = [0, 1, 2, 3, 4, 5, 6].map((day) => ({ day, open: 0, close: 0 }));
+  await t.run((ctx) => ctx.db.patch(ids.market, { hours: allDayHours }));
   const asUser = t.withIdentity({ subject: `${ids.userId}|session` });
   return { t, asUser, ...ids };
 }
@@ -44,7 +48,7 @@ describe("orders.quote", () => {
     const { t, asUser, market, milk } = await setup();
     await t.run((ctx) => ctx.db.patch(milk, { price: 50 }));
     expect(await asUser.query(api.orders.quote, { shopId: market, items: [line(milk, 2)] })).toMatchObject({
-      kind: "ok", unitPrices: [50], subtotal: 100, minOrder: 40, paused: false,
+      kind: "ok", unitPrices: [50], subtotal: 100, minOrder: 30, paused: false,
     });
   });
 
@@ -65,7 +69,7 @@ describe("orders.place", () => {
     });
     const order = await asUser.query(api.orders.get, { orderId });
     expect(order).toMatchObject({
-      subtotal: 94, deliveryFee: 15, total: 109, payment: "cod", status: "created", note: "بسرعة",
+      subtotal: 175, deliveryFee: 15, total: 190, payment: "cod", status: "created", note: "بسرعة",
       address: { zoneName: "سمادون" }, customerPhone: "01012345678",
     });
     expect(order?.history).toHaveLength(1);

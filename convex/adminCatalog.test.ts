@@ -46,15 +46,14 @@ test("rejects bad values and non-admins", async () => {
 
 test("a price can't drop below what discount options subtract", async () => {
   const { t, asAdmin } = await setup();
-  const kofta = await t.run(async (ctx) => (await ctx.db.query("products").collect()).find((p) => p.name === "كفتة بالكيلو")!._id);
-  await expect(asAdmin.mutation(api.adminCatalog.updateProduct, { productId: kofta, price: 280 })).rejects.toThrow("285");
-  await asAdmin.mutation(api.adminCatalog.updateProduct, { productId: kofta, price: 300 });
+  const burger = await t.run(async (ctx) => (await ctx.db.query("products").collect()).find((p) => p.name === "كلاسيك برجر")!._id);
   await t.run((ctx) =>
-    ctx.db.patch(kofta, {
+    ctx.db.patch(burger, {
       optionGroups: [
         { key: "d", name: "خصم", min: 0, max: 2, options: [{ key: "a", name: "أ", priceDelta: -40 }, { key: "b", name: "ب", priceDelta: -40 }] },
       ],
     }),
   );
-  await expect(asAdmin.mutation(api.adminCatalog.updateProduct, { productId: kofta, price: 50 })).rejects.toThrow("80");
+  await expect(asAdmin.mutation(api.adminCatalog.updateProduct, { productId: burger, price: 50 })).rejects.toThrow("80");
+  await asAdmin.mutation(api.adminCatalog.updateProduct, { productId: burger, price: 90 });
 });

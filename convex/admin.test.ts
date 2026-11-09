@@ -7,6 +7,12 @@ import { modules } from "./test.setup";
 async function setup() {
   const t = convexTest(schema, modules);
   await t.mutation(internal.seed.run, {});
+  // كاتشب stands in for the pruned 24/7 shop so orders can be placed anytime.
+  const allDayHours = [0, 1, 2, 3, 4, 5, 6].map((day) => ({ day, open: 0, close: 0 }));
+  await t.run(async (ctx) => {
+    const ketchup = (await ctx.db.query("shops").collect()).find((s) => s.name === "كاتشب")!;
+    await ctx.db.patch(ketchup._id, { hours: allDayHours });
+  });
   const ids = await t.run(async (ctx) => {
     const customerId = await ctx.db.insert("users", { name: "سارة", phone: "01012345678", role: "customer" });
     const adminId = await ctx.db.insert("users", { name: "مدير", phone: "01112345678", role: "customer" });
@@ -19,8 +25,8 @@ async function setup() {
     const drivers = await ctx.db.query("drivers").collect();
     return {
       customerId, adminId, addressId,
-      market: shops.find((s) => s.name === "ماركت البركة")!._id,
-      milk: products.find((p) => p.name === "لبن كامل الدسم 1 لتر")!._id,
+      market: shops.find((s) => s.name === "كاتشب")!._id,
+      milk: products.find((p) => p.name === "ميل كاتشب")!._id,
       driverId: drivers[0]._id,
     };
   });

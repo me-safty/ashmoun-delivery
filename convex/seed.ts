@@ -42,18 +42,6 @@ type SeedProduct = {
   optionGroups?: OptionGroup[];
 };
 
-const size = (medium: number, large: number): OptionGroup => ({
-  key: "size",
-  name: "الحجم",
-  min: 1,
-  max: 1,
-  options: [
-    { key: "small", name: "صغير", priceDelta: 0 },
-    { key: "medium", name: "وسط", priceDelta: medium },
-    { key: "large", name: "كبير", priceDelta: large },
-  ],
-});
-
 const extras = (options: [key: string, name: string, priceDelta: number][]): OptionGroup => ({
   key: "extras",
   name: "إضافات",
@@ -281,7 +269,7 @@ const shops: {
     category: "food",
     name: "سعيد السورى",
     description: "سعيد السورى - شاورما ومشاوي",
-    emoji: "🥙",
+    emoji: "🌯",
     tint: "#E6F4F1",
     kind: "شاورما",
     hours: everyDay(h(9), h(3)),
@@ -293,7 +281,7 @@ const shops: {
       {
         section: "شاورما",
         products: [
-          { name: "شاورما فراخ", description: "مع ثومية ومخلل", price: 40, emoji: "🥙" },
+          { name: "شاورما فراخ", description: "مع ثومية ومخلل", price: 40, emoji: "🌯" },
         ],
       },
     ],
@@ -424,6 +412,8 @@ export const run = internalMutation({
     await dedupeShopsByName(ctx);
     await dedupeDriversByName(ctx);
     await dedupeMenu(ctx);
+    // Shops pruned from the seed list above are gone from the deployment as well.
+    await pruneRemovedSeedShops(ctx);
     return "seeded";
   },
 });
@@ -559,6 +549,47 @@ async function dedupeDriversByName(ctx: MutationCtx): Promise<number> {
   }
   return removed;
 }
+
+// The seed list is the source of truth for the catalog: a shop pruned from it is deleted here
+// together with its menu, so removing an entry from `shops` also removes it from the site.
+// Orders are kept untouched — they store their own snapshots (shopName and item lines) and the
+// UI already renders a missing shop as "not available".
+async function pruneRemovedSeedShops(ctx: MutationCtx): Promise<number> {
+  const wanted = new Set(shops.map((shop) => shop.name));
+  const orphans = (await ctx.db.query("shops").collect()).filter((shop) => !wanted.has(shop.name));
+  for (const shop of orphans) {
+    for (const section of await ctx.db
+      .query("menuSections")
+      .withIndex("by_shop", (q) => q.eq("shopId", shop._id))
+      .collect()) {
+      for (const product of await ctx.db
+        .query("products")
+        .withIndex("by_section", (q) => q.eq("sectionId", section._id))
+        .collect()) {
+        await ctx.db.delete(product._id);
+      }
+      await ctx.db.delete(section._id);
+    }
+    for (const product of await ctx.db
+      .query("products")
+      .withIndex("by_shop", (q) => q.eq("shopId", shop._id))
+      .collect()) {
+      await ctx.db.delete(product._id);
+    }
+    await ctx.db.delete(shop._id);
+  }
+  return orphans.length;
+}
+
+// Deletes shops that are no longer part of the seed list (with their menus). Run it after
+// pruning `shops` in this file to make the removal reach the site immediately.
+export const pruneRemovedShops = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const removed = await pruneRemovedSeedShops(ctx);
+    return { removed };
+  },
+});
 
 // Merges duplicate menu sections and products left inside one shop by repeated seed runs:
 // each (shop, name) pair keeps its oldest row, products under a merged section are re-pointed
