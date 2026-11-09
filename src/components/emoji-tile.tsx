@@ -11,5 +11,5 @@ export function EmojiTile({ emoji, tint, size = 56 }: { emoji: string; tint: str
 }
 
 const styles = StyleSheet.create({
-  tile: { borderRadius: radius.md, alignItems: "center", justifyContent: "center" },
+  tile: { borderRadius: 0, alignItems: "center", justifyContent: "center" },
 });

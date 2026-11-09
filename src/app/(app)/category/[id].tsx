@@ -23,12 +23,15 @@ export default function CategoryShops() {
   const filteredShops = useMemo(() => {
     if (!shops) return shops;
     const q = search.trim().toLowerCase();
-    if (!q) return shops;
-    return shops.filter((shop) => {
-      const name = shop.name.toLowerCase();
-      const desc = shop.description.toLowerCase();
-      return name.includes(q) || desc.includes(q);
-    });
+    let filtered = q
+      ? shops.filter((shop) => {
+          const name = shop.name.toLowerCase();
+          const desc = shop.description.toLowerCase();
+          return name.includes(q) || desc.includes(q);
+        })
+      : shops;
+    // Already sorted by sortOrder from database
+    return filtered;
   }, [shops, search]);
 
   if (category === null) return <Unavailable message="هذا القسم غير موجود" />;
@@ -41,6 +44,7 @@ export default function CategoryShops() {
           title: category ? `${category.emoji} ${category.name}` : "",
           headerBackTitle: "عودة",
           headerBackButtonDisplayMode: "minimal",
+          headerStyle: { backgroundColor: "#FFFFFF" },
         }}
       />
       <View style={styles.container}>
@@ -66,6 +70,7 @@ export default function CategoryShops() {
           numColumns={2}
           keyExtractor={(s) => s._id}
           contentContainerStyle={styles.list}
+          columnWrapperStyle={{ justifyContent: "space-between", gap: "2%" }}
           renderItem={({ item }) => <ShopCard shop={item} now={now} />}
           ListEmptyComponent={
             filteredShops === undefined ? (
@@ -83,12 +88,12 @@ export default function CategoryShops() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: "#FFFFFF" },
   searchWrapper: {
     paddingHorizontal: space.lg,
     paddingTop: space.md,
     paddingBottom: space.sm,
-    backgroundColor: colors.background,
+    backgroundColor: "#FFFFFF",
   },
   search: {
     minHeight: 48,
@@ -96,7 +101,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: space.sm,
     borderRadius: radius.pill,
-    backgroundColor: colors.surface,
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: space.lg,
     borderWidth: 1,
     borderColor: colors.border,
@@ -110,6 +115,11 @@ const styles = StyleSheet.create({
     color: colors.ink,
     textAlign: "right",
   },
-  list: { paddingHorizontal: space.lg, paddingBottom: space.lg, gap: space.md },
+  list: { 
+    paddingHorizontal: space.lg, 
+    paddingBottom: space.lg, 
+    gap: space.md,
+    justifyContent: "space-between",
+  },
   emptyText: { textAlign: "center", marginTop: space.xl },
 });

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 
 export const categories = query({
   args: {},
@@ -13,12 +13,27 @@ export const shops = query({
   handler: async (ctx, args) => {
     const categoryId = args.categoryId === undefined ? null : ctx.db.normalizeId("categories", args.categoryId);
     if (args.categoryId !== undefined && categoryId === null) return [];
-    return categoryId
+    const shops = categoryId
       ? await ctx.db
           .query("shops")
-          .withIndex("by_category", (q) => q.eq("categoryId", categoryId))
+          .withIndex("by_category_sort", (q) => q.eq("categoryId", categoryId))
           .collect()
-      : await ctx.db.query("shops").collect();
+      : await ctx.db.query("shops").order("asc").collect();
+
+    const categoryIds = new Set(shops.map((s) => s.categoryId));
+    const categoryMap = new Map<string, { name: string }>();
+    for (const id of categoryIds) {
+      const c = await ctx.db.get(id);
+      if (c) categoryMap.set(id.toString(), c);
+    }
+
+    return shops.map((shop) => {
+      const category = categoryMap.get(shop.categoryId.toString());
+      return {
+        ...shop,
+        categoryName: category ? category.name : "",
+      };
+    });
   },
 });
 
@@ -67,5 +82,12 @@ export const product = query({
     const shop = product === null ? null : await ctx.db.get(product.shopId);
     if (product === null || shop === null) return null;
     return { product, shop };
+  },
+});
+
+export const updateShopSortOrder = mutation({
+  args: { shopId: v.id("shops"), sortOrder: v.number() },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.shopId, { sortOrder: args.sortOrder });
   },
 });

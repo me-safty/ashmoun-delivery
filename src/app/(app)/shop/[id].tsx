@@ -1,6 +1,6 @@
 import { useQuery } from "convex/react";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, SectionList, StyleSheet, View } from "react-native";
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
 import { CART_BAR_SPACE, CartBar } from "@/components/cart-bar";
@@ -29,26 +29,45 @@ export default function Shop() {
         keyExtractor={(p) => p._id}
         contentContainerStyle={styles.list}
         stickySectionHeadersEnabled={false}
-        ListHeaderComponent={
-          <View style={[styles.hero, { backgroundColor: shop.tint }]}>
-            <EmojiTile emoji={shop.emoji} tint={colors.surface} size={72} />
-            <AppText variant="display">{shop.name}</AppText>
-            <AppText tone="muted">{shop.description}</AppText>
-            <View style={styles.metaRow}>
-              <ShopStatusBadge state={state} onTint />
-<AppText variant="caption" tone="muted">
-                 {shop.rating ? '⭐ ' + shop.rating.toFixed(1) : ''} · {shop.prepMinutes}دقيقة · {todayHoursLabel(shop, now)}
-               </AppText>
+ListHeaderComponent={
+          <View style={styles.card}>
+            {shop.imageUrl ? (
+              <Image
+                source={{ uri: shop.imageUrl }}
+                style={styles.cardImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={[styles.cardImage, { backgroundColor: shop.tint }]}>
+                <EmojiTile emoji={shop.emoji} tint={colors.surface} size={80} />
+              </View>
+            )}
+            <View style={styles.cardContent}>
+              <AppText variant="display" style={styles.cardTitle}>
+                {shop.name}
+              </AppText>
+              <AppText tone="muted" style={styles.cardDescription} numberOfLines={3}>
+                {shop.description}
+              </AppText>
+              <View style={styles.cardMeta}>
+                <ShopStatusBadge state={state} />
+                <AppText variant="caption" tone="muted">
+                  {shop.rating ? '⭐ ' + shop.rating.toFixed(1) : ''}{' '}
+                  {shop.rating && '· '}{shop.prepMinutes} دقيقة{' '}
+                  {todayHoursLabel(shop, now)}
+                </AppText>
+              </View>
+              {state === "closed" && (
+                <AppText variant="caption" tone="danger" style={styles.statusText}>
+                  المحل مغلق حاليًا، يمكنك تصفّح القائمة والطلب عند فتحه.
+                </AppText>
+              )}
+              {state === "paused" && (
+                <AppText variant="caption" tone="warningInk" style={styles.statusText}>
+                  المحل متوقف عن استقبال الطلبات مؤقتًا، يرجى المحاولة لاحقًا.
+                </AppText>
+              )}
             </View>
-            {state === "closed" ? (
-              <AppText variant="caption" tone="danger">
-                المحل مغلق حاليًا، يمكنك تصفّح القائمة والطلب عند فتحه.
-              </AppText>
-            ) : state === "paused" ? (
-              <AppText variant="caption" tone="warningInk">
-                المحل متوقف عن استقبال الطلبات مؤقتًا، يرجى المحاولة لاحقًا.
-              </AppText>
-            ) : null}
           </View>
         }
         renderSectionHeader={({ section }) => (
@@ -96,8 +115,48 @@ export default function Shop() {
 const styles = StyleSheet.create({
   loading: { marginTop: space.xxl },
   list: { paddingBottom: CART_BAR_SPACE },
-  hero: { padding: space.xl, gap: space.sm, marginBottom: space.sm },
-  metaRow: { flexDirection: "row", alignItems: "center", gap: space.sm, flexWrap: "wrap" },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginHorizontal: space.lg,
+    marginTop: space.lg,
+    marginBottom: space.md,
+    overflow: "hidden",
+  },
+  cardImage: {
+    width: "100%",
+    height: 200,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardContent: {
+    padding: space.lg,
+    gap: space.md,
+  },
+  cardTitle: {
+    fontWeight: "700",
+  },
+  cardDescription: {
+    lineHeight: 22,
+  },
+  cardMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: space.sm,
+    marginTop: space.sm,
+    paddingTop: space.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  statusText: {
+    marginTop: space.sm,
+    paddingTop: space.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
   sectionTitle: { paddingHorizontal: space.lg, paddingTop: space.lg, paddingBottom: space.sm },
   product: {
     flexDirection: "row",

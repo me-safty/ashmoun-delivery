@@ -1,35 +1,35 @@
 import { router } from "expo-router";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View, Image } from "react-native";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { colors, formatPrice, radius, space } from "@/theme";
 import { AppText } from "./app-text";
 import { EmojiTile } from "./emoji-tile";
-import { ShopStatusBadge, shopState } from "./shop-status";
 
-export function ShopCard({ shop, now }: { shop: Doc<"shops">; now: number }) {
-  const state = shopState(shop, now);
+export function ShopCard({ shop, now }: { shop: Doc<"shops"> & { categoryName?: string }; now: number }) {
   return (
     <Pressable
       accessibilityRole="link"
       onPress={() => router.push({ pathname: "/shop/[id]", params: { id: shop._id } })}
       style={styles.card}>
-      <View style={state !== "open" && styles.dimmed}>
-        <EmojiTile emoji={shop.emoji} tint={shop.tint} size={64} />
+      <View style={styles.imageContainer}>
+        {shop.imageUrl ? (
+          <Image
+            source={{ uri: shop.imageUrl }}
+            style={styles.cardImage}
+            resizeMode="contain"
+          />
+        ) : (
+          <EmojiTile emoji={shop.emoji} tint={shop.tint} size={140} />
+        )}
       </View>
       <View style={styles.body}>
-        <View style={styles.titleRow}>
-          <AppText variant="subtitle" numberOfLines={1} style={styles.name}>
-            {shop.name}
-          </AppText>
-          <ShopStatusBadge state={state} />
-        </View>
-        <AppText variant="caption" tone="muted" numberOfLines={1}>
-          {shop.description}
+        <AppText variant="subtitle" numberOfLines={1} style={styles.name}>
+          {shop.name}
         </AppText>
-<AppText variant="caption" tone="muted">
-           {shop.rating ? '⭐ ' + shop.rating.toFixed(1) : ''} · {shop.prepMinutes} دقيقة
-           {shop.minOrder > 0 ? ` · أقل\u00A0طلب\u00A0${formatPrice(shop.minOrder)}` : ""}
-         </AppText>
+
+        <AppText variant="caption" tone="muted">
+          {shop.categoryName}
+        </AppText>
       </View>
     </Pressable>
   );
@@ -37,16 +37,27 @@ export function ShopCard({ shop, now }: { shop: Doc<"shops">; now: number }) {
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: "row",
-    gap: space.md,
-    padding: space.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
+    backgroundColor: "transparent",
+    borderRadius: 0,
     borderWidth: 1,
     borderColor: colors.border,
+    padding: space.md,
+    gap: space.sm,
+    alignItems: "center",
+    width: "49%",
   },
-  dimmed: { opacity: 0.45 },
-  body: { flex: 1, gap: 2 },
-  titleRow: { flexDirection: "row", alignItems: "center", gap: space.sm },
-  name: { flexShrink: 1 },
+  imageContainer: {
+    width: "100%",
+    paddingBottom: space.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    alignItems: "center",
+  },
+  cardImage: {
+    width: 140,
+    height: 140,
+    borderRadius: 0,
+  },
+  body: { gap: space.xs, alignItems: "center", width: "100%" },
+  name: { fontWeight: "700", textAlign: "center" },
 });

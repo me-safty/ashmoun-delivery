@@ -85,10 +85,12 @@ export default defineSchema({
     imageUrl: v.optional(v.string()),
     hours: weeklyHours,
     paused: v.boolean(),
-    minOrder: v.number(),
-    prepMinutes: v.number(),
-    rating: v.number(),
-  }).index("by_category", ["categoryId"]),
+    minOrder: v.optional(v.number()),
+    prepMinutes: v.optional(v.number()),
+    rating: v.optional(v.number()),
+    sortOrder: v.optional(v.number()),
+  }).index("by_category", ["categoryId"])
+    .index("by_category_sort", ["categoryId", "sortOrder"]),
 
   menuSections: defineTable({
     shopId: v.id("shops"),

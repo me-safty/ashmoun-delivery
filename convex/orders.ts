@@ -96,7 +96,7 @@ export const place = mutation({
     if (note.length > MAX_NOTE) throw new ConvexError(`يجب أن تكون الملاحظات أقل من ${MAX_NOTE} حرفًا`);
 
     const { items, subtotal } = await priceCart(ctx, shop, args.items);
-    if (subtotal < shop.minOrder) throw new ConvexError(`الحد الأدنى للطلب من ${shop.name} هو ${shop.minOrder} ج.م`);
+    if (subtotal < (shop.minOrder ?? 0)) throw new ConvexError(`الحد الأدنى للطلب من ${shop.name} هو ${shop.minOrder ?? 0} ج.م`);
 
     return await ctx.db.insert("orders", {
       userId: user._id,

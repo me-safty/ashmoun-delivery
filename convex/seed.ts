@@ -72,18 +72,20 @@ const shops: {
   minOrder: number;
   prepMinutes: number;
   rating: number;
+  sortOrder: number;
   menu: { section: string; products: SeedProduct[] }[];
 }[] = [
   {
     category: "food",
-    name: "برجر الميدان",
-    description: "برجر لحم بلدي مشوي على الفحم",
+    name: "جوهر",
+    description: "مطعم جوهر المميز",
     emoji: "🍔",
     tint: "#FDE7D9",
     hours: everyDay(h(12), h(2)),
     minOrder: 50,
     prepMinutes: 25,
     rating: 4.7,
+    sortOrder: 1,
     menu: [
       {
         section: "البرجر",
@@ -111,21 +113,209 @@ const shops: {
               ]),
             ],
           },
-          {
-            name: "تشيكن كرسبي",
-            description: "صدور فراخ مقرمشة مع صوص رانش",
-            price: 75,
-            emoji: "🍗",
-            optionGroups: [extras([["cheese", "جبنة شيدر", 10]])],
-          },
-          { name: "برجر مشروم", description: "صوص مشروم وجبنة سويسري", price: 105, emoji: "🍄", available: false },
         ],
       },
+    ],
+  },
+  {
+    category: "food",
+    name: "فولكانو",
+    description: "فولكانو - برجر حار ومميز",
+    emoji: "🌋",
+    tint: "#FCE3E1",
+    hours: everyDay(h(10), h(24)),
+    minOrder: 60,
+    prepMinutes: 30,
+    rating: 4.5,
+    sortOrder: 2,
+    menu: [
       {
-        section: "جانبي",
+        section: "البرجر",
         products: [
-          { name: "بطاطس", description: "بطاطس مقلية بالتتبيلة", price: 25, emoji: "🍟", optionGroups: [size(10, 20)] },
-          { name: "حلقات بصل", description: "8 قطع", price: 30, emoji: "🧅" },
+          { name: "فولكانو برجر", description: "برجر حار مع جبنة", price: 95, emoji: "🍔" },
+        ],
+      },
+    ],
+  },
+  {
+    category: "food",
+    name: "كاتشب",
+    description: "كاتشب - وجبات سريعة ولذيذة",
+    emoji: "🍟",
+    tint: "#FFF1CC",
+    hours: everyDay(h(9), h(1)),
+    minOrder: 30,
+    prepMinutes: 15,
+    rating: 4.6,
+    sortOrder: 3,
+    menu: [
+      {
+        section: "وجبات",
+        products: [
+          { name: "ميل كاتشب", description: "برجر + بطاطس + مشروب", price: 75, emoji: "🍔" },
+        ],
+      },
+    ],
+  },
+  {
+    category: "food",
+    name: "مكسيكانو",
+    description: "مكسيكانو - نكهات مكسيكية",
+    emoji: "🌮",
+    tint: "#F6E6D6",
+    hours: everyDay(h(13), h(23), [FRIDAY]),
+    minOrder: 100,
+    prepMinutes: 40,
+    rating: 4.8,
+    sortOrder: 4,
+    menu: [
+      {
+        section: "مكسيكي",
+        products: [
+          { name: "تاكو", description: "تاكو لحم مع صوص", price: 45, emoji: "🌮" },
+        ],
+      },
+    ],
+  },
+  {
+    category: "food",
+    name: "الأصلى",
+    description: "الأصلى - أكل بيتي أصيل",
+    emoji: "🍲",
+    tint: "#E3EEFB",
+    hours: everyDay(h(10), h(23)),
+    paused: true,
+    minOrder: 50,
+    prepMinutes: 20,
+    rating: 4.4,
+    sortOrder: 5,
+    menu: [
+      {
+        section: "رئيسية",
+        products: [
+          { name: "مقلوبة", description: "أرز ولحمة وخضار", price: 85, emoji: "🍚" },
+        ],
+      },
+    ],
+  },
+  {
+    category: "food",
+    name: "ابو يارا",
+    description: "ابو يارا - مشويات ومشروبات",
+    emoji: "🍢",
+    tint: "#DDF3EA",
+    hours: everyDay(h(8), h(2)),
+    minOrder: 25,
+    prepMinutes: 10,
+    rating: 4.3,
+    sortOrder: 6,
+    menu: [
+      {
+        section: "مشويات",
+        products: [
+          { name: "شيش طاووق", description: "صدور دجاج مشوية", price: 80, emoji: "🍢" },
+        ],
+      },
+    ],
+  },
+  {
+    category: "food",
+    name: "البرنس",
+    description: "البرنس - بيتزا وفطائر",
+    emoji: "🍕",
+    tint: "#FBE4EE",
+    hours: everyDay(h(10), h(23)),
+    minOrder: 50,
+    prepMinutes: 25,
+    rating: 4.5,
+    sortOrder: 7,
+    menu: [
+      {
+        section: "بيتزا",
+        products: [
+          { name: "بيتزا مارجريتا", description: "جبنة وصلصة طماطم", price: 70, emoji: "🍕" },
+        ],
+      },
+    ],
+  },
+  {
+    category: "food",
+    name: "قرمشة",
+    description: "قرمشة - وجبات مقرمشة",
+    emoji: "🥪",
+    tint: "#FDE7D9",
+    hours: everyDay(h(12), h(2)),
+    minOrder: 50,
+    prepMinutes: 25,
+    rating: 4.7,
+    sortOrder: 8,
+    menu: [
+      {
+        section: "سندوتشات",
+        products: [
+          { name: "سندوتش برجر", description: "لحم مع خس وطماطم", price: 55, emoji: "🍔" },
+        ],
+      },
+    ],
+  },
+  {
+    category: "food",
+    name: "سعيد السورى",
+    description: "سعيد السورى - شاورما ومشاوي",
+    emoji: "🥙",
+    tint: "#E6F4F1",
+    hours: everyDay(h(9), h(3)),
+    minOrder: 0,
+    prepMinutes: 15,
+    rating: 4.9,
+    sortOrder: 9,
+    menu: [
+      {
+        section: "شاورما",
+        products: [
+          { name: "شاورما فراخ", description: "مع ثومية ومخلل", price: 40, emoji: "🥙" },
+        ],
+      },
+    ],
+  },
+  {
+    category: "food",
+    name: "برجر الميدان",
+    description: "برجر لحم بلدي مشوي على الفحم",
+    emoji: "🍔",
+    tint: "#FDE7D9",
+    hours: everyDay(h(12), h(2)),
+    minOrder: 50,
+    prepMinutes: 25,
+    rating: 4.7,
+    sortOrder: 10,
+    menu: [
+      {
+        section: "البرجر",
+        products: [
+          {
+            name: "كلاسيك برجر",
+            description: "لحم 150 جم، خس، طماطم، صوص الميدان",
+            price: 85,
+            emoji: "🍔",
+            optionGroups: [
+              {
+                key: "patty",
+                name: "عدد القطع",
+                min: 1,
+                max: 1,
+                options: [
+                  { key: "single", name: "سنجل", priceDelta: 0 },
+                  { key: "double", name: "دبل", priceDelta: 45 },
+                ],
+              },
+              extras([
+                ["cheese", "جبنة شيدر", 10],
+                ["bacon", "بيف بيكون", 20],
+                ["jalapeno", "هالبينو", 5],
+              ]),
+            ],
+          },
         ],
       },
     ],
@@ -140,6 +330,7 @@ const shops: {
     minOrder: 60,
     prepMinutes: 30,
     rating: 4.5,
+    sortOrder: 11,
     menu: [
       {
         section: "بيتزا",
@@ -148,17 +339,10 @@ const shops: {
             name: "بيتزا مارجريتا",
             description: "صوص طماطم وموتزاريلا",
             price: 70,
-            emoji: "🍕",
+    emoji: "🐟",
             optionGroups: [size(30, 60), extras([["olives", "زيتون", 5], ["extra_cheese", "جبنة زيادة", 15]])],
           },
           { name: "بيتزا سوبر سوبريم", description: "سجق، بسطرمة، فلفل، مشروم", price: 110, emoji: "🍕", optionGroups: [size(35, 70)] },
-        ],
-      },
-      {
-        section: "فطير",
-        products: [
-          { name: "فطير مشلتت", description: "بالسمنة البلدي مع عسل وجبنة قديمة", price: 90, emoji: "🥧" },
-          { name: "فطير حلو", description: "قشطة وعسل وسكر بودرة", price: 65, emoji: "🥞" },
         ],
       },
     ],
@@ -173,6 +357,7 @@ const shops: {
     minOrder: 100,
     prepMinutes: 40,
     rating: 4.8,
+    sortOrder: 12,
     menu: [
       {
         section: "المشويات",
@@ -211,6 +396,7 @@ const shops: {
     minOrder: 30,
     prepMinutes: 15,
     rating: 4.6,
+    sortOrder: 13,
     menu: [
       {
         section: "كشري",
@@ -223,13 +409,6 @@ const shops: {
             optionGroups: [size(10, 20), extras([["liver", "كبدة", 15], ["extra_fried_onion", "تقلية زيادة", 5]])],
           },
           { name: "طاجن مكرونة باللحمة", description: "", price: 60, emoji: "🥘" },
-        ],
-      },
-      {
-        section: "فول وطعمية",
-        products: [
-          { name: "ساندوتش فول", description: "", price: 8, emoji: "🥙" },
-          { name: "ساندوتش طعمية", description: "", price: 8, emoji: "🧆" },
         ],
       },
     ],
@@ -245,6 +424,7 @@ const shops: {
     minOrder: 50,
     prepMinutes: 20,
     rating: 4.4,
+    sortOrder: 14,
     menu: [
       {
         section: "حلويات",
@@ -265,6 +445,7 @@ const shops: {
     minOrder: 25,
     prepMinutes: 10,
     rating: 4.3,
+    sortOrder: 15,
     menu: [
       {
         section: "عصائر",
@@ -286,6 +467,7 @@ const shops: {
     minOrder: 40,
     prepMinutes: 20,
     rating: 4.2,
+    sortOrder: 16,
     menu: [
       {
         section: "ألبان",
@@ -313,6 +495,7 @@ const shops: {
     minOrder: 0,
     prepMinutes: 15,
     rating: 4.9,
+    sortOrder: 17,
     menu: [
       {
         section: "مستلزمات",
@@ -348,7 +531,7 @@ export const run = internalMutation({
     for (const { category, menu, paused = false, ...shop } of shops) {
       const categoryId = categoryIds.get(category);
       if (!categoryId) throw new Error(`unknown category ${category}`);
-      const shopId = await ctx.db.insert("shops", { ...shop, categoryId, paused });
+      const shopId = await ctx.db.insert("shops", { ...shop, categoryId, paused, sortOrder: shop.sortOrder });
       for (const [sortOrder, { section, products }] of menu.entries()) {
         const sectionId = await ctx.db.insert("menuSections", { shopId, name: section, sortOrder });
         for (const { available = true, optionGroups = [], ...product } of products) {
