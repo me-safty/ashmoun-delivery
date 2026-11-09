@@ -1,9 +1,18 @@
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { query, mutation } from "./_generated/server";
+import type { QueryCtx } from "./_generated/server";
+
+// The site is browsable before sign-in, so a missing session renders empty data instead of
+// throwing — a throwing catalog query crash-lands the Home screen once a session expires.
+async function signedIn(ctx: QueryCtx): Promise<boolean> {
+  return await getAuthUserId(ctx) !== null;
+}
 
 export const categories = query({
   args: {},
   handler: async (ctx) => {
+    if (!await signedIn(ctx)) return [];
     return await ctx.db.query("categories").withIndex("by_sort").collect();
   },
 });
@@ -11,6 +20,7 @@ export const categories = query({
 export const shops = query({
   args: { categoryId: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    if (!await signedIn(ctx)) return [];
     const categoryId = args.categoryId === undefined ? null : ctx.db.normalizeId("categories", args.categoryId);
     if (args.categoryId !== undefined && categoryId === null) return [];
     const shops = categoryId
@@ -30,6 +40,7 @@ export const shops = query({
 export const category = query({
   args: { categoryId: v.string() },
   handler: async (ctx, args) => {
+    if (!await signedIn(ctx)) return null;
     const categoryId = ctx.db.normalizeId("categories", args.categoryId);
     return categoryId === null ? null : await ctx.db.get(categoryId);
   },
@@ -39,6 +50,7 @@ export const category = query({
 export const shop = query({
   args: { shopId: v.string() },
   handler: async (ctx, args) => {
+    if (!await signedIn(ctx)) return null;
     const shopId = ctx.db.normalizeId("shops", args.shopId);
     const shop = shopId === null ? null : await ctx.db.get(shopId);
     if (shop === null) return null;
@@ -67,6 +79,7 @@ export const shop = query({
 export const product = query({
   args: { productId: v.string() },
   handler: async (ctx, args) => {
+    if (!await signedIn(ctx)) return null;
     const productId = ctx.db.normalizeId("products", args.productId);
     const product = productId === null ? null : await ctx.db.get(productId);
     const shop = product === null ? null : await ctx.db.get(product.shopId);

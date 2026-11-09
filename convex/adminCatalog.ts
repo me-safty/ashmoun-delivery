@@ -33,6 +33,37 @@ export const setShopPaused = mutation({
   },
 });
 
+// Removes a shop together with its menu: sections and products are deleted, while order
+// history keeps its snapshots (orders copy shopName and item lines at order time), so past
+// orders keep rendering after the shop is gone.
+export const deleteShop = mutation({
+  args: { shopId: v.id("shops") },
+  handler: async (ctx, { shopId }) => {
+    await requireAdmin(ctx);
+    const shop = await ctx.db.get(shopId);
+    if (shop === null) throw new ConvexError("المحل غير موجود");
+    for (const section of await ctx.db
+      .query("menuSections")
+      .withIndex("by_shop", (q) => q.eq("shopId", shopId))
+      .collect()) {
+      for (const product of await ctx.db
+        .query("products")
+        .withIndex("by_section", (q) => q.eq("sectionId", section._id))
+        .collect()) {
+        await ctx.db.delete(product._id);
+      }
+      await ctx.db.delete(section._id);
+    }
+    for (const leftover of await ctx.db
+      .query("products")
+      .withIndex("by_shop", (q) => q.eq("shopId", shopId))
+      .collect()) {
+      await ctx.db.delete(leftover._id);
+    }
+    await ctx.db.delete(shopId);
+  },
+});
+
 export const updateProduct = mutation({
   args: { productId: v.id("products"), price: v.optional(v.number()), available: v.optional(v.boolean()) },
   handler: async (ctx, { productId, price, available }) => {

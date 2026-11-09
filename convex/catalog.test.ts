@@ -4,11 +4,12 @@ import { api, internal } from "./_generated/api";
 import schema from "./schema";
 import { modules } from "./test.setup";
 
-test("catalog queries require sign-in", async () => {
+test("catalog queries render empty for signed-out visitors instead of throwing", async () => {
   const t = convexTest(schema, modules);
   await t.mutation(internal.seed.run, {});
-  await expect(t.query(api.catalog.shops, {})).rejects.toThrow("يرجى تسجيل الدخول");
-  await expect(t.query(api.catalog.categories, {})).rejects.toThrow("يرجى تسجيل الدخول");
+  expect(await t.query(api.catalog.shops, {})).toEqual([]);
+  expect(await t.query(api.catalog.categories, {})).toEqual([]);
+  expect(await t.query(api.catalog.shop, { shopId: "not-an-id" })).toBeNull();
 });
 
 test("missing or malformed ids return null instead of throwing", async () => {

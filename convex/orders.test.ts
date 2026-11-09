@@ -52,7 +52,7 @@ describe("orders.quote", () => {
     const { t, asUser, market, milk } = await setup();
     await t.run((ctx) => ctx.db.delete(milk));
     expect(await asUser.query(api.orders.quote, { shopId: market, items: [line(milk)] })).toMatchObject({
-      kind: "invalid", message: expect.stringContaining("اتشال"),
+      kind: "invalid", message: expect.stringContaining("أُزيل"),
     });
   });
 });

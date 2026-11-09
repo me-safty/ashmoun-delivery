@@ -1,8 +1,9 @@
 import type { Infer } from "convex/values";
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
 import { internalMutation } from "./_generated/server";
-import type { optionGroup } from "./schema";
 import type { WeeklyHours } from "./lib/hours";
+import type { optionGroup } from "./schema";
 
 const h = (hour: number) => hour * 60;
 const everyDay = (open: number, close: number, closedDays: number[] = []): WeeklyHours =>
@@ -161,6 +162,7 @@ const shops: {
         section: "وجبات",
         products: [
           { name: "ميل كاتشب", description: "برجر + بطاطس + مشروب", price: 75, emoji: "🍔" },
+          { name: "بطاطس", description: "بطاطس مقلية مقرمشة", price: 25, emoji: "🍟" },
         ],
       },
     ],
@@ -297,220 +299,6 @@ const shops: {
     ],
   },
   {
-    category: "food",
-    name: "برجر الميدان",
-    description: "برجر لحم بلدي مشوي على الفحم",
-    emoji: "🍔",
-    tint: "#FDE7D9",
-    kind: "برجر",
-    hours: everyDay(h(12), h(2)),
-    minOrder: 50,
-    prepMinutes: 25,
-    rating: 4.7,
-    sortOrder: 10,
-    menu: [
-      {
-        section: "البرجر",
-        products: [
-          {
-            name: "كلاسيك برجر",
-            description: "لحم 150 جم، خس، طماطم، صوص الميدان",
-            price: 85,
-            emoji: "🍔",
-            optionGroups: [
-              {
-                key: "patty",
-                name: "عدد القطع",
-                min: 1,
-                max: 1,
-                options: [
-                  { key: "single", name: "سنجل", priceDelta: 0 },
-                  { key: "double", name: "دبل", priceDelta: 45 },
-                ],
-              },
-              extras([
-                ["cheese", "جبنة شيدر", 10],
-                ["bacon", "بيف بيكون", 20],
-                ["jalapeno", "هالبينو", 5],
-              ]),
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    category: "food",
-    name: "بيتزا وفطير السلطان",
-    description: "بيتزا إيطالي وفطير مشلتت على الفرن البلدي",
-    emoji: "🍕",
-    tint: "#FCE3E1",
-    kind: "بيتزا",
-    hours: everyDay(h(10), h(24)),
-    minOrder: 60,
-    prepMinutes: 30,
-    rating: 4.5,
-    sortOrder: 11,
-    menu: [
-      {
-        section: "بيتزا",
-        products: [
-          {
-            name: "بيتزا مارجريتا",
-            description: "صوص طماطم وموتزاريلا",
-            price: 70,
-    emoji: "🐟",
-            optionGroups: [size(30, 60), extras([["olives", "زيتون", 5], ["extra_cheese", "جبنة زيادة", 15]])],
-          },
-          { name: "بيتزا سوبر سوبريم", description: "سجق، بسطرمة، فلفل، مشروم", price: 110, emoji: "🍕", optionGroups: [size(35, 70)] },
-        ],
-      },
-    ],
-  },
-  {
-    category: "food",
-    name: "مشويات أبو علي",
-    description: "كفتة وطرب وفراخ مشوية",
-    emoji: "🍢",
-    tint: "#F6E6D6",
-    kind: "مشويات",
-    hours: everyDay(h(13), h(23), [FRIDAY]),
-    minOrder: 100,
-    prepMinutes: 40,
-    rating: 4.8,
-    sortOrder: 12,
-    menu: [
-      {
-        section: "المشويات",
-        products: [
-          {
-            name: "كفتة بالكيلو",
-            description: "مع عيش وطحينة وسلطة",
-            price: 380,
-            emoji: "🍢",
-            optionGroups: [
-              {
-                key: "weight",
-                name: "الكمية",
-                min: 1,
-                max: 1,
-                options: [
-                  { key: "quarter", name: "ربع كيلو", priceDelta: -285 },
-                  { key: "half", name: "نص كيلو", priceDelta: -190 },
-                  { key: "kilo", name: "كيلو", priceDelta: 0 },
-                ],
-              },
-            ],
-          },
-          { name: "نص فرخة مشوية", description: "مع أرز وسلطات", price: 140, emoji: "🍗" },
-        ],
-      },
-    ],
-  },
-  {
-    category: "food",
-    name: "كشري التحرير أشمون",
-    description: "كشري وطواجن ومكرونة",
-    emoji: "🥙",
-    tint: "#FFF1CC",
-    kind: "كشري",
-    hours: everyDay(h(9), h(1)),
-    minOrder: 30,
-    prepMinutes: 15,
-    rating: 4.6,
-    sortOrder: 13,
-    menu: [
-      {
-        section: "كشري",
-        products: [
-          {
-            name: "علبة كشري",
-            description: "أرز، مكرونة، عدس، صلصة، دقة، تقلية",
-            price: 30,
-            emoji: "🍝",
-            optionGroups: [size(10, 20), extras([["liver", "كبدة", 15], ["extra_fried_onion", "تقلية زيادة", 5]])],
-          },
-          { name: "طاجن مكرونة باللحمة", description: "", price: 60, emoji: "🥘" },
-        ],
-      },
-    ],
-  },
-  {
-    category: "food",
-    name: "حلواني الشروق",
-    description: "تورت وجاتوه وحلويات شرقي",
-    emoji: "🍰",
-    tint: "#FBE4EE",
-    kind: "حلويات",
-    hours: everyDay(h(10), h(23)),
-    paused: true,
-    minOrder: 50,
-    prepMinutes: 20,
-    rating: 4.4,
-    sortOrder: 14,
-    menu: [
-      {
-        section: "حلويات",
-        products: [
-          { name: "بسبوسة بالقشطة", description: "ربع كيلو", price: 55, emoji: "🍮" },
-          { name: "جاتوه شوكولاتة", description: "قطعة", price: 35, emoji: "🍰" },
-        ],
-      },
-    ],
-  },
-  {
-    category: "food",
-    name: "عصير ركن الفاكهة",
-    description: "عصائر فريش وسموزي",
-    emoji: "🥤",
-    tint: "#DDF3EA",
-    kind: "عصائر",
-    hours: everyDay(h(8), h(2)),
-    minOrder: 25,
-    prepMinutes: 10,
-    rating: 4.3,
-    sortOrder: 15,
-    menu: [
-      {
-        section: "عصائر",
-        products: [
-          { name: "مانجا", description: "فريش", price: 30, emoji: "🥭", optionGroups: [size(10, 20)] },
-          { name: "قصب", description: "", price: 15, emoji: "🥤", optionGroups: [size(5, 10)] },
-          { name: "سموزي فراولة", description: "فراولة ولبن", price: 40, emoji: "🍓" },
-        ],
-      },
-    ],
-  },
-  {
-    category: "groceries",
-    name: "ماركت البركة",
-    description: "بقالة وخضار ومنظفات",
-    emoji: "🛒",
-    tint: "#E3EEFB",
-    kind: "بقالة",
-    hours: everyDay(0, 0),
-    minOrder: 40,
-    prepMinutes: 20,
-    rating: 4.2,
-    sortOrder: 16,
-    menu: [
-      {
-        section: "ألبان",
-        products: [
-          { name: "لبن كامل الدسم 1 لتر", description: "", price: 42, emoji: "🥛" },
-          { name: "جبنة بيضاء نص كيلو", description: "", price: 60, emoji: "🧀" },
-        ],
-      },
-      {
-        section: "بقالة",
-        products: [
-          { name: "عيش بلدي (5 أرغفة)", description: "", price: 10, emoji: "🫓" },
-          { name: "أرز 1 كيلو", description: "", price: 38, emoji: "🍚" },
-        ],
-      },
-    ],
-  },
-  {
     category: "pharmacies",
     name: "صيدلية الشفاء",
     description: "أدوية ومستلزمات طبية",
@@ -567,53 +355,49 @@ export const run = internalMutation({
   handler: async (ctx) => {
     // Upsert zones without clearing existing data
     for (const [sortOrder, zone] of zones.entries()) {
-      const existing = await ctx.db.query("zones").filter((q) => q.eq("name", zone.name)).collect();
-      if (existing.length > 0) {
-        await ctx.db.patch(existing[0]._id, { ...zone, active: true, sortOrder });
+      const existing = await ctx.db.query("zones").filter((q) => q.eq(q.field("name"), zone.name)).collect();
+      const keeperZone = existing.sort((a, b) => a._creationTime - b._creationTime)[0];
+      if (keeperZone !== undefined) {
+        await ctx.db.patch(keeperZone._id, { ...zone, active: true, sortOrder });
       } else {
         await ctx.db.insert("zones", { ...zone, active: true, sortOrder });
       }
     }
-    const categoryIds = new Map<CategoryKey, Id<"categories">>();
-    for (const [sortOrder, { key, ...category }] of categories.entries()) {
-      const existing = await ctx.db.query("categories").filter((q) => q.eq("name", category.name)).collect();
-      let categoryId: Id<"categories">;
-      if (existing.length > 0) {
-        categoryId = existing[0]._id;
-        await ctx.db.patch(categoryId, { ...category, sortOrder });
-      } else {
-        categoryId = await ctx.db.insert("categories", { ...category, sortOrder });
-      }
-      categoryIds.set(key, categoryId);
-    }
+    await dedupeZonesByName(ctx);
+    const categoryIds: Map<CategoryKey, Id<"categories">> = await canonicalCategories(ctx);
     for (const { category, menu, paused = false, ...shop } of shops) {
       const categoryId = categoryIds.get(category);
       if (!categoryId) throw new Error(`unknown category ${category}`);
-      const existingShop = await ctx.db.query("shops").filter((q) => q.eq("name", shop.name)).collect();
+      const existingShop = await ctx.db.query("shops").filter((q) => q.eq(q.field("name"), shop.name)).collect();
+      // Patch the row the dedupe keeps (the oldest, since plain scans return rows in
+      // ascending creation order) so the fields aren't lost when duplicates collapse.
+      const keeperShop = existingShop.sort((a, b) => a._creationTime - b._creationTime)[0];
       let shopId: Id<"shops">;
-      if (existingShop.length > 0) {
-        shopId = existingShop[0]._id;
+      if (keeperShop !== undefined) {
+        shopId = keeperShop._id;
         await ctx.db.patch(shopId, { ...shop, categoryId, paused, sortOrder: shop.sortOrder });
       } else {
         shopId = await ctx.db.insert("shops", { ...shop, categoryId, paused, sortOrder: shop.sortOrder });
       }
       for (const [sortOrder, { section, products }] of menu.entries()) {
         const existingSection = await ctx.db.query("menuSections")
-          .withIndex("by_shop", (q) => q.eq("shopId", shopId)).filter((q) => q.eq("name", section))
+          .withIndex("by_shop", (q) => q.eq("shopId", shopId)).filter((q) => q.eq(q.field("name"), section))
           .collect();
+        const keeperSection = existingSection.sort((a, b) => a._creationTime - b._creationTime)[0];
         let sectionId: Id<"menuSections">;
-        if (existingSection.length > 0) {
-          sectionId = existingSection[0]._id;
+        if (keeperSection !== undefined) {
+          sectionId = keeperSection._id;
           await ctx.db.patch(sectionId, { name: section, sortOrder });
         } else {
           sectionId = await ctx.db.insert("menuSections", { shopId, name: section, sortOrder });
         }
         for (const { available = true, optionGroups = [], ...product } of products) {
           const existingProduct = await ctx.db.query("products")
-          .withIndex("by_shop", (q) => q.eq("shopId", shopId)).filter((q) => q.eq("name", product.name))
+          .withIndex("by_shop", (q) => q.eq("shopId", shopId)).filter((q) => q.eq(q.field("name"), product.name))
           .collect();
-          if (existingProduct.length > 0) {
-            await ctx.db.patch(existingProduct[0]._id, {
+          const keeperProduct = existingProduct.sort((a, b) => a._creationTime - b._creationTime)[0];
+          if (keeperProduct !== undefined) {
+            await ctx.db.patch(keeperProduct._id, {
               ...product,
               shopId,
               sectionId,
@@ -627,52 +411,217 @@ export const run = internalMutation({
       }
     }
     for (const driver of drivers) {
-      const existingDriver = await ctx.db.query("drivers").filter((q) => q.eq("name", driver.name)).collect();
-      if (existingDriver.length > 0) {
-        await ctx.db.patch(existingDriver[0]._id, { ...driver, active: true });
+      const existingDriver = await ctx.db.query("drivers").filter((q) => q.eq(q.field("name"), driver.name)).collect();
+      const keeperDriver = existingDriver.sort((a, b) => a._creationTime - b._creationTime)[0];
+      if (keeperDriver !== undefined) {
+        await ctx.db.patch(keeperDriver._id, { ...driver, active: true });
       } else {
         await ctx.db.insert("drivers", { ...driver, active: true });
       }
     }
+    // Collapse anything that slipped through as a duplicate (e.g. a previous seed run
+    // inserted the same name under a re-created deployment).
+    await dedupeShopsByName(ctx);
+    await dedupeDriversByName(ctx);
+    await dedupeMenu(ctx);
     return "seeded";
   },
 });
 
+// Old spellings that earlier seed generations stored under different names; every one of
+// them must be merged onto the canonical row so re-seeding cannot stack duplicates.
 const CATEGORY_ALIASES: Record<string, string[]> = {
-  الطعام: ["مطاعم"],
-  الصيدليات: ["صيدليات", "صيدلية"],
-  البقالة: ["بقالة"],
-  الورود: ["زهور"],
+  الطعام: ["مطاعم", "طعام"],
+  الصيدليات: ["صيدليات", "صيدلية", "صيديليات"],
+  البقالة: ["بقالة", "بقاليات"],
+  الورود: ["زهور", "زهورات"],
 };
 
-async function upsertSeedCategories(ctx: { db: any }) {
-  const existing = await ctx.db.query("categories").collect();
-  const results: { name: string; action: "inserted" | "updated" }[] = [];
-  for (const [sortOrder, { key: _key, ...category }] of categories.entries()) {
+// One row per canonical category, with its fields synced and every alias (or exact-name
+// duplicate) merged into it. Shops pointing at a merged row are re-pointed at the keeper
+// before the row is deleted, keeping every `categoryId` valid.
+async function canonicalCategories(ctx: MutationCtx): Promise<Map<CategoryKey, Id<"categories">>> {
+  const categoryIds = new Map<CategoryKey, Id<"categories">>();
+  for (const [sortOrder, { key, ...category }] of categories.entries()) {
     const aliases = CATEGORY_ALIASES[category.name] ?? [];
-    const row = existing.find(
-      (c: { name: string }) => c.name === category.name || aliases.includes(c.name),
+    const matches = (await ctx.db.query("categories").collect()).filter(
+      (row) => row.name === category.name || aliases.includes(row.name),
     );
-    if (row) {
-      await ctx.db.patch(row._id, { ...category, sortOrder });
-      results.push({ name: category.name, action: "updated" });
-    } else {
-      await ctx.db.insert("categories", { ...category, sortOrder });
-      results.push({ name: category.name, action: "inserted" });
+    if (matches.length === 0) {
+      categoryIds.set(key, await ctx.db.insert("categories", { ...category, sortOrder }));
+      continue;
     }
+    // Prefer a row that already carries the canonical name, oldest wins on ties.
+    const keeper = matches.find((row) => row.name === category.name) ?? matches[0];
+    await ctx.db.patch(keeper._id, { ...category, sortOrder });
+    for (const row of matches) {
+      if (row._id === keeper._id) continue;
+      for (const shop of await ctx.db
+        .query("shops")
+        .withIndex("by_category", (q) => q.eq("categoryId", row._id))
+        .collect()) {
+        await ctx.db.patch(shop._id, { categoryId: keeper._id });
+      }
+      await ctx.db.delete(row._id);
+    }
+    categoryIds.set(key, keeper._id);
   }
-  return results;
+  return categoryIds;
 }
 
-// Ensures the seed categories exist (matched by name). Inserts missing sections and updates
-// emoji/tint/sortOrder for existing ones without deleting shops or other data.
+// Collapses shops that share a name onto their oldest row: menu sections and products are
+// migrated onto the keeper (duplicate section names map onto the keeper's section), orders
+// are re-pointed, and the duplicate shop row is deleted.
+async function dedupeShopsByName(ctx: MutationCtx): Promise<number> {
+  const shops = await ctx.db.query("shops").collect();
+  const keepers = new Map<string, Doc<"shops">>();
+  let removed = 0;
+  for (const shop of shops) {
+    // The plain scan returns rows in ascending creation order, so the first row per name wins.
+    const keeper = keepers.get(shop.name);
+    if (keeper === undefined) {
+      keepers.set(shop.name, shop);
+      continue;
+    }
+    const keeperSections = await ctx.db
+      .query("menuSections")
+      .withIndex("by_shop", (q) => q.eq("shopId", keeper._id))
+      .collect();
+    for (const section of await ctx.db
+      .query("menuSections")
+      .withIndex("by_shop", (q) => q.eq("shopId", shop._id))
+      .collect()) {
+      const replacement = keeperSections.find((s) => s.name === section.name);
+      if (replacement !== undefined) {
+        for (const product of await ctx.db
+          .query("products")
+          .withIndex("by_section", (q) => q.eq("sectionId", section._id))
+          .collect()) {
+          await ctx.db.patch(product._id, { shopId: keeper._id, sectionId: replacement._id });
+        }
+        await ctx.db.delete(section._id);
+      } else {
+        await ctx.db.patch(section._id, { shopId: keeper._id });
+        for (const product of await ctx.db
+          .query("products")
+          .withIndex("by_section", (q) => q.eq("sectionId", section._id))
+          .collect()) {
+          await ctx.db.patch(product._id, { shopId: keeper._id });
+        }
+      }
+    }
+    for (const product of await ctx.db
+      .query("products")
+      .withIndex("by_shop", (q) => q.eq("shopId", shop._id))
+      .collect()) {
+      await ctx.db.patch(product._id, { shopId: keeper._id });
+    }
+    for (const order of (await ctx.db.query("orders").collect()).filter((o) => o.shopId === shop._id)) {
+      await ctx.db.patch(order._id, { shopId: keeper._id });
+    }
+    await ctx.db.delete(shop._id);
+    removed += 1;
+  }
+  return removed;
+}
+
+// Same treatment for zones: addresses pointing at a merged zone are re-pointed first.
+async function dedupeZonesByName(ctx: MutationCtx): Promise<number> {
+  const zones = await ctx.db.query("zones").collect();
+  const keepers = new Map<string, Doc<"zones">>();
+  let removed = 0;
+  for (const zone of zones) {
+    const keeper = keepers.get(zone.name);
+    if (keeper === undefined) {
+      keepers.set(zone.name, zone);
+      continue;
+    }
+    for (const address of (await ctx.db.query("addresses").collect()).filter((a) => a.zoneId === zone._id)) {
+      await ctx.db.patch(address._id, { zoneId: keeper._id });
+    }
+    await ctx.db.delete(zone._id);
+    removed += 1;
+  }
+  return removed;
+}
+
+async function dedupeDriversByName(ctx: MutationCtx): Promise<number> {
+  const drivers = await ctx.db.query("drivers").collect();
+  const seen = new Set<string>();
+  let removed = 0;
+  for (const driver of drivers) {
+    if (seen.has(driver.name)) {
+      await ctx.db.delete(driver._id);
+      removed += 1;
+    } else {
+      seen.add(driver.name);
+    }
+  }
+  return removed;
+}
+
+// Merges duplicate menu sections and products left inside one shop by repeated seed runs:
+// each (shop, name) pair keeps its oldest row, products under a merged section are re-pointed
+// first, and only truly duplicate product rows are deleted.
+async function dedupeMenu(ctx: MutationCtx): Promise<{ sections: number; products: number }> {
+  let removedSections = 0;
+  let removedProducts = 0;
+  const sections = await ctx.db.query("menuSections").collect();
+  const keeperSections = new Map<string, Doc<"menuSections">>();
+  for (const section of sections) {
+    const key = `${section.shopId}|${section.name}`;
+    const keeper = keeperSections.get(key);
+    if (keeper === undefined) {
+      keeperSections.set(key, section);
+      continue;
+    }
+    for (const product of await ctx.db
+      .query("products")
+      .withIndex("by_section", (q) => q.eq("sectionId", section._id))
+      .collect()) {
+      await ctx.db.patch(product._id, { sectionId: keeper._id });
+    }
+    await ctx.db.delete(section._id);
+    removedSections += 1;
+  }
+  const products = await ctx.db.query("products").collect();
+  const keeperProducts = new Set<string>();
+  for (const product of products) {
+    const key = `${product.shopId}|${product.name}`;
+    if (keeperProducts.has(key)) {
+      await ctx.db.delete(product._id);
+      removedProducts += 1;
+    } else {
+      keeperProducts.add(key);
+    }
+  }
+  return { sections: removedSections, products: removedProducts };
+}
+
+// Fixes seed data that was inserted more than once: merges duplicate/aliased categories,
+// zones, shops and drivers back onto their canonical rows without dropping any reference.
+export const cleanupDuplicates = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    await canonicalCategories(ctx);
+    const removedZones = await dedupeZonesByName(ctx);
+    const removedShops = await dedupeShopsByName(ctx);
+    const removedDrivers = await dedupeDriversByName(ctx);
+    const menu = await dedupeMenu(ctx);
+    return { removedZones, removedShops, removedDrivers, menu };
+  },
+});
+
+// Ensures the seed categories exist (matched by canonical name or an old alias). Inserts missing
+// ones, updates emoji/tint/sortOrder for existing ones, and merges duplicates — without
+// deleting shops or other data.
 export const upsertCategories = internalMutation({
   args: {},
-  handler: async (ctx) => upsertSeedCategories(ctx),
+  handler: async (ctx) => await canonicalCategories(ctx),
 });
 
 // Backward-compatible alias.
 export const syncCategories = internalMutation({
   args: {},
-  handler: async (ctx) => upsertSeedCategories(ctx),
+  handler: async (ctx) => await canonicalCategories(ctx),
 });
