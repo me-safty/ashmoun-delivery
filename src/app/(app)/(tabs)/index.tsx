@@ -223,7 +223,7 @@ color={DARK}
                 accessibilityRole="button"
                 accessibilityLabel={c.name}
                 style={styles.quickLink}
-                onPress={() => router.push({ pathname: "/category/[id]", params: { id: c._id } })}>
+                onPress={() => router.push({ pathname: "/category/[slug]", params: { slug: c.slug ?? c._id } })}>
                 <View style={styles.quickLinkCircle}>
                   <CategoryArt name={c.name} emoji={c.emoji} size={44} />
                 </View>

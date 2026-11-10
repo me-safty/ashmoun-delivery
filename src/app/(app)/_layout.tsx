@@ -12,7 +12,9 @@ export default function AppLayout() {
     <Stack screenOptions={stackScreenOptions}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="shop/[id]" options={{ title: "" }} />
+      <Stack.Screen name="shops/[slug]" options={{ title: "" }} />
       <Stack.Screen name="category/[id]" options={{ headerShown: true, headerBackButtonDisplayMode: "minimal" }} />
+      <Stack.Screen name="category/[slug]" options={{ headerShown: true, headerBackButtonDisplayMode: "minimal" }} />
       <Stack.Screen name="order/[id]/index" options={{ title: "" }} />
       <Stack.Protected guard={me?.isAdmin ?? false}>
         <Stack.Screen name="admin" options={{ headerShown: false }} />

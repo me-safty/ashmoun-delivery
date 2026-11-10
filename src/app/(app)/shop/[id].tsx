@@ -16,12 +16,11 @@ import { CART_BAR_SPACE, CartBar } from "@/components/cart-bar";
 import { EmojiTile } from "@/components/emoji-tile";
 import { Unavailable } from "@/components/unavailable";
 import { ShopStatusBadge, shopState, todayHoursLabel } from "@/components/shop-status";
+import { ShopReviews } from "@/components/shop-reviews";
 import { useNow } from "@/lib/use-now";
 import { colors, fonts, formatPrice, radius, space } from "@/theme";
 
 const STAR = "#F5B301";
-// Placeholder until reviews are tracked in the backend; render only alongside a rating.
-const REVIEWS_COUNT = 4540;
 
 function Stars({ rating }: { rating?: number }) {
   const value = rating ?? 0;
@@ -107,22 +106,6 @@ export default function Shop() {
                     {todayHoursLabel(shop, now)}
                   </AppText>
                 </View>
-                <AppText variant="caption" style={styles.heroHint}>
-                  اختر منطقتك لعرض قائمة طعام المطعم
-                </AppText>
-
-                {/* 2) Location search bar (pill, pin on the right, GPS on the left) */}
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="ابحث عن منطقتك"
-                  onPress={() => router.push("/select-location")}
-                  style={styles.searchBar}>
-                  <Ionicons name="location" size={20} color={colors.ink} />
-                  <AppText variant="body" style={styles.searchPlaceholder}>
-                    ابحث عن منطقة، شارع، معلم معروف...
-                  </AppText>
-                  <Ionicons name="locate" size={20} color={colors.primary} />
-                </Pressable>
 
                 {/* 3) CTA: jump to the menu */}
                 <Pressable
@@ -136,40 +119,19 @@ export default function Shop() {
                   <Ionicons name="arrow-back" size={18} color={colors.onPrimary} />
                 </Pressable>
 
-                {/* 4) Trust bar: payments + rating + review link */}
-                <View style={styles.trustRow}>
-                  <View style={styles.chip}>
-                    <Ionicons name="cash-outline" size={16} color={colors.ink} />
-                  </View>
-                  <View style={styles.chip}>
-                    <View style={styles.mcRow}>
-                      <View style={[styles.mcCircle, { backgroundColor: "#EB001B" }]} />
-                      <View style={[styles.mcCircle, styles.mcOverlap, { backgroundColor: "#F79E1B" }]} />
-                    </View>
-                  </View>
-                  <View style={styles.chip}>
-                    <AppText style={styles.visaText}>VISA</AppText>
-                  </View>
-                  {shop.rating != null && (
-                    <View style={styles.ratingRow}>
-                      <View style={styles.ratingBadge}>
-                        <AppText variant="caption" tone="onPrimary">
-                          {shop.rating.toFixed(1)}
-                        </AppText>
-                      </View>
-                      <Stars rating={shop.rating} />
-                      <AppText variant="caption" style={styles.ratingCount}>
-                        ( {REVIEWS_COUNT} التقييم )
+                {shop.rating != null && (
+                  <View style={styles.ratingRow}>
+                    <View style={styles.ratingBadge}>
+                      <AppText variant="caption" tone="onPrimary">
+                        {shop.rating.toFixed(1)}
                       </AppText>
                     </View>
-                  )}
-                </View>
-                <Pressable accessibilityRole="link" style={styles.reviewLink}>
-                  <Ionicons name="chatbubble-ellipses-outline" size={16} color={colors.onPrimary} />
-                  <AppText variant="caption" tone="onPrimary" style={styles.reviewLinkText}>
-                    تقييم المطعم
-                  </AppText>
-                </Pressable>
+                    <Stars rating={shop.rating} />
+                    <AppText variant="caption" style={styles.ratingCount}>
+                      ( {shop.reviewsCount ?? 0} التقييم )
+                    </AppText>
+                  </View>
+                )}
 
                 {state === "closed" && (
                   <View style={[styles.notice, { backgroundColor: colors.dangerSoft }]}>
@@ -186,20 +148,7 @@ export default function Shop() {
                   </View>
                 )}
               </View>
-            </View>
-
-            {/* 5) Lower body: delivery heading + social icons */}
-            <View style={styles.lower}>
-              <AppText variant="title">{shop.name} يوصل إليك</AppText>
-              <View style={styles.socialRow}>
-                <Pressable accessibilityLabel="تويتر" hitSlop={8} style={styles.socialBtn}>
-                  <Ionicons name="logo-twitter" size={18} color="#1DA1F2" />
-                </Pressable>
-                <Pressable accessibilityLabel="فيسبوك" hitSlop={8} style={styles.socialBtn}>
-                  <Ionicons name="logo-facebook" size={18} color="#1877F2" />
-                </Pressable>
-              </View>
-            </View>
+          </View>
           </>
         }
         renderSectionHeader={({ section }) => (
@@ -207,6 +156,13 @@ export default function Shop() {
             {section.title}
           </AppText>
         )}
+        ListFooterComponent={
+          <ShopReviews
+            shopId={shop._id}
+            rating={shop.rating}
+            reviewsCount={shop.reviewsCount}
+          />
+        }
         renderItem={({ item }) => (
           <Pressable
             accessibilityRole="link"
@@ -271,9 +227,9 @@ const styles = StyleSheet.create({
     paddingBottom: space.xl,
   },
   logoCard: {
-    width: 84,
-    height: 84,
-    borderRadius: 20,
+    width: 110,
+    height: 110,
+    borderRadius: 24,
     backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
@@ -338,15 +294,14 @@ const styles = StyleSheet.create({
   mcRow: { flexDirection: "row" },
   mcCircle: { width: 14, height: 14, borderRadius: 7 },
   mcOverlap: { marginStart: -5, opacity: 0.9 },
-  visaText: { fontFamily: fonts.bold, fontSize: 11, color: "#1A1F71", letterSpacing: 1 },
+  stars: { flexDirection: "row", gap: 2 },
   ratingRow: { flexDirection: "row", alignItems: "center", gap: space.xs },
   ratingBadge: {
-    backgroundColor: "rgba(0,0,0,0.55)",
+    backgroundColor: colors.primary,
     borderRadius: radius.sm,
     paddingHorizontal: space.sm,
     paddingVertical: 2,
   },
-  stars: { flexDirection: "row", gap: 1 },
   ratingCount: { color: "rgba(255,255,255,0.8)" },
   reviewLink: { flexDirection: "row", alignItems: "center", gap: space.xs },
   reviewLinkText: { textDecorationLine: "underline" },

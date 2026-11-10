@@ -27,6 +27,8 @@ if (Platform.OS === "web") {
   document.documentElement.lang = "ar";
 }
 
+// The cloud deployment URL from .env.local is publicly reachable, so one value
+// serves every platform: web on localhost or LAN, native devices, and EAS builds.
 const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
 if (!convexUrl) throw new Error("EXPO_PUBLIC_CONVEX_URL is not set; run `pnpm exec convex dev`.");
 const convex = new ConvexReactClient(convexUrl, { unsavedChangesWarning: false });

@@ -6,17 +6,22 @@ import { useNow } from "@/lib/use-now";
 import { colors, fonts, radius, space } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery } from "convex/react";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Platform, StyleSheet, TextInput, View } from "react-native";
+import { ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
 
 const webNoOutline: object = Platform.OS === "web" ? { outlineStyle: "none" } : {};
 
 export default function CategoryShops() {
+  // This is the legacy id-based route: the param is `id`, not `slug`, and both
+  // resolve fine server-side (resolveCategory accepts a slug or a row id).
   const { id } = useLocalSearchParams<{ id: string }>();
+  const slugParam = Array.isArray(id) ? id[0] : id;
   const now = useNow();
-  const category = useQuery(api.catalog.category, { categoryId: id });
-  const shops = useQuery(api.catalog.shops, { categoryId: id });
+  // "skip" until the route param exists — guards against template paths landing
+  // without params on web, which previously sent {} and errored server-side.
+  const category = useQuery(api.catalog.categoryBySlug, slugParam ? { slug: slugParam } : "skip");
+  const shops = useQuery(api.catalog.shopsByCategorySlug, slugParam ? { categorySlug: slugParam } : "skip");
   const [search, setSearch] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
 
@@ -30,7 +35,6 @@ export default function CategoryShops() {
           return name.includes(q) || desc.includes(q);
         })
       : shops;
-    // Already sorted by sortOrder from database
     return filtered;
   }, [shops, search]);
 
@@ -64,13 +68,19 @@ export default function CategoryShops() {
             />
           </View>
         </View>
-        <FlatList
-          data={filteredShops ?? []}
-          numColumns={2}
-          keyExtractor={(s) => s._id}
-          contentContainerStyle={styles.list}
-          columnWrapperStyle={{ justifyContent: "space-between", gap: "2%" }}
-          renderItem={({ item }) => <ShopCard shop={item} now={now} />}
+<FlatList
+            data={filteredShops ?? []}
+            numColumns={2}
+            keyExtractor={(s) => s._id}
+            contentContainerStyle={styles.list}
+            columnWrapperStyle={styles.row}
+            renderItem={({ item }) => (
+            <Pressable
+              onPress={() => router.push({ pathname: "/shops/[slug]", params: { slug: item.slug ?? item._id } })}
+              style={styles.shopWrapper}>
+              <ShopCard shop={item} now={now} />
+            </Pressable>
+          )}
           ListEmptyComponent={
             filteredShops === undefined ? (
               <ActivityIndicator color={colors.primary} />
@@ -114,11 +124,8 @@ const styles = StyleSheet.create({
     color: colors.ink,
     textAlign: "right",
   },
-  list: { 
-    paddingHorizontal: space.lg, 
-    paddingBottom: space.lg, 
-    gap: space.md,
-    justifyContent: "space-between",
-  },
-  emptyText: { textAlign: "center", marginTop: space.xl },
+  list: { paddingHorizontal: space.lg, paddingBottom: space.lg, gap: space.md, flex: 1, justifyContent: "center", alignItems: "center" },
+  row: { justifyContent: "space-between" },
+  shopWrapper: { borderRadius: radius.lg, overflow: "hidden", width: "49%" },
+  emptyText: { textAlign: "center" },
 });

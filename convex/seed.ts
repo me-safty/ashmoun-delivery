@@ -3,6 +3,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { internalMutation } from "./_generated/server";
 import type { WeeklyHours } from "./lib/hours";
+import { ensureSlugs } from "./lib/slugs";
 import type { optionGroup } from "./schema";
 
 const h = (hour: number) => hour * 60;
@@ -25,13 +26,13 @@ const zones = [
 ] as const;
 
 const categories = [
-  { key: "food", name: "الطعام", emoji: "🍔", tint: "#FDE7D9" },
+  { key: "مطاعم", name: "المطاعم", emoji: "🍔", tint: "#FDE7D9" },
   { key: "pharmacies", name: "الصيدليات", emoji: "💊", tint: "#E6F4F1" },
   { key: "groceries", name: "البقالة", emoji: "🛍️", tint: "#E3EEFB" },
   { key: "flowers", name: "الورود", emoji: "💐", tint: "#FCE7F1" },
 ] as const;
 
-type CategoryKey = (typeof categories)[number]["key"];
+type CategoryKey = "مطاعم" | "pharmacies" | "groceries" | "flowers";
 type OptionGroup = Infer<typeof optionGroup>;
 type SeedProduct = {
   name: string;
@@ -67,7 +68,7 @@ const shops: {
   menu: { section: string; products: SeedProduct[] }[];
 }[] = [
   {
-    category: "food",
+    category: "مطاعم",
     name: "جوهر",
     description: "مطعم جوهر المميز",
     emoji: "🍔",
@@ -111,7 +112,7 @@ const shops: {
     ],
   },
   {
-    category: "food",
+    category: "مطاعم",
     name: "فولكانو",
     description: "فولكانو - برجر حار ومميز",
     emoji: "🌋",
@@ -133,7 +134,7 @@ const shops: {
     ],
   },
   {
-    category: "food",
+    category: "مطاعم",
     name: "كاتشب",
     description: "كاتشب - وجبات سريعة ولذيذة",
     emoji: "🍟",
@@ -156,7 +157,7 @@ const shops: {
     ],
   },
   {
-    category: "food",
+    category: "مطاعم",
     name: "مكسيكانو",
     description: "مكسيكانو - نكهات مكسيكية",
     emoji: "🌮",
@@ -178,7 +179,7 @@ const shops: {
     ],
   },
   {
-    category: "food",
+    category: "مطاعم",
     name: "الأصلى",
     description: "الأصلى - أكل بيتي أصيل",
     emoji: "🍲",
@@ -201,7 +202,7 @@ const shops: {
     ],
   },
   {
-    category: "food",
+    category: "مطاعم",
     name: "ابو يارا",
     description: "ابو يارا - مشويات ومشروبات",
     emoji: "🍢",
@@ -223,7 +224,7 @@ const shops: {
     ],
   },
   {
-    category: "food",
+    category: "مطاعم",
     name: "البرنس",
     description: "البرنس - بيتزا وفطائر",
     emoji: "🐟",
@@ -244,7 +245,7 @@ const shops: {
     ],
   },
   {
-    category: "food",
+    category: "مطاعم",
     name: "قرمشة",
     description: "قرمشة - وجبات مقرمشة",
     emoji: "🥪",
@@ -266,7 +267,7 @@ const shops: {
     ],
   },
   {
-    category: "food",
+    category: "مطاعم",
     name: "سعيد السورى",
     description: "سعيد السورى - شاورما ومشاوي",
     emoji: "🌯",
@@ -309,7 +310,7 @@ const shops: {
     ],
   },
   {
-    category: "food",
+    category: "مطاعم",
     name: "شاورما الشام",
     description: "شاورما الشام - شاورما وفلافل",
     emoji: "🥙",
@@ -414,6 +415,8 @@ export const run = internalMutation({
     await dedupeMenu(ctx);
     // Shops pruned from the seed list above are gone from the deployment as well.
     await pruneRemovedSeedShops(ctx);
+    // Categories/shops must always carry a slug: the UI routes by it.
+    await ensureSlugs(ctx);
     return "seeded";
   },
 });
@@ -421,7 +424,7 @@ export const run = internalMutation({
 // Old spellings that earlier seed generations stored under different names; every one of
 // them must be merged onto the canonical row so re-seeding cannot stack duplicates.
 const CATEGORY_ALIASES: Record<string, string[]> = {
-  الطعام: ["مطاعم", "طعام"],
+  المطاعم: ["مطاعم", "طعام", "الطعام"],
   الصيدليات: ["صيدليات", "صيدلية", "صيديليات"],
   البقالة: ["بقالة", "بقاليات"],
   الورود: ["زهور", "زهورات"],
@@ -438,12 +441,12 @@ async function canonicalCategories(ctx: MutationCtx): Promise<Map<CategoryKey, I
       (row) => row.name === category.name || aliases.includes(row.name),
     );
     if (matches.length === 0) {
-      categoryIds.set(key, await ctx.db.insert("categories", { ...category, sortOrder }));
+      categoryIds.set(key, await ctx.db.insert("categories", { ...category, slug: key, sortOrder }));
       continue;
     }
     // Prefer a row that already carries the canonical name, oldest wins on ties.
     const keeper = matches.find((row) => row.name === category.name) ?? matches[0];
-    await ctx.db.patch(keeper._id, { ...category, sortOrder });
+    await ctx.db.patch(keeper._id, { ...category, slug: key, sortOrder });
     for (const row of matches) {
       if (row._id === keeper._id) continue;
       for (const shop of await ctx.db
@@ -644,11 +647,14 @@ export const cleanupDuplicates = internalMutation({
 });
 
 // Ensures the seed categories exist (matched by canonical name or an old alias). Inserts missing
-// ones, updates emoji/tint/sortOrder for existing ones, and merges duplicates — without
+// ones, updates emoji/tint/slug/sortOrder for existing ones, and merges duplicates — without
 // deleting shops or other data.
 export const upsertCategories = internalMutation({
   args: {},
-  handler: async (ctx) => await canonicalCategories(ctx),
+  handler: async (ctx) => {
+    const ids = await canonicalCategories(ctx);
+    return { categories: Object.fromEntries(ids) };
+  },
 });
 
 // Backward-compatible alias.

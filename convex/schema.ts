@@ -71,18 +71,16 @@ export default defineSchema({
 
   categories: defineTable({
     name: v.string(),
-    // Legacy field kept for existing rows; see the note on the shops table.
     slug: v.optional(v.string()),
     emoji: v.string(),
     tint: v.string(),
     sortOrder: v.number(),
-  }).index("by_sort", ["sortOrder"]),
+  }).index("by_sort", ["sortOrder"])
+    .index("by_slug", ["slug"]),
 
   shops: defineTable({
     name: v.string(),
     categoryId: v.id("categories"),
-    // Legacy slugs remain on existing rows (from the slug-based migration); the id-based
-    // storefront doesn't rely on them, so they stay optional and unused.
     slug: v.optional(v.string()),
     kind: v.optional(v.string()),
     description: v.string(),
@@ -94,9 +92,11 @@ export default defineSchema({
     minOrder: v.optional(v.number()),
     prepMinutes: v.optional(v.number()),
     rating: v.optional(v.number()),
+    reviewsCount: v.optional(v.number()),
     sortOrder: v.optional(v.number()),
   }).index("by_category", ["categoryId"])
-    .index("by_category_sort", ["categoryId", "sortOrder"]),
+    .index("by_category_sort", ["categoryId", "sortOrder"])
+    .index("by_slug", ["slug"]),
 
   menuSections: defineTable({
     shopId: v.id("shops"),
@@ -117,6 +117,17 @@ export default defineSchema({
   })
     .index("by_shop", ["shopId"])
     .index("by_section", ["sectionId"]),
+
+  // One review per user per shop; `add` upserts and refreshes the shop's
+  // rating/reviewsCount, so these docs are the source of truth.
+  reviews: defineTable({
+    shopId: v.id("shops"),
+    userId: v.id("users"),
+    rating: v.number(),
+    comment: v.string(),
+  })
+    .index("by_shop", ["shopId"])
+    .index("by_user_shop", ["userId", "shopId"]),
 
   drivers: defineTable({
     name: v.string(),
