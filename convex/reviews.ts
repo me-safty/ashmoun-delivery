@@ -21,11 +21,31 @@ async function refreshShopStats(ctx: MutationCtx, shopId: Id<"shops">) {
     count += 1;
   }
   if (count === 0) {
-    await ctx.db.patch(shopId, { reviewsCount: 0 });
+    await ctx.db.patch(shopId, { rating: undefined, reviewsCount: 0 });
     return;
   }
   await ctx.db.patch("shops", shopId, { rating: sum / count, reviewsCount: count });
 }
+
+// One-time migration: clear seeded ratings for shops with no reviews
+export const clearSeededRatingsForEmptyReviews = mutation({
+  args: {},
+  handler: async (ctx) => {
+    let cleared = 0;
+    for await (const shop of ctx.db.query("shops")) {
+      const count = await ctx.db
+        .query("reviews")
+        .withIndex("by_shop", (q) => q.eq("shopId", shop._id))
+        .collect()
+        .then((r) => r.length);
+      if (count === 0 && shop.rating != null) {
+        await ctx.db.patch(shop._id, { rating: undefined, reviewsCount: 0 });
+        cleared++;
+      }
+    }
+    return { cleared };
+  },
+});
 
 export const list = query({
   args: { shopId: v.string() },

@@ -8,7 +8,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery } from "convex/react";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 
 const webNoOutline: object = Platform.OS === "web" ? { outlineStyle: "none" } : {};
 
@@ -47,54 +47,61 @@ export default function CategoryShops() {
           headerStyle: { backgroundColor: "#FFFFFF" },
         }}
       />
-      <View style={styles.container}>
-        <View style={styles.searchWrapper}>
-          <View style={[styles.search, searchFocused && styles.searchFocused]}>
-            <Ionicons name="search" size={20} color={colors.muted} />
-            <TextInput
-              accessibilityLabel="ابحث عن محلات"
-              placeholder="ابحث عن محلات"
-              placeholderTextColor={colors.muted}
-              returnKeyType="search"
-              clearButtonMode="while-editing"
-              value={search}
-              onChangeText={setSearch}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-              style={[styles.searchInput, webNoOutline]}
-            />
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 100}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          <View style={styles.searchWrapper}>
+            <View style={[styles.search, searchFocused && styles.searchFocused]}>
+              <Ionicons name="search" size={20} color={colors.muted} />
+              <TextInput
+                accessibilityLabel="ابحث عن محلات"
+                placeholder="ابحث عن محلات"
+                placeholderTextColor={colors.muted}
+                returnKeyType="search"
+                clearButtonMode="while-editing"
+                value={search}
+                onChangeText={setSearch}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                style={[styles.searchInput, webNoOutline]}
+              />
+            </View>
           </View>
-        </View>
-<FlatList
+          <FlatList
             data={filteredShops ?? []}
             numColumns={2}
             keyExtractor={(s) => s._id}
             contentContainerStyle={styles.list}
             columnWrapperStyle={styles.row}
             renderItem={({ item }) => (
-            <Pressable
-              onPress={() => router.push({ pathname: "/shops/[slug]", params: { slug: item.slug ?? item._id } })}
-              style={styles.shopWrapper}>
-              <ShopCard shop={item} now={now} />
-            </Pressable>
-          )}
-          ListEmptyComponent={
-            filteredShops === undefined ? (
-              <ActivityIndicator color={colors.primary} />
-            ) : (
-              <AppText tone="muted" style={styles.emptyText}>
-                {search.trim() ? "لا توجد محلات مطابقة للبحث" : "لا توجد محلات في هذا القسم بعد"}
-              </AppText>
-            )
-          }
-        />
-      </View>
+              <Pressable
+                onPress={() => router.push({ pathname: "/shops/[slug]", params: { slug: item.slug ?? item._id } })}
+                style={styles.shopWrapper}>
+                <ShopCard shop={item} now={now} />
+              </Pressable>
+            )}
+            ListEmptyComponent={
+              filteredShops === undefined ? (
+                <ActivityIndicator color={colors.primary} />
+              ) : (
+                <AppText tone="muted" style={styles.emptyText}>
+                  {search.trim() ? "لا توجد محلات مطابقة للبحث" : "لا توجد محلات في هذا القسم بعد"}
+                </AppText>
+              )
+            }
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
+  scrollContent: { flexGrow: 1, paddingBottom: space.lg },
   searchWrapper: {
     paddingHorizontal: space.lg,
     paddingTop: space.md,
@@ -121,7 +128,7 @@ const styles = StyleSheet.create({
     color: colors.ink,
     textAlign: "right",
   },
-  list: { paddingHorizontal: space.lg, paddingBottom: space.lg, gap: space.md, flex: 1, justifyContent: "center", alignItems: "center" },
+  list: { paddingHorizontal: space.lg, paddingBottom: space.lg, gap: space.md },
   row: { justifyContent: "space-between" },
   shopWrapper: { borderRadius: radius.lg, overflow: "hidden", width: "49%" },
   emptyText: { textAlign: "center" },

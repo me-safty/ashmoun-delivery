@@ -44,7 +44,15 @@ export function todayRanges(hours: WeeklyHours, at: number) {
   const spill = hours
     .filter((range) => range.day === yesterday && range.close < range.open && minute < range.close)
     .map((range) => ({ day, open: 0, close: range.close }));
-  return [...spill, ...hours.filter((range) => range.day === day)];
+  const today = hours.filter((range) => range.day === day);
+  // Deduplicate by day (keep first entry per day)
+  const seen = new Set<number>();
+  const deduped = [...spill, ...today].filter((range) => {
+    if (seen.has(range.day)) return false;
+    seen.add(range.day);
+    return true;
+  });
+  return deduped;
 }
 
 export function isShopOpen(

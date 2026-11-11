@@ -1,6 +1,14 @@
+import { AppText } from "@/components/app-text";
+import { CART_BAR_SPACE, CartBar } from "@/components/cart-bar";
+import { EmojiTile } from "@/components/emoji-tile";
+import { shopState, ShopStatusBadge, todayHoursLabel } from "@/components/shop-status";
+import { Unavailable } from "@/components/unavailable";
+import { api } from "@/convex/_generated/api";
+import { useNow } from "@/lib/use-now";
+import { colors, fonts, formatPrice, radius, space } from "@/theme";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useQuery } from "convex/react";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRef } from "react";
 import {
   ActivityIndicator,
@@ -10,14 +18,6 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { api } from "@/convex/_generated/api";
-import { AppText } from "@/components/app-text";
-import { CART_BAR_SPACE, CartBar } from "@/components/cart-bar";
-import { EmojiTile } from "@/components/emoji-tile";
-import { Unavailable } from "@/components/unavailable";
-import { ShopStatusBadge, shopState, todayHoursLabel } from "@/components/shop-status";
-import { useNow } from "@/lib/use-now";
-import { colors, fonts, formatPrice, radius, space } from "@/theme";
 
 const STAR = "#F5B301";
 
@@ -101,11 +101,17 @@ export default function Shop() {
                   {shop.description}
                 </AppText>
                 <View style={styles.heroMeta}>
-                  <ShopStatusBadge state={state} />
-                  <AppText variant="caption" style={styles.heroMetaText}>
-                    {shop.prepMinutes ? `${shop.prepMinutes} دقيقة · ` : ""}
-                    {todayHoursLabel(shop, now)}
-                  </AppText>
+                  {shop.prepMinutes ? (
+                    <AppText variant="caption" style={styles.heroMetaText}>
+                      {`وقت تحضير الطلب ${shop.prepMinutes} دقيقة`}
+                    </AppText>
+                  ) : null}
+                  <View style={styles.statusHoursRow}>
+                    <ShopStatusBadge state={state} />
+                    <AppText variant="caption" style={styles.heroMetaText}>
+                      {todayHoursLabel(shop, now)}
+                    </AppText>
+                  </View>
                 </View>
 
                 {/* 3) CTA: jump to the menu */}
@@ -129,7 +135,7 @@ export default function Shop() {
                     </View>
                     <Stars rating={shop.rating} />
                     <AppText variant="caption" style={styles.ratingCount}>
-                      ( {shop.reviewsCount ?? 0} التقييم )
+                      ( {shop.reviewsCount ?? 0} تقييم )
                     </AppText>
                   </View>
                 )}
@@ -235,9 +241,13 @@ const styles = StyleSheet.create({
   heroTitle: { textAlign: "center" },
   heroSubtitle: { color: "rgba(255,255,255,0.85)", textAlign: "center" },
   heroMeta: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.xs,
+  },
+  statusHoursRow: {
     flexDirection: "row",
     alignItems: "center",
-    flexWrap: "wrap",
     justifyContent: "center",
     gap: space.sm,
   },
