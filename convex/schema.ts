@@ -110,6 +110,7 @@ export default defineSchema({
     name: v.string(),
     description: v.string(),
     price: v.number(),
+    discountPercent: v.optional(v.number()),
     emoji: v.string(),
     imageUrl: v.optional(v.string()),
     available: v.boolean(),

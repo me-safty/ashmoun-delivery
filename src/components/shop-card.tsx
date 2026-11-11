@@ -9,7 +9,7 @@ export function ShopCard({ shop, now }: { shop: Doc<"shops"> & { kind?: string }
   return (
     <Pressable
       accessibilityRole="link"
-      onPress={() => router.push({ pathname: "/shop/[id]", params: { id: shop._id } })}
+      onPress={() => router.push({ pathname: "/shop/[slug]", params: { slug: shop.slug ?? shop._id } })}
       style={styles.card}>
       <View style={styles.imageContainer}>
         {shop.imageUrl ? (

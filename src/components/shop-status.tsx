@@ -30,7 +30,7 @@ export function todayHoursLabel(shop: Pick<Doc<"shops">, "hours">, now: number) 
   const ranges = todayRanges(shop.hours, now);
   if (ranges.length === 0) return "إجازة اليوم";
   if (ranges.some((r) => r.open === r.close)) return "مفتوح 24 ساعة";
-  return ranges.map((r) => `${formatMinute(r.open)} - ${formatMinute(r.close)}`).join("، ");
+  return ranges.map((r) => `من ${formatMinute(r.open)} إلى ${formatMinute(r.close)}`).join("، ");
 }
 
 const styles = StyleSheet.create({

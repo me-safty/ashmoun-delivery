@@ -75,7 +75,7 @@ export default function Product() {
         quantity,
       },
     );
-    router.dismissTo({ pathname: "/shop/[id]", params: { id: shop._id } });
+    router.dismissTo({ pathname: "/shop/[slug]", params: { slug: shop.slug ?? shop._id } });
   }
 
   return (

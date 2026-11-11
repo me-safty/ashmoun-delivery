@@ -78,7 +78,7 @@ export default function CategoryShops() {
             columnWrapperStyle={styles.row}
             renderItem={({ item }) => (
               <Pressable
-                onPress={() => router.push({ pathname: "/shops/[slug]", params: { slug: item.slug ?? item._id } })}
+                onPress={() => router.push({ pathname: "/shop/[slug]", params: { slug: item.slug ?? item._id } })}
                 style={styles.shopWrapper}>
                 <ShopCard shop={item} now={now} />
               </Pressable>

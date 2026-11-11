@@ -7,6 +7,7 @@ export const colors = {
   placeholder: "#746A61",
   border: "#EFE6DC",
   primary: "#D9480F",
+  orange: "#FF6B00",
   primarySoft: "#FFE8DC",
   onPrimary: "#FFFFFF",
   success: "#2B8A3E",
