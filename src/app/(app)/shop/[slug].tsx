@@ -32,12 +32,12 @@ type TabKey = "menu" | "reviews" | "info";
 type Product = {
   _id: string;
   name: string;
-  description?: string;
+  description: string;
   emoji: string;
   imageUrl?: string;
   available: boolean;
   optionGroups: { min: number; max: number; key: string }[];
-  price?: number;
+  price: number;
   discountPercent?: number;
 };
 type Section = { _id: string; name: string; products: Product[] };
@@ -161,7 +161,7 @@ export default function Shop() {
           ? section.products
           : section.products.filter(
               (p) =>
-                p.name.toLowerCase().includes(q) || (p.description ?? "").toLowerCase().includes(q),
+                p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q),
             );
         return { ...section, products };
       })
@@ -183,7 +183,7 @@ export default function Shop() {
           emoji: item.emoji,
           optionsLabel: "",
           selections: [],
-          unitPrice: item.price ?? 0,
+          unitPrice: item.price,
           quantity: 1,
         },
       );
@@ -205,7 +205,7 @@ export default function Shop() {
 
   const renderProductRow = (item: Product) => {
     const discount = item.discountPercent ?? 0;
-    const price = currentPrice(item.price ?? 0, discount);
+    const price = currentPrice(item.price, discount);
     const hasRequired = item.optionGroups.some((g) => g.min > 0);
 
     return (
@@ -240,24 +240,20 @@ export default function Shop() {
         </View>
         {/* Left section – price and add to cart */}
         <View style={styles.priceColumn}>
-          {item.price !== undefined ? (
-            <>
-              <AppText variant="caption" tone="muted" style={styles.currency}>
-                EGP
-              </AppText>
-              <AppText variant="subtitle" tone="ink" style={[styles.price, { fontFamily: fonts.bold }]}>
-                {formatPrice(price)}
-              </AppText>
-              {discount > 0 ? (
-                <AppText
-                  variant="caption"
-                  tone="muted"
-                  style={[styles.originalPrice, { textDecorationLine: "line-through" }]}
-                >
-                  {formatPrice(item.price)}
-                </AppText>
-              ) : null}
-            </>
+          <AppText variant="caption" tone="muted" style={styles.currency}>
+            EGP
+          </AppText>
+          <AppText variant="subtitle" tone="ink" style={[styles.price, { fontFamily: fonts.bold }]}>
+            {formatPrice(price)}
+          </AppText>
+          {discount > 0 ? (
+            <AppText
+              variant="caption"
+              tone="muted"
+              style={[styles.originalPrice, { textDecorationLine: "line-through" }]}
+            >
+              {formatPrice(item.price)}
+            </AppText>
           ) : null}
           <Pressable
             style={styles.addButton}

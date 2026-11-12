@@ -85,11 +85,9 @@ export default function Product() {
           <EmojiTile emoji={product.emoji} tint={shop.tint} size={96} />
           <AppText variant="display">{product.name}</AppText>
           {product.description ? <AppText tone="muted">{product.description}</AppText> : null}
-          {product.price !== undefined ? (
-            <AppText variant="title" tone="primary">
-              {formatPrice(product.price)}
-            </AppText>
-          ) : null}
+          <AppText variant="title" tone="primary">
+            {formatPrice(product.price)}
+          </AppText>
         </View>
 
         {product.optionGroups.map((group) => (

@@ -38,7 +38,7 @@ export default function AdminShopMenu() {
 
 function ProductRow({ product }: { product: Doc<"products"> }) {
   const updateProduct = useMutation(api.adminCatalog.updateProduct);
-  const [price, setPrice] = useState(String(product.price ?? ""));
+  const [price, setPrice] = useState(String(product.price));
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const parsed = Number(price);

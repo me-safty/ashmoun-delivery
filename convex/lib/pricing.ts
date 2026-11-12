@@ -11,7 +11,7 @@ export type PricedLine =
   | { kind: "invalid"; reason: string };
 
 export function priceLine(
-  product: { price?: number; optionGroups: OptionGroup[] },
+  product: { price: number; optionGroups: OptionGroup[] },
   selections: Selection[],
 ): PricedLine {
   const known = new Set(product.optionGroups.map((g) => g.key));
@@ -21,7 +21,7 @@ export function priceLine(
     return { kind: "invalid", reason: "group selected twice" };
   }
 
-  let unitPrice = product.price ?? 0;
+  let unitPrice = product.price;
   const labels: string[] = [];
   for (const group of product.optionGroups) {
     const keys = selections.find((s) => s.groupKey === group.key)?.optionKeys ?? [];
