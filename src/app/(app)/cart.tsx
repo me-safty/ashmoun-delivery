@@ -1,9 +1,11 @@
 import { useQuery } from "convex/react";
 import { router, Stack } from "expo-router";
-import { Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useState } from "react";
+import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/convex/_generated/api";
 import { AppText } from "@/components/app-text";
+import { AuthPromptDialog } from "@/components/auth-prompt-dialog";
 import { Button } from "@/components/button";
 import { EmojiTile } from "@/components/emoji-tile";
 import { PriceSummary } from "@/components/price-summary";
@@ -15,11 +17,23 @@ import { colors, formatPrice, radius, space } from "@/theme";
 
 export default function Cart() {
   const { shop, lines, setQuantity } = useCart();
+  const me = useQuery(api.users.me);
   const addresses = useQuery(api.addresses.mine);
   const quote = useCartQuote();
   const address = addresses?.find((a) => a.isDefault && a.zoneActive) ?? addresses?.find((a) => a.zoneActive);
   const priced = quote?.kind === "ok" ? quote : undefined;
   const problem = cartProblem(quote, useNow());
+  const guest = me === null;
+  const [promptDismissed, setPromptDismissed] = useState(false);
+
+  // Guests see the sign-in / continue-as-guest prompt once per visit, but can dismiss it.
+  const promptOpen = guest && Boolean(shop) && lines.length > 0 && !promptDismissed;
+
+  const closePrompt = () => setPromptDismissed(true);
+  const signIn = () => {
+    setPromptDismissed(true);
+    router.push("/sign-in");
+  };
 
   if (!shop || lines.length === 0) {
     return (
@@ -75,13 +89,20 @@ export default function Cart() {
         <PriceSummary subtotal={priced?.subtotal} deliveryFee={address?.deliveryFee} />
       </ScrollView>
       <View style={[styles.footer, Platform.OS === "web" && styles.footerWeb]}>
-        {problem ? <AppText tone="danger">{problem}</AppText> : null}
+        {problem && !guest ? <AppText tone="danger">{problem}</AppText> : null}
         <Button
-          label={priced && address ? `إتمام الطلب · ${formatPrice(priced.subtotal + address.deliveryFee)}` : "إتمام الطلب"}
-          disabled={!priced || problem !== null}
-          onPress={() => router.push("/checkout")}
+          label={
+            guest
+              ? "تسجيل الدخول للمتابعة"
+              : priced && address
+                ? `إتمام الطلب · ${formatPrice(priced.subtotal + address.deliveryFee)}`
+                : "إتمام الطلب"
+          }
+          disabled={!guest && (!priced || problem !== null)}
+          onPress={() => (guest ? setPromptDismissed(false) : router.push("/checkout"))}
         />
       </View>
+      <AuthPromptDialog visible={promptOpen} onSignIn={signIn} onGuest={closePrompt} />
     </SafeAreaView>
   );
 }

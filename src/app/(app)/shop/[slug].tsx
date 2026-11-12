@@ -6,13 +6,17 @@ import { shopState, ShopStatusBadge, todayHoursLabel } from "@/components/shop-s
 import { Unavailable } from "@/components/unavailable";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { useQuery } from "convex/react";
-import { useNow } from "@/lib/use-now";
 import { useCart } from "@/lib/cart";
+import { useNow } from "@/lib/use-now";
 import { colors, fonts, formatPrice, radius, space } from "@/theme";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useAction, useMutation, useQuery } from "convex/react";
+import * as ImagePicker from "expo-image-picker";
 import { router, Stack, useLocalSearchParams } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -20,11 +24,8 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useCallback, useMemo, useState } from "react";
-import Ionicons from "@expo/vector-icons/Ionicons";
 
 const ORANGE = colors.orange;
-const CATEGORY_BG = "#F5F5F5";
 const THUMB_SIZE = 56;
 
 type TabKey = "menu" | "reviews" | "info";
@@ -67,6 +68,89 @@ export default function Shop() {
   }, []);
 
   const isExpanded = useCallback((id: string) => expanded.has(id), [expanded]);
+
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [description, setDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const createRequest = useMutation(api.pharmacyRequests.create);
+  const uploadImageAction = useAction(api.pharmacyRequests.uploadImage);
+
+  const pickImage = useCallback(async (source: "camera" | "library" = "library") => {
+    if (source === "camera") {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (permission.granted !== true) {
+        Alert.alert("لا يمكن الوصول للكاميرا", "الرجاء منح إذن الكاميرا من إعدادات الجهاز.");
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.7,
+      });
+      if (!result.canceled && result.assets[0]) setImageUri(result.assets[0].uri);
+    } else {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permission.granted !== true) {
+        Alert.alert("لا يمكن الوصول للمعرض", "الرجاء منح إذن المعرض من إعدادات الجهاز.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.7,
+      });
+      if (!result.canceled && result.assets[0]) setImageUri(result.assets[0].uri);
+    }
+  }, []);
+
+  const submitRequest = useCallback(
+    async (shopId: Id<"shops">) => {
+      if (submitting) return;
+      const hasImage = imageUri !== null;
+      const text = description.trim();
+      if (!hasImage && text.length === 0) {
+        Alert.alert("الرجاء كتابة ما تحتاجه أو رفع صورة");
+        return;
+      }
+      setSubmitting(true);
+      try {
+        let imageStorageId: Id<"_storage"> | undefined;
+        if (hasImage && imageUri) {
+          const response = await fetch(imageUri);
+          const arrayBuffer = await response.arrayBuffer();
+          const bytes = new Uint8Array(arrayBuffer);
+          let binary = "";
+          for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          const imageBase64 = btoa(binary);
+          const blob = await response.blob();
+          imageStorageId = await uploadImageAction({
+            imageBase64,
+            imageMimeType: blob.type ?? "image/jpeg",
+          });
+        }
+        await createRequest({
+          shopId,
+          description: text,
+          imageStorageId,
+        });
+        setSubmitted(true);
+      } catch (error) {
+        Alert.alert(
+          "فشل الإرسال",
+          error instanceof Error ? error.message : "حاول مرة أخرى لاحقًا",
+        );
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [submitting, imageUri, description, createRequest],
+  );
 
   const q = query.trim().toLowerCase();
   const filteredSections = useMemo(() => {
@@ -112,6 +196,7 @@ export default function Shop() {
 
   const { shop } = data;
   const state = shopState(shop, now);
+  const isPharmacy = data.category?.slug === "pharmacies";
 
   const currentPrice = (price: number, discountPercent?: number) => {
     const discount = discountPercent ?? 0;
@@ -193,6 +278,8 @@ export default function Shop() {
     return (
       <View key={section._id} style={styles.categoryWrapper}>
         <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: open }}
           style={styles.categoryHeader}
           onPress={() => toggleCategory(section._id)}>
           <AppText variant="subtitle" tone="ink" style={styles.categoryTitle} numberOfLines={1}>
@@ -214,10 +301,7 @@ export default function Shop() {
   const renderMenu = () => (
     <View style={styles.menuList}>
       {filteredSections.map((section) => (
-        <View key={section._id}>
-          {renderCategory(section)}
-          <View style={styles.divider} />
-        </View>
+        <View key={section._id}>{renderCategory(section)}</View>
       ))}
       {filteredSections.length === 0 && (
         <AppText variant="body" tone="muted" style={styles.empty}>
@@ -226,6 +310,63 @@ export default function Shop() {
       )}
     </View>
   );
+
+  const renderPharmacyRequest = () => {
+    const disabled = submitting || (imageUri === null && description.trim().length === 0);
+    if (submitted) {
+      return (
+        <View style={styles.successCard}>
+          <Ionicons name="checkmark-circle" size={48} color={colors.success} style={styles.successIcon} />
+          <AppText variant="subtitle" tone="success" style={styles.successTitle}>
+            تم إرسال طلبك
+          </AppText>
+          <AppText variant="caption" tone="muted" style={styles.successText}>
+            طلبك إلى {shop.name} قيد الانتظار، وسيتم التواصل معك لتحديد موعد التوصيل.
+          </AppText>
+        </View>
+      );
+    }
+    return (
+      <View style={styles.requestCard}>
+        <AppText variant="subtitle" tone="ink" style={styles.requestTitle}>
+          أرسل طلبك إلى {shop.name}
+        </AppText>
+        <AppText variant="caption" tone="muted" style={styles.requestHint}>
+          اكتب ما تحتاجه أو ارفق صورة للروشتة الطبية.
+        </AppText>
+        <View style={styles.inputWrap}>
+          <TextInput
+            style={styles.requestInput}
+            placeholder="اكتب ما تحتاجه ..."
+            value={description}
+            onChangeText={setDescription}
+            returnKeyType="done"
+            blurOnSubmit={false}
+          />
+          <Pressable style={styles.cameraButton} accessibilityLabel="إرفاق صورة" onPress={() => pickImage()}>
+            <Ionicons name="camera" size={20} color={colors.primary} />
+          </Pressable>
+        </View>
+        {imageUri !== null && (
+          <View style={styles.previewWrap}>
+            <Image source={{ uri: imageUri }} style={styles.previewImage} resizeMode="cover" />
+            <Pressable style={styles.removeButton} accessibilityLabel="إزالة الصورة" onPress={() => setImageUri(null)}>
+              <Ionicons name="close" size={20} color={colors.ink} />
+            </Pressable>
+          </View>
+        )}
+        <Pressable
+          style={[styles.submitButton, disabled && styles.submitButtonDisabled]}
+          accessibilityRole="button"
+          disabled={disabled}
+          onPress={() => submitRequest(shop._id)}>
+          <AppText variant="subtitle" tone="onPrimary" style={styles.submitLabel}>
+            {submitting ? "جارٍ الإرسال..." : "إرسال الطلب"}
+          </AppText>
+        </Pressable>
+      </View>
+    );
+  };
 
   const renderInfo = () => (
     <View style={styles.infoSection}>
@@ -289,9 +430,9 @@ export default function Shop() {
               {shop.name}
             </AppText>
             <View style={styles.shopMeta}>
-              <ShopStatusBadge state={state} />
+              <ShopStatusBadge state={state} onTint />
               <AppText variant="caption" tone="muted" style={styles.shopHours}>
-                {todayHoursLabel(shop, now)}
+                · {todayHoursLabel(shop, now)}
               </AppText>
             </View>
             {shop.rating != null && (
@@ -308,7 +449,9 @@ export default function Shop() {
             return (
               <Pressable
                 key={t.key}
-                style={[styles.tab]}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+                style={[styles.tab, active && styles.activeTab]}
                 onPress={() => setTab(t.key)}>
                 <AppText
                   variant="subtitle"
@@ -317,28 +460,35 @@ export default function Shop() {
                     active && { color: colors.ink, fontFamily: fonts.bold },
                   ]}
                 >
-                  {t.label}
+                  {isPharmacy && t.key === "menu" ? "طلب الدواء" : t.label}
                 </AppText>
               </Pressable>
             );
           })}
         </View>
 
-        <View style={styles.searchWrap}>
-          <Ionicons name="search" size={20} color={colors.muted} style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="البحث عن أصناف"
-            placeholderTextColor={colors.faint}
-            value={query}
-            onChangeText={setQuery}
-            returnKeyType="search"
-          />
-        </View>
+        {!isPharmacy && (
+          <View style={styles.searchWrap}>
+            <Ionicons name="search" size={20} color={colors.muted} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="البحث عن أصناف"
+              placeholderTextColor={colors.faint}
+              value={query}
+              onChangeText={setQuery}
+              returnKeyType="search"
+            />
+          </View>
+        )}
 
-        {tab === "menu" ? renderMenu() : tab === "reviews" ? (
+        {isPharmacy && tab === "menu"
+          ? renderPharmacyRequest()
+          : tab === "menu"
+            ? renderMenu()
+            : tab === "reviews"
+              ? (
           <ShopReviews shopId={shop._id} rating={shop.rating} reviewsCount={shop.reviewsCount} />
-        ) : (
+      ) : (
           renderInfo()
         )}
 
@@ -362,7 +512,7 @@ const styles = StyleSheet.create({
     paddingBottom: space.md,
     backgroundColor: colors.background,
   },
-  headerImage: { width: 48, height: 48, borderRadius: radius.md },
+  headerImage: { width: 96, height: 96, borderRadius: radius.lg },
   shopHeaderInfo: { flex: 1 },
   shopTitle: { fontSize: 20, lineHeight: 28, fontFamily: fonts.bold },
   shopMeta: { flexDirection: "row", alignItems: "center", gap: space.sm, marginTop: space.xs },
@@ -372,13 +522,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingHorizontal: space.lg,
     paddingTop: space.sm,
-    paddingBottom: space.sm,
     backgroundColor: colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   tab: {
     flex: 1,
     alignItems: "center",
     paddingVertical: space.sm,
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
+    marginBottom: -1,
+  },
+  activeTab: {
+    borderBottomColor: colors.primary,
   },
   tabText: {
     fontSize: 15,
@@ -408,18 +565,26 @@ const styles = StyleSheet.create({
     color: colors.ink,
     textAlign: "right",
   },
-  categoryWrapper: { backgroundColor: colors.background },
+  categoryWrapper: {
+    backgroundColor: colors.surface,
+    marginHorizontal: space.lg,
+    marginTop: space.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden",
+  },
   categoryHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: CATEGORY_BG,
+    backgroundColor: colors.surface,
     paddingHorizontal: space.lg,
     paddingVertical: space.md,
   },
   categoryTitle: { fontSize: 15, fontFamily: fonts.bold, color: colors.ink },
-  chevronWrap: { padding: space.xs },
-  content: { backgroundColor: colors.surface },
+  chevronWrap: { alignItems: "center", justifyContent: "center" },
+  content: { backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border },
   productRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -471,9 +636,80 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: space.xs,
-    paddingHorizontal: space.lg,
+    alignItems: "center",
+    paddingVertical: space.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   infoLabel: { color: colors.muted },
   infoValue: { color: colors.ink },
+  requestCard: {
+    padding: space.lg,
+    gap: space.md,
+    backgroundColor: colors.background,
+  },
+  requestTitle: { fontSize: 18, fontFamily: fonts.bold, color: colors.ink },
+  requestHint: { fontSize: 14, color: colors.muted, lineHeight: 22 },
+  inputWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+  },
+  requestInput: {
+    flex: 1,
+    minHeight: 44,
+    fontSize: 15,
+    color: colors.ink,
+    textAlign: "right",
+  },
+  cameraButton: { padding: space.xs },
+  previewWrap: {
+    position: "relative",
+    alignSelf: "center",
+    width: 140,
+    height: 140,
+    borderRadius: radius.lg,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  previewImage: { width: "100%", height: "100%" },
+  removeButton: {
+    position: "absolute",
+    top: space.xs,
+    right: space.xs,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  successCard: {
+    alignItems: "center",
+    paddingVertical: space.xxl,
+    backgroundColor: colors.background,
+  },
+  successIcon: { marginBottom: space.md },
+  successTitle: { fontSize: 18, fontFamily: fonts.bold, color: colors.successInk },
+  successText: { fontSize: 14, color: colors.muted, textAlign: "center", marginHorizontal: space.lg },
+  submitButton: {
+    marginTop: space.sm,
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: space.md,
+  },
+  submitButtonDisabled: { opacity: 0.5 },
+  submitLabel: { fontSize: 16, fontFamily: fonts.bold, color: colors.onPrimary },
 });

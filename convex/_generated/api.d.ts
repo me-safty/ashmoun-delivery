@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as _cleanupOrphans from "../_cleanupOrphans.js";
 import type * as addresses from "../addresses.js";
 import type * as admin from "../admin.js";
 import type * as adminCatalog from "../adminCatalog.js";
@@ -24,6 +25,7 @@ import type * as lib_session from "../lib/session.js";
 import type * as lib_slugs from "../lib/slugs.js";
 import type * as lib_sms from "../lib/sms.js";
 import type * as orders from "../orders.js";
+import type * as pharmacyRequests from "../pharmacyRequests.js";
 import type * as push from "../push.js";
 import type * as reviews from "../reviews.js";
 import type * as seed from "../seed.js";
@@ -38,6 +40,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  _cleanupOrphans: typeof _cleanupOrphans;
   addresses: typeof addresses;
   admin: typeof admin;
   adminCatalog: typeof adminCatalog;
@@ -54,6 +57,7 @@ declare const fullApi: ApiFromModules<{
   "lib/slugs": typeof lib_slugs;
   "lib/sms": typeof lib_sms;
   orders: typeof orders;
+  pharmacyRequests: typeof pharmacyRequests;
   push: typeof push;
   reviews: typeof reviews;
   seed: typeof seed;

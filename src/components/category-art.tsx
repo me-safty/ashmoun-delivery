@@ -42,7 +42,8 @@ const styles = StyleSheet.create({
   wrap: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "transparent",
+    backgroundColor: "rgba(255,255,255,0.35)",
+    borderRadius: 16,
   },
 });
 

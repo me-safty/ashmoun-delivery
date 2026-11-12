@@ -28,8 +28,9 @@ export function priceLine(
     if (new Set(keys).size !== keys.length) {
       return { kind: "invalid", reason: `duplicate option in ${group.key}` };
     }
-    if (keys.length < group.min || keys.length > group.max) {
-      return { kind: "invalid", reason: `${group.name}: choose ${group.min}-${group.max}` };
+    // Options are optional: only the max count is enforced, never a minimum.
+    if (keys.length > group.max) {
+      return { kind: "invalid", reason: `${group.name}: choose up to ${group.max}` };
     }
     for (const key of keys) {
       const option = group.options.find((o) => o.key === key);

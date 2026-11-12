@@ -43,7 +43,7 @@ export default function Product() {
     setSelected((current) => {
       const keys = current[group.key] ?? [];
       if (group.max === 1) {
-        const clearing = group.min === 0 && keys.includes(optionKey);
+        const clearing = keys.includes(optionKey);
         return { ...current, [group.key]: clearing ? [] : [optionKey] };
       }
       if (keys.includes(optionKey)) return { ...current, [group.key]: keys.filter((k) => k !== optionKey) };
@@ -94,7 +94,7 @@ export default function Product() {
           <View key={group.key} style={styles.group}>
             <View style={styles.groupHeader}>
               <AppText variant="subtitle">{group.name}</AppText>
-              <AppText variant="caption" tone={group.min > 0 ? "primary" : "muted"}>
+              <AppText variant="caption" tone="muted">
                 {groupHint(group)}
               </AppText>
             </View>
@@ -165,10 +165,8 @@ export default function Product() {
   );
 }
 
-function groupHint({ min, max }: { min: number; max: number }) {
-  if (min === 0) return `اختياري · حتى ${max}`;
-  if (min === max) return min === 1 ? "مطلوب" : `مطلوب · اختر ${min}`;
-  return `مطلوب · من ${min} إلى ${max}`;
+function groupHint({ max }: { max: number }) {
+  return max === 1 ? "اختياري" : `اختياري · حتى ${max}`;
 }
 
 const styles = StyleSheet.create({

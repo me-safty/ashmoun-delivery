@@ -17,7 +17,7 @@ async function resolveCategory(ctx: QueryCtx, slug: string): Promise<Doc<"catego
 
 // Shared detail view for the shop page, whichever way the route names the shop.
 async function shopDetailView(ctx: QueryCtx, shop: Doc<"shops">) {
-  const [sections, products] = await Promise.all([
+  const [sections, products, category] = await Promise.all([
     ctx.db
       .query("menuSections")
       .withIndex("by_shop", (q) => q.eq("shopId", shop._id))
@@ -26,6 +26,7 @@ async function shopDetailView(ctx: QueryCtx, shop: Doc<"shops">) {
       .query("products")
       .withIndex("by_shop", (q) => q.eq("shopId", shop._id))
       .collect(),
+    shop.categoryId === undefined ? null : ctx.db.get(shop.categoryId),
   ]);
   return {
     shop,
@@ -35,6 +36,7 @@ async function shopDetailView(ctx: QueryCtx, shop: Doc<"shops">) {
         products: products.filter((p) => p.sectionId === section._id),
       }))
       .filter((section) => section.products.length > 0),
+    category,
   };
 }
 

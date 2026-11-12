@@ -171,4 +171,27 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_status", ["status"]),
+
+  // Pharmacy requests: customers submit what they need (a photo of a prescription
+  // and/or free text) instead of browsing a fixed product menu.
+  pharmacyRequests: defineTable({
+    shopId: v.id("shops"),
+    userId: v.id("users"),
+    shopName: v.string(),
+    customerName: v.string(),
+    customerPhone: v.string(),
+    description: v.string(),
+    imageStorageId: v.optional(v.id("_storage")),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("accepted"),
+      v.literal("rejected"),
+      v.literal("delivered"),
+      v.literal("cancelled"),
+    ),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_shop", ["shopId"])
+    .index("by_shop_status", ["shopId", "status"]),
 });
