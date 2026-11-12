@@ -36,8 +36,8 @@ test("adds option deltas and labels", () => {
   ).toEqual({ kind: "ok", unitPrice: 140, optionsLabel: "دبل، جبنة، بيف بيكون" });
 });
 
-test("allows missing choices since options are optional", () => {
-  expect(priceLine(burger, [])).toEqual({ kind: "ok", unitPrice: 80, optionsLabel: "" });
+test("rejects a missing required choice", () => {
+  expect(priceLine(burger, []).kind).toBe("invalid");
 });
 
 test("rejects too many, duplicate, or unknown options", () => {

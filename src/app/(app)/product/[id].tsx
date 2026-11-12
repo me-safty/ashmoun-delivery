@@ -43,7 +43,7 @@ export default function Product() {
     setSelected((current) => {
       const keys = current[group.key] ?? [];
       if (group.max === 1) {
-        const clearing = keys.includes(optionKey);
+        const clearing = group.min === 0 && keys.includes(optionKey);
         return { ...current, [group.key]: clearing ? [] : [optionKey] };
       }
       if (keys.includes(optionKey)) return { ...current, [group.key]: keys.filter((k) => k !== optionKey) };
@@ -85,16 +85,18 @@ export default function Product() {
           <EmojiTile emoji={product.emoji} tint={shop.tint} size={96} />
           <AppText variant="display">{product.name}</AppText>
           {product.description ? <AppText tone="muted">{product.description}</AppText> : null}
-          <AppText variant="title" tone="primary">
-            {formatPrice(product.price)}
-          </AppText>
+          {product.price !== undefined ? (
+            <AppText variant="title" tone="primary">
+              {formatPrice(product.price)}
+            </AppText>
+          ) : null}
         </View>
 
         {product.optionGroups.map((group) => (
           <View key={group.key} style={styles.group}>
             <View style={styles.groupHeader}>
               <AppText variant="subtitle">{group.name}</AppText>
-              <AppText variant="caption" tone="muted">
+              <AppText variant="caption" tone={group.min > 0 ? "primary" : "muted"}>
                 {groupHint(group)}
               </AppText>
             </View>
@@ -165,8 +167,10 @@ export default function Product() {
   );
 }
 
-function groupHint({ max }: { max: number }) {
-  return max === 1 ? "اختياري" : `اختياري · حتى ${max}`;
+function groupHint({ min, max }: { min: number; max: number }) {
+  if (min === 0) return `اختياري · حتى ${max}`;
+  if (min === max) return min === 1 ? "مطلوب" : `مطلوب · اختر ${min}`;
+  return `مطلوب · من ${min} إلى ${max}`;
 }
 
 const styles = StyleSheet.create({

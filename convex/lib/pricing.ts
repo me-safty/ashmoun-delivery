@@ -11,7 +11,7 @@ export type PricedLine =
   | { kind: "invalid"; reason: string };
 
 export function priceLine(
-  product: { price: number; optionGroups: OptionGroup[] },
+  product: { price?: number; optionGroups: OptionGroup[] },
   selections: Selection[],
 ): PricedLine {
   const known = new Set(product.optionGroups.map((g) => g.key));
@@ -21,16 +21,15 @@ export function priceLine(
     return { kind: "invalid", reason: "group selected twice" };
   }
 
-  let unitPrice = product.price;
+  let unitPrice = product.price ?? 0;
   const labels: string[] = [];
   for (const group of product.optionGroups) {
     const keys = selections.find((s) => s.groupKey === group.key)?.optionKeys ?? [];
     if (new Set(keys).size !== keys.length) {
       return { kind: "invalid", reason: `duplicate option in ${group.key}` };
     }
-    // Options are optional: only the max count is enforced, never a minimum.
-    if (keys.length > group.max) {
-      return { kind: "invalid", reason: `${group.name}: choose up to ${group.max}` };
+    if (keys.length < group.min || keys.length > group.max) {
+      return { kind: "invalid", reason: `${group.name}: choose ${group.min}-${group.max}` };
     }
     for (const key of keys) {
       const option = group.options.find((o) => o.key === key);

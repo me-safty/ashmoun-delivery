@@ -8,7 +8,6 @@
  * @module
  */
 
-import type * as _cleanupOrphans from "../_cleanupOrphans.js";
 import type * as addresses from "../addresses.js";
 import type * as admin from "../admin.js";
 import type * as adminCatalog from "../adminCatalog.js";
@@ -40,7 +39,6 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  _cleanupOrphans: typeof _cleanupOrphans;
   addresses: typeof addresses;
   admin: typeof admin;
   adminCatalog: typeof adminCatalog;
